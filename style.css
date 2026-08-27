@@ -1,0 +1,356 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: #0c1118;
+    font-family: "Courier New", monospace;
+    color: white;
+}
+
+
+/* ===================================
+   GAME
+=================================== */
+
+#game {
+    position: relative;
+
+    width: 100vw;
+    height: 100vh;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            rgba(20, 27, 36, 0.92),
+            rgba(20, 27, 36, 0.92)
+        );
+
+    image-rendering: pixelated;
+}
+
+
+/* ===================================
+   GAME WORLD
+=================================== */
+
+#game-world {
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: #252d37;
+
+    /*
+    나중에 실제 맵 이미지를 넣으면
+    아래처럼 바꾸면 된다.
+
+    background-image: url("assets/map.png");
+    background-size: cover;
+    background-position: center;
+    */
+
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,0.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,0.025) 1px,
+            transparent 1px
+        );
+
+    background-size: 40px 40px;
+}
+
+
+/* ===================================
+   PLAYER
+=================================== */
+
+#player {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 42px;
+    height: 64px;
+
+    transform: translate(-50%, -50%);
+
+    z-index: 20;
+
+    image-rendering: pixelated;
+}
+
+
+/* 임시 플레이어 */
+
+.player-head {
+    position: absolute;
+
+    left: 10px;
+    top: 0;
+
+    width: 22px;
+    height: 22px;
+
+    background: #9b623c;
+
+    border: 3px solid #16191d;
+}
+
+
+.player-body {
+    position: absolute;
+
+    left: 6px;
+    top: 23px;
+
+    width: 30px;
+    height: 30px;
+
+    background: #e7e7df;
+
+    border: 3px solid #16191d;
+}
+
+
+/* ===================================
+   OBJECT
+=================================== */
+
+.object {
+    position: absolute;
+
+    transform: translate(-50%, -50%);
+
+    font-size: 48px;
+
+    cursor: default;
+
+    image-rendering: pixelated;
+
+    filter: drop-shadow(0 5px 3px rgba(0,0,0,0.5));
+
+    z-index: 10;
+}
+
+
+/* ===================================
+   SYSTEM STATUS
+=================================== */
+
+#system-status {
+    position: absolute;
+
+    left: 24px;
+    top: 24px;
+
+    width: 310px;
+
+    padding: 18px 20px;
+
+    background: rgba(11, 19, 27, 0.92);
+
+    border: 2px solid #69737e;
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 0 0 2px #1b222b,
+        0 10px 30px rgba(0,0,0,0.4);
+
+    z-index: 100;
+}
+
+
+.status-title {
+    margin-bottom: 15px;
+
+    color: #dce5eb;
+
+    font-size: 20px;
+    font-weight: bold;
+
+    letter-spacing: 2px;
+
+    border-bottom: 1px solid #56616d;
+
+    padding-bottom: 10px;
+}
+
+
+.status-line {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin: 12px 0;
+
+    font-size: 16px;
+}
+
+
+.status-line > span:first-child {
+    width: 55px;
+}
+
+
+/* ===================================
+   GAUGE
+=================================== */
+
+.gauge {
+    width: 105px;
+    height: 15px;
+
+    background: #18222b;
+
+    border: 1px solid #33414c;
+
+    display: flex;
+
+    overflow: hidden;
+}
+
+
+.filled {
+    display: block;
+
+    width: 70%;
+    height: 100%;
+
+    background: #54c94d;
+
+    box-shadow:
+        inset 0 0 4px rgba(255,255,255,0.25);
+}
+
+
+#temperature-gauge .filled {
+    width: 40%;
+}
+
+
+#hp-gauge .filled {
+    width: 100%;
+}
+
+
+.status-line > span:last-child {
+    margin-left: auto;
+
+    width: 55px;
+
+    text-align: right;
+}
+
+
+/* ===================================
+   DIALOGUE
+=================================== */
+
+#dialogue {
+    position: absolute;
+
+    left: 50%;
+    bottom: 28px;
+
+    width: min(900px, 80vw);
+
+    transform: translateX(-50%);
+
+    min-height: 110px;
+
+    padding: 25px 30px;
+
+    background: rgba(9, 17, 26, 0.96);
+
+    border: 2px solid #788490;
+
+    box-shadow:
+        0 0 0 3px #202933,
+        0 10px 30px rgba(0,0,0,0.45);
+
+    z-index: 100;
+}
+
+
+#dialogue-text {
+    font-size: 20px;
+
+    line-height: 1.6;
+
+    min-height: 45px;
+}
+
+
+#dialogue-hint {
+    position: absolute;
+
+    right: 18px;
+    bottom: -24px;
+
+    padding: 5px 15px;
+
+    background: #101820;
+
+    border-radius: 0 0 8px 8px;
+
+    color: #e8edf0;
+
+    font-size: 14px;
+}
+
+
+/* ===================================
+   RESPONSIVE
+=================================== */
+
+@media (max-width: 700px) {
+
+    #system-status {
+        left: 12px;
+        top: 12px;
+
+        width: 250px;
+
+        padding: 13px;
+    }
+
+    .status-line {
+        font-size: 13px;
+    }
+
+    .gauge {
+        width: 75px;
+    }
+
+    #dialogue {
+        width: 90vw;
+
+        bottom: 20px;
+
+        padding: 18px;
+    }
+
+    #dialogue-text {
+        font-size: 16px;
+    }
+}

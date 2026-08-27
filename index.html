@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SYSTEM ERROR</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main id="game">
+
+        <!-- 게임 배경 -->
+        <div id="game-world">
+
+            <!-- 플레이어 -->
+            <div id="player">
+                <div class="player-head"></div>
+                <div class="player-body"></div>
+            </div>
+
+            <!-- 조사 가능한 오브젝트 -->
+            <div
+                class="object"
+                id="computer"
+                data-message="오래된 컴퓨터다. 아직 작동하고 있는 것 같다."
+                style="left: 78%; top: 38%;"
+            >
+                💻
+            </div>
+
+            <div
+                class="object"
+                id="door"
+                data-message="문이다. 잠겨 있다. 거리 센서가 이상한 값을 측정하고 있다."
+                style="left: 86%; top: 67%;"
+            >
+                🚪
+            </div>
+
+            <div
+                class="object"
+                id="file"
+                data-message="ERROR_LOG.txt 파일이 있다."
+                style="left: 15%; top: 30%;"
+            >
+                📄
+            </div>
+
+        </div>
+
+
+        <!-- 시스템 상태창 -->
+        <section id="system-status">
+
+            <div class="status-title">
+                SYS STATUS
+            </div>
+
+            <div class="status-line">
+                <span>DIST.</span>
+
+                <div class="gauge">
+                    <span class="filled" id="distance-gauge"></span>
+                </div>
+
+                <span id="distance-value">82cm</span>
+            </div>
+
+
+            <div class="status-line">
+                <span>TEMP.</span>
+
+                <div class="gauge">
+                    <span class="filled" id="temperature-gauge"></span>
+                </div>
+
+                <span id="temperature-value">24°C</span>
+            </div>
+
+
+            <div class="status-line">
+                <span>HP</span>
+
+                <div class="gauge">
+                    <span class="filled" id="hp-gauge"></span>
+                </div>
+
+                <span id="hp-value">100%</span>
+            </div>
+
+        </section>
+
+
+        <!-- 대화 / 조사창 -->
+        <section id="dialogue">
+
+            <div id="dialogue-text">
+                SYSTEM READY.
+            </div>
+
+            <div id="dialogue-hint">
+                SPACE&nbsp;&nbsp; 조사 / 대화
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
