@@ -1,7 +1,3 @@
-/* =================================================
-   RESET
-================================================= */
-
 * {
     box-sizing: border-box;
     margin: 0;
@@ -16,9 +12,7 @@ body {
 }
 
 body {
-
-    background: #080d13;
-
+    background: #070c12;
     color: #dce6ef;
 
     font-family:
@@ -34,7 +28,6 @@ body {
 ================================================= */
 
 #game {
-
     position: relative;
 
     width: 100vw;
@@ -51,17 +44,18 @@ body {
 ================================================= */
 
 #world {
-
     position: absolute;
 
     left: 0;
     top: 0;
 
-    width: 3400px;
+    width: 3500px;
     height: 100%;
 
-    will-change:
-        transform;
+    will-change: transform;
+
+    transition:
+        transform 0.08s linear;
 }
 
 
@@ -70,7 +64,6 @@ body {
 ================================================= */
 
 #intro-area {
-
     position: absolute;
 
     left: 0;
@@ -79,28 +72,26 @@ body {
     width: 1700px;
     height: 100%;
 
-    background:
+    overflow: hidden;
 
+    background:
         radial-gradient(
-            ellipse at 85% 50%,
-            #263d4d 0%,
-            #192a36 28%,
-            #101a23 58%,
+            ellipse at 83% 50%,
+            #253b4b 0%,
+            #172731 26%,
+            #101921 57%,
             #080d13 100%
         );
-
-    overflow: hidden;
 }
 
 
 .intro-title {
-
     position: absolute;
 
     left: 120px;
     top: 42%;
 
-    color: #8196a7;
+    color: #8195a5;
 
     font-size: 18px;
 
@@ -109,13 +100,12 @@ body {
 
 
 .intro-subtitle {
-
     position: absolute;
 
     left: 120px;
-    top: calc(42% + 32px);
+    top: calc(42% + 34px);
 
-    color: #506675;
+    color: #536875;
 
     font-size: 10px;
 
@@ -124,85 +114,74 @@ body {
 
 
 /* =================================================
-   LIGHT PATH
+   LIGHT
 ================================================= */
 
 .light-path {
-
     position: absolute;
 
     left: 0;
     top: 50%;
 
-    width: 1580px;
+    width: 1600px;
     height: 320px;
 
     transform:
         translateY(-50%);
 
-    pointer-events: none;
-
     background:
-
         linear-gradient(
             90deg,
-
-            rgba(110,190,240,0) 0%,
-
-            rgba(115,190,235,.025) 25%,
-
-            rgba(138,203,243,.08) 48%,
-
-            rgba(164,220,251,.17) 67%,
-
-            rgba(197,235,255,.34) 84%,
-
-            rgba(225,248,255,.58) 100%
+            rgba(100,180,235,0),
+            rgba(112,189,238,.025) 25%,
+            rgba(137,203,242,.08) 46%,
+            rgba(166,220,250,.17) 67%,
+            rgba(199,235,255,.36) 85%,
+            rgba(224,248,255,.62)
         );
 
     filter:
         blur(38px);
+
+    pointer-events:
+        none;
 }
 
 
 .light-core {
-
     position: absolute;
 
-    left: 60px;
+    left: 90px;
     top: 50%;
 
     width: 1510px;
-    height: 28px;
+    height: 22px;
 
     transform:
         translateY(-50%);
 
     background:
-
         linear-gradient(
             90deg,
-
-            rgba(121,193,234,0),
-
-            rgba(132,203,241,.04) 35%,
-
-            rgba(177,224,250,.14) 65%,
-
-            rgba(219,246,255,.58)
+            transparent,
+            rgba(137,201,238,.04) 30%,
+            rgba(181,226,249,.13) 64%,
+            rgba(220,246,255,.62)
         );
 
     filter:
-        blur(14px);
+        blur(13px);
+
+    pointer-events:
+        none;
 }
 
 
 /* =================================================
-   SYSTEM ACCESS
+   ACCESS
 ================================================= */
 
 #system-access {
-
     position: absolute;
 
     left: 1580px;
@@ -216,59 +195,52 @@ body {
 
     display: flex;
 
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 }
 
 
 .access-frame {
-
     position: absolute;
 
     width: 82px;
     height: 82px;
 
     border:
-        1px solid #aacbe0;
+        1px solid #a7cbe0;
 
     transform:
         rotate(45deg);
 
     box-shadow:
-        0 0 25px
-        rgba(147,213,250,.18);
+        0 0 24px
+        rgba(135,204,242,.2);
 }
 
 
 .access-core {
-
     width: 18px;
     height: 18px;
 
-    background: #ecf8ff;
+    background: #edf9ff;
 
     box-shadow:
-
-        0 0 14px #d6f2ff,
-
-        0 0 34px
-        rgba(134,211,255,.82);
+        0 0 13px #d8f2ff,
+        0 0 35px rgba(132,210,255,.8);
 
     animation:
-        accessPulse
-        1.3s
+        accessPulse 1.35s
         infinite
         alternate;
 }
 
 
 .access-label {
-
     position: absolute;
 
-    top: 106px;
+    top: 107px;
 
-    color: #91a9ba;
+    color: #90a9bb;
 
     font-size: 9px;
 
@@ -279,18 +251,12 @@ body {
 @keyframes accessPulse {
 
     from {
-
-        transform:
-            scale(.65);
-
+        transform: scale(.65);
         opacity: .55;
     }
 
     to {
-
-        transform:
-            scale(1.2);
-
+        transform: scale(1.2);
         opacity: 1;
     }
 }
@@ -301,34 +267,47 @@ body {
 ================================================= */
 
 #system-area {
-
     position: absolute;
 
     left: 1700px;
     top: 0;
 
-    width: 1400px;
+    width: 100vw;
     height: 100%;
 
-    background:
+    overflow: hidden;
 
+    background:
         linear-gradient(
             rgba(255,255,255,.018) 1px,
             transparent 1px
         ),
-
         linear-gradient(
             90deg,
             rgba(255,255,255,.018) 1px,
             transparent 1px
         ),
-
         #26313c;
 
-    background-size: 56px 56px;
+    background-size:
+        56px 56px;
 
     border-left:
-        1px solid #5e7180;
+        1px solid #617583;
+}
+
+
+/* =================================================
+   SYSTEM VIEW
+================================================= */
+
+.system-view #world {
+    transform:
+        translateX(-1700px) !important;
+}
+
+.system-view #intro-area {
+    display: none;
 }
 
 
@@ -337,11 +316,10 @@ body {
 ================================================= */
 
 .system-header {
-
     position: absolute;
 
-    left: 70px;
-    right: 70px;
+    left: 6%;
+    right: 6%;
     top: 45px;
 
     display: flex;
@@ -351,9 +329,9 @@ body {
     padding-bottom: 12px;
 
     border-bottom:
-        1px solid #536674;
+        1px solid #536673;
 
-    color: #a6b6c1;
+    color: #a5b5c0;
 
     font-size: 12px;
 
@@ -362,7 +340,6 @@ body {
 
 
 #system-state {
-
     color: #7ca18a;
 }
 
@@ -372,7 +349,6 @@ body {
 ================================================= */
 
 #player {
-
     position: absolute;
 
     width: 42px;
@@ -386,7 +362,6 @@ body {
 
 
 .player-shadow {
-
     position: absolute;
 
     left: 4px;
@@ -403,7 +378,6 @@ body {
 
 
 .player-head {
-
     position: absolute;
 
     left: 10px;
@@ -420,7 +394,6 @@ body {
 
 
 .player-body {
-
     position: absolute;
 
     left: 6px;
@@ -429,7 +402,7 @@ body {
     width: 30px;
     height: 30px;
 
-    background: #d9e2e7;
+    background: #dbe3e7;
 
     border:
         3px solid #15191d;
@@ -441,7 +414,6 @@ body {
 ================================================= */
 
 .system-object {
-
     position: absolute;
 
     width: 120px;
@@ -457,11 +429,19 @@ body {
 
     gap: 9px;
 
-    color: #d2dde4;
+    color: #d0dce3;
 
     font-size: 11px;
 
     text-align: center;
+
+    transition:
+        filter .15s;
+}
+
+.system-object:hover {
+    filter:
+        brightness(1.18);
 }
 
 
@@ -470,7 +450,6 @@ body {
 ================================================= */
 
 .folder-icon {
-
     position: relative;
 
     width: 58px;
@@ -494,7 +473,6 @@ body {
 
 
 .folder-icon::before {
-
     content: "";
 
     position: absolute;
@@ -513,9 +491,6 @@ body {
 
     border-bottom:
         none;
-
-    border-radius:
-        3px 3px 0 0;
 }
 
 
@@ -524,7 +499,6 @@ body {
 ================================================= */
 
 .document-icon {
-
     position: relative;
 
     width: 46px;
@@ -535,14 +509,10 @@ body {
 
     border:
         3px solid #242b31;
-
-    box-shadow:
-        0 4px 0 rgba(0,0,0,.18);
 }
 
 
 .document-lines {
-
     position: absolute;
 
     left: 8px;
@@ -557,7 +527,6 @@ body {
 
 
 .document-lines i {
-
     width: 25px;
     height: 2px;
 
@@ -567,7 +536,6 @@ body {
 
 
 .extension {
-
     position: absolute;
 
     right: -20px;
@@ -587,7 +555,8 @@ body {
     border:
         3px solid #242b31;
 
-    color: #293038;
+    color:
+        #293038;
 
     font-size: 8px;
 }
@@ -598,7 +567,6 @@ body {
 ================================================= */
 
 .trash {
-
     position: relative;
 
     width: 55px;
@@ -607,7 +575,6 @@ body {
 
 
 .trash-handle {
-
     position: absolute;
 
     left: 20px;
@@ -625,7 +592,6 @@ body {
 
 
 .trash-lid {
-
     position: absolute;
 
     left: 4px;
@@ -645,7 +611,6 @@ body {
 
 
 .trash-body {
-
     position: absolute;
 
     left: 10px;
@@ -675,7 +640,6 @@ body {
 
 
 .trash-body i {
-
     width: 3px;
     height: 27px;
 
@@ -691,10 +655,9 @@ body {
 ================================================= */
 
 #hidden-exit {
-
     position: absolute;
 
-    width: 90px;
+    width: 80px;
 
     transform:
         translate(-50%, -50%);
@@ -707,30 +670,25 @@ body {
 
     gap: 8px;
 
-    color: #768994;
+    color: #7a8f9b;
 
     font-size: 10px;
 
     opacity: .025;
 
     transition:
-        opacity .8s ease;
+        opacity .7s ease;
 }
 
 
 #hidden-exit.revealed {
-
     opacity: 1;
 }
 
 
 .exit-door {
-
-    width: 58px;
-    height: 78px;
-
-    border:
-        1px solid #7d919d;
+    width: 56px;
+    height: 76px;
 
     display: flex;
 
@@ -739,13 +697,14 @@ body {
 
     background:
         #18222b;
+
+    border:
+        1px solid #7d919d;
 }
 
 
 .exit-question {
-
-    color: #9db0bb;
-
+    color: #9db1bd;
     font-size: 15px;
 }
 
@@ -755,7 +714,6 @@ body {
 ================================================= */
 
 #system-status {
-
     position: fixed;
 
     left: 16px;
@@ -779,7 +737,6 @@ body {
 
 
 .status-title {
-
     margin-bottom: 7px;
 
     padding-bottom: 6px;
@@ -798,63 +755,71 @@ body {
 
 
 .status-row {
-
     display: flex;
 
     align-items: center;
 
     gap: 6px;
 
-    margin: 7px 0;
+    margin:
+        7px 0;
 
     font-size: 10px;
 }
 
 
 .status-row span:first-child {
-
     width: 37px;
 
-    color: #9babb8;
+    color:
+        #9babb8;
 }
 
 
 .status-row strong {
-
     width: 42px;
 
-    text-align: right;
+    text-align:
+        right;
 
-    font-size: 10px;
+    font-size:
+        10px;
 
-    font-weight: normal;
+    font-weight:
+        normal;
 }
 
 
 .gauge {
-
     width: 65px;
     height: 8px;
+
+    overflow:
+        hidden;
 
     background:
         #18222b;
 
     border:
         1px solid #344551;
-
-    overflow: hidden;
 }
 
 
 .gauge span {
+    display:
+        block;
 
-    display: block;
+    width:
+        50%;
 
-    width: 50%;
-    height: 100%;
+    height:
+        100%;
 
     background:
         #91b4ce;
+
+    transition:
+        width .2s ease;
 }
 
 
@@ -863,7 +828,6 @@ body {
 ================================================= */
 
 #dialogue {
-
     position: fixed;
 
     left: 50%;
@@ -873,7 +837,7 @@ body {
         translateX(-50%);
 
     width:
-        min(760px, 82vw);
+        min(760px,82vw);
 
     min-height:
         76px;
@@ -887,14 +851,15 @@ body {
     border:
         1px solid #7e8e9d;
 
-    border-radius: 2px;
+    border-radius:
+        2px;
 
-    z-index: 300;
+    z-index:
+        300;
 }
 
 
 #dialogue-text {
-
     min-height:
         38px;
 
@@ -907,12 +872,14 @@ body {
 
 
 #dialogue-hint {
-
     position:
         absolute;
 
-    right: 12px;
-    bottom: 7px;
+    right:
+        12px;
+
+    bottom:
+        7px;
 
     color:
         #94a5b4;
@@ -923,11 +890,10 @@ body {
 
 
 /* =================================================
-   PUZZLE MAP
+   PUZZLE MAPS
 ================================================= */
 
 .puzzle-map {
-
     position: fixed;
 
     left: 0;
@@ -938,35 +904,48 @@ body {
 
     display: none;
 
-    z-index: 250;
+    z-index: 1000;
+
+    overflow: hidden;
 
     background:
         radial-gradient(
             circle at center,
             #263b49 0%,
-            #182832 50%,
-            #0c151d 100%
+            #182832 55%,
+            #0b141b 100%
         );
-
-    overflow: hidden;
 }
 
 
 .puzzle-map.active {
-
     display: block;
 }
 
 
-.map-title {
+/*
+    퍼즐 맵이 열리면
+    기존 HUD가 클릭을 가로막지 않도록 한다.
+*/
 
+.puzzle-open #system-status,
+.puzzle-open #dialogue {
+    display: none;
+}
+
+
+/* =================================================
+   PUZZLE TEXT
+================================================= */
+
+.map-title {
     position: absolute;
 
     left: 70px;
     top: 55px;
 
     color:
-        #cfdee7;
+        #cedee7;
 
     font-size:
         21px;
@@ -977,14 +956,13 @@ body {
 
 
 .map-subtitle {
-
     position: absolute;
 
     left: 70px;
-    top: 88px;
+    top: 89px;
 
     color:
-        #8096a6;
+        #8298a7;
 
     font-size:
         10px;
@@ -995,464 +973,515 @@ body {
 
 
 /* =================================================
-   DOCUMENT MAP
+   CLUE OBJECTS
 ================================================= */
 
-.map-note {
-
+.clue-object,
+.measurement-station {
     position: absolute;
 
-    width: 220px;
-    min-height: 145px;
+    transform:
+        translate(-50%,-50%);
 
-    padding: 18px;
+    width:
+        150px;
 
-    background:
-        #e8ecef;
+    min-height:
+        65px;
 
     border:
-        3px solid #252d33;
+        1px solid #748b9a;
+
+    background:
+        #17242d;
 
     color:
-        #283138;
+        #c9d9e2;
 
-    box-shadow:
-        6px 6px 0 rgba(0,0,0,.18);
-}
-
-
-.map-note b {
-
-    font-size: 13px;
-}
-
-
-.map-note p {
-
-    margin-top:
-        16px;
-
-    line-height:
-        1.7;
+    font-family:
+        "Courier New",
+        monospace;
 
     font-size:
         11px;
+
+    cursor:
+        pointer;
+
+    z-index:
+        20;
 }
 
 
-.map-question {
+.clue-object:hover,
+.measurement-station:hover {
+    background:
+        #263b48;
+}
 
+
+/* =================================================
+   EVIDENCE PANEL
+================================================= */
+
+.evidence-panel {
+    position: absolute;
+
+    right: 8%;
+    top: 20%;
+
+    width:
+        300px;
+
+    min-height:
+        180px;
+
+    padding:
+        20px;
+
+    background:
+        #101a22;
+
+    border:
+        1px solid #5e7380;
+
+    color:
+        #bdcdd6;
+
+    font-size:
+        11px;
+
+    line-height:
+        1.8;
+
+    z-index:
+        10;
+}
+
+
+/* =================================================
+   DOCUMENT DEDUCTION
+================================================= */
+
+.deduction-question {
     position: absolute;
 
     left: 70px;
-    bottom: 160px;
+    bottom: 175px;
 
     color:
-        #bdcdd7;
+        #bdcbd3;
 
     font-size:
         14px;
 }
 
 
-.map-answers {
-
+.answer-grid {
     position: absolute;
 
     left: 70px;
-    bottom: 95px;
+    bottom: 90px;
 
-    display: flex;
+    display:
+        grid;
 
-    gap: 10px;
+    grid-template-columns:
+        repeat(2, 160px);
+
+    gap:
+        8px;
 }
 
 
-/* =================================================
-   COMMON BUTTON
-================================================= */
-
-button {
-
+.answer-grid button {
     padding:
-        10px 14px;
+        10px;
 
     border:
-        1px solid #7b909e;
+        1px solid #748995;
 
     background:
         #263842;
 
     color:
-        #d8e4ea;
-
-    font-family:
-        "Courier New",
-        monospace;
+        #d5e0e6;
 
     cursor:
         pointer;
 }
 
 
-button:hover {
-
+.answer-grid button:hover {
     background:
-        #354b58;
+        #354c58;
 }
 
 
 /* =================================================
-   RETURN BUTTON
+   SENSOR
 ================================================= */
-
-.return-button {
-
-    position: absolute;
-
-    right: 30px;
-    bottom: 25px;
-
-    font-size: 10px;
-
-    color:
-        #9fb0bb;
-}
-
-
-/* =================================================
-   SENSOR MAP
-================================================= */
-
-.sensor-terminal {
-
-    position: absolute;
-
-    left: 150px;
-    top: 230px;
-
-    width: 170px;
-}
-
-
-.terminal-screen {
-
-    width: 140px;
-    height: 80px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    background:
-        #101920;
-
-    border:
-        4px solid #8d9da7;
-
-    color:
-        #a8c8d9;
-
-    font-size:
-        13px;
-}
-
-
-.terminal-body {
-
-    width: 170px;
-    height: 35px;
-
-    background:
-        #53636d;
-
-    border:
-        3px solid #83949e;
-}
-
-
-.sensor-readout {
-
-    position: absolute;
-
-    left: 500px;
-    top: 190px;
-
-    width: 330px;
-
-    padding: 22px;
-
-    background:
-        #101a22;
-
-    border:
-        1px solid #607583;
-
-    color:
-        #bad0dc;
-
-    line-height:
-        1.9;
-}
-
 
 .sensor-question {
-
     position: absolute;
 
-    left: 500px;
-    top: 380px;
+    left: 15%;
+    top: 60%;
+
+    width:
+        350px;
 
     color:
-        #a8bac5;
+        #aebfc9;
 
     font-size:
         12px;
+
+    line-height:
+        1.7;
 }
 
 
 #sensor-input {
-
     position: absolute;
 
-    left: 500px;
-    top: 430px;
+    left: 55%;
+    top: 59%;
 
-    width: 150px;
+    width:
+        140px;
 
-    padding: 10px;
-
-    background:
-        #101a22;
-
-    border:
-        1px solid #6b818f;
-
-    color:
-        #dce6ed;
-}
-
-
-#sensor-submit {
-
-    position: absolute;
-
-    left: 665px;
-    top: 430px;
-}
-
-
-#sensor-result {
-
-    position: absolute;
-
-    left: 500px;
-    top: 485px;
-
-    color:
-        #a6c8af;
-}
-
-
-/* =================================================
-   CONTROL MAP
-================================================= */
-
-.control-panel {
-
-    position: absolute;
-
-    left: 150px;
-    top: 180px;
-
-    width: 600px;
-
-    padding: 25px;
+    padding:
+        10px;
 
     background:
         #111b23;
 
     border:
-        1px solid #657b88;
+        1px solid #687d89;
+
+    color:
+        #dbe6ec;
+}
+
+
+#sensor-submit {
+    position: absolute;
+
+    left: calc(55% + 150px);
+    top: 59%;
+
+    padding:
+        10px 14px;
+
+    border:
+        1px solid #7a909e;
+
+    background:
+        #263842;
+
+    color:
+        #d8e4e9;
+
+    cursor:
+        pointer;
+}
+
+
+/* =================================================
+   CONTROL
+================================================= */
+
+.control-machine {
+    position: absolute;
+
+    left: 12%;
+    top: 20%;
+
+    width:
+        470px;
+
+    padding:
+        25px;
+
+    background:
+        #101a22;
+
+    border:
+        1px solid #637986;
 }
 
 
 .control-screen {
-
-    width: 240px;
-
-    padding: 20px;
+    padding:
+        18px;
 
     border:
-        1px solid #4d6371;
-
-    color:
-        #aabec9;
+        1px solid #4c626f;
 
     line-height:
-        2;
+        1.7;
 }
 
 
 .control-screen strong {
+    display:
+        block;
 
-    display: block;
+    margin-bottom:
+        10px;
 
     color:
-        #d8e9f2;
+        #d9e8ef;
 
     font-size:
-        26px;
+        28px;
 }
 
 
-#control-slider {
-
-    width: 400px;
-
-    margin-top:
-        25px;
-}
-
-
-#control-submit {
+.control-machine label {
+    display:
+        block;
 
     margin-top:
         20px;
-}
 
-
-#control-result {
-
-    margin-top:
-        18px;
+    margin-bottom:
+        8px;
 
     color:
-        #a7c8b0;
-}
-
-
-.control-hint {
-
-    position: absolute;
-
-    left: 150px;
-    top: 560px;
-
-    color:
-        #95a9b5;
+        #a8bbc5;
 
     font-size:
         11px;
 }
 
 
-/* =================================================
-   POWER MAP
-================================================= */
+.control-machine input {
+    width:
+        100%;
+}
 
-.power-grid {
 
-    position: absolute;
+#kp-value,
+#kd-value {
+    margin-top:
+        6px;
 
-    left: 100px;
-    top: 170px;
+    color:
+        #91a7b5;
 
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, 240px);
-
-    gap:
+    font-size:
         10px;
 }
 
 
-.power-grid div {
+#control-submit {
+    margin-top:
+        25px;
 
     padding:
-        16px;
+        10px 14px;
+
+    border:
+        1px solid #7d919d;
 
     background:
-        #111b23;
+        #263a45;
+
+    color:
+        #dce7ed;
+
+    cursor:
+        pointer;
+}
+
+
+.control-observation {
+    position: absolute;
+
+    right: 12%;
+    top: 30%;
+
+    width:
+        300px;
+
+    padding:
+        20px;
+
+    background:
+        #101a22;
 
     border:
         1px solid #536975;
 
     color:
-        #bfced7;
+        #9eb2be;
+
+    font-size:
+        11px;
+
+    line-height:
+        1.8;
 }
 
 
-.power-grid span {
+/* =================================================
+   POWER
+================================================= */
 
-    float:
-        right;
+.power-budget {
+    position: absolute;
+
+    left: 10%;
+    top: 20%;
+
+    width:
+        260px;
+
+    padding:
+        20px;
+
+    background:
+        #101a22;
+
+    border:
+        1px solid #566d7a;
+}
+
+
+.power-budget strong {
+    display:
+        block;
+
+    margin-top:
+        10px;
+
+    font-size:
+        28px;
 
     color:
-        #9eb7c6;
+        #d7e7ee;
+}
+
+
+.power-info {
+    position: absolute;
+
+    left: 10%;
+    top: 42%;
+
+    width:
+        320px;
+
+    background:
+        #111b23;
+
+    border:
+        1px solid #506571;
+}
+
+
+.power-info div {
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    padding:
+        12px;
+
+    border-bottom:
+        1px solid #344852;
+
+    font-size:
+        11px;
+}
+
+
+.power-info div:last-child {
+    border-bottom:
+        none;
 }
 
 
 .power-switches {
-
     position: absolute;
 
-    left: 650px;
-    top: 180px;
+    right: 18%;
+    top: 22%;
 
-    display: flex;
+    display:
+        flex;
 
-    flex-direction: column;
+    flex-direction:
+        column;
 
-    gap: 18px;
+    gap:
+        20px;
 }
 
 
 .power-switches label {
-
     color:
-        #bfced7;
+        #c4d2da;
 
     font-size:
         13px;
+
+    cursor:
+        pointer;
 }
 
 
 .power-load {
-
     position: absolute;
 
-    left: 650px;
-    top: 400px;
+    right: 18%;
+    top: 55%;
 
     color:
-        #aac2ce;
+        #a9bdc8;
 
     font-size:
-        16px;
+        18px;
 }
 
 
 #power-submit {
-
     position: absolute;
 
-    left: 650px;
-    top: 440px;
+    right: 18%;
+    top: 61%;
+
+    padding:
+        10px 15px;
+
+    border:
+        1px solid #7c919e;
+
+    background:
+        #263842;
+
+    color:
+        #dce7ed;
+
+    cursor:
+        pointer;
 }
 
 
-#power-result {
+/* =================================================
+   PUZZLE RESULT
+================================================= */
 
-    position: absolute;
-
-    left: 650px;
-    top: 500px;
-
+.puzzle-result {
     color:
-        #a7c8b0;
+        #a9c8b1;
+
+    font-size:
+        12px;
 }
 
 
@@ -1461,24 +1490,23 @@ button:hover {
 ================================================= */
 
 .diagnostic-panel {
-
     position: absolute;
 
-    left: 150px;
-    top: 180px;
+    left: 14%;
+    top: 22%;
 
-    width: 450px;
+    width:
+        420px;
 
     background:
         #101a22;
 
     border:
-        1px solid #637884;
+        1px solid #607582;
 }
 
 
 .diagnostic-panel div {
-
     display:
         flex;
 
@@ -1488,11 +1516,11 @@ button:hover {
     padding:
         17px;
 
-    border-bottom:
-        1px solid #3f535f;
-
     color:
-        #c8d6de;
+        #c7d6dd;
+
+    border-bottom:
+        1px solid #3e525d;
 }
 
 
@@ -1503,30 +1531,82 @@ button:hover {
 
 
 .diagnostic-panel span {
-
     color:
         #ba6e6e;
 }
 
 
 #diagnostic-submit {
-
     position: absolute;
 
-    left: 150px;
-    top: 420px;
+    left: 14%;
+    top: 53%;
+
+    padding:
+        10px 15px;
+
+    border:
+        1px solid #7c919e;
+
+    background:
+        #263842;
+
+    color:
+        #dce7ed;
+
+    cursor:
+        pointer;
 }
 
 
 #diagnostic-result {
-
     position: absolute;
 
-    left: 150px;
-    top: 480px;
+    left: 14%;
+    top: 63%;
+}
+
+
+/* =================================================
+   RETURN
+================================================= */
+
+.return-button {
+    position: absolute;
+
+    right: 30px;
+    bottom: 25px;
+
+    padding:
+        9px 12px;
+
+    border:
+        1px solid #708692;
+
+    background:
+        #1c2b34;
 
     color:
-        #a7c8b0;
+        #aebec7;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        10px;
+
+    cursor:
+        pointer;
+
+    z-index:
+        50;
+}
+
+
+.return-button:hover {
+    background:
+        #2b404c;
 }
 
 
@@ -1535,19 +1615,17 @@ button:hover {
 ================================================= */
 
 #map-final {
-
     text-align:
         center;
 }
 
 
 .final-title {
-
     margin-top:
         120px;
 
     color:
-        #d0e0e8;
+        #d2e1e8;
 
     font-size:
         23px;
@@ -1558,12 +1636,11 @@ button:hover {
 
 
 .final-panel {
-
     width:
         430px;
 
     margin:
-        60px auto 0;
+        55px auto 0;
 
     padding:
         22px;
@@ -1583,17 +1660,15 @@ button:hover {
 
 
 .final-panel span {
-
     float:
         right;
 
     color:
-        #a9c9b1;
+        #a8c9b1;
 }
 
 
 .final-text {
-
     margin-top:
         40px;
 
@@ -1606,9 +1681,93 @@ button:hover {
 
 
 #final-exit {
-
     margin-top:
         35px;
+
+    padding:
+        12px 18px;
+
+    border:
+        1px solid #8b9fa9;
+
+    background:
+        #263842;
+
+    color:
+        #dce7ed;
+
+    cursor:
+        pointer;
+}
+
+
+/* =================================================
+   ENDING
+================================================= */
+
+.ending-screen {
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    gap:
+        25px;
+
+    background:
+        #080e14;
+
+    color:
+        #cfdde5;
+
+    text-align:
+        center;
+
+    letter-spacing:
+        2px;
+}
+
+
+.ending-screen strong {
+    font-size:
+        32px;
+}
+
+
+.ending-screen p {
+    color:
+        #93a6b2;
+
+    font-size:
+        13px;
+
+    line-height:
+        1.8;
+
+    letter-spacing:
+        0;
+}
+
+
+.ending-screen span {
+    color:
+        #6c7d88;
+
+    font-size:
+        11px;
 }
 
 
@@ -1619,24 +1778,25 @@ button:hover {
 @media (max-width: 700px) {
 
     #system-status {
+        width:
+            175px;
 
-        width: 175px;
+        left:
+            10px;
 
-        left: 10px;
-        top: 10px;
+        top:
+            10px;
     }
 
 
     #dialogue {
-
         width:
             calc(100vw - 20px);
     }
 
 
     .puzzle-map {
-
-        overflow-y: auto;
+        overflow-y:
+            auto;
     }
-
 }
