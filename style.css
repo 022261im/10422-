@@ -1,3 +1,7 @@
+/* ===================================
+   RESET
+=================================== */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -12,9 +16,13 @@ body {
 }
 
 body {
-    background: #0c1118;
+    background: #0a0f16;
+
     font-family: "Courier New", monospace;
-    color: white;
+
+    color: #ffffff;
+
+    image-rendering: pixelated;
 }
 
 
@@ -30,13 +38,7 @@ body {
 
     overflow: hidden;
 
-    background:
-        linear-gradient(
-            rgba(20, 27, 36, 0.92),
-            rgba(20, 27, 36, 0.92)
-        );
-
-    image-rendering: pixelated;
+    background: #111821;
 }
 
 
@@ -47,32 +49,215 @@ body {
 #game-world {
     position: absolute;
 
+    left: 0;
+    top: 0;
+
     width: 100%;
     height: 100%;
 
-    background-color: #252d37;
+    overflow: hidden;
 
-    /*
-    나중에 실제 맵 이미지를 넣으면
-    아래처럼 바꾸면 된다.
+    background:
+        radial-gradient(
+            circle at center,
+            #1d2937 0%,
+            #111821 52%,
+            #0a0f15 100%
+        );
 
-    background-image: url("assets/map.png");
-    background-size: cover;
-    background-position: center;
-    */
+    transition:
+        background 1.2s ease;
+}
+
+
+/* ===================================
+   SUBTLE GRID
+=================================== */
+
+#game-world::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
 
     background-image:
         linear-gradient(
-            rgba(255,255,255,0.025) 1px,
+            rgba(255,255,255,0.018) 1px,
             transparent 1px
         ),
         linear-gradient(
             90deg,
-            rgba(255,255,255,0.025) 1px,
+            rgba(255,255,255,0.018) 1px,
             transparent 1px
         );
 
-    background-size: 40px 40px;
+    background-size: 48px 48px;
+
+    opacity: 0.65;
+}
+
+
+/* ===================================
+   LIGHT PATH
+=================================== */
+
+#light-path {
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+}
+
+
+/* 빛나는 선 */
+
+.path-segment {
+
+    position: absolute;
+
+    background: #8fc9ff;
+
+    box-shadow:
+        0 0 4px rgba(143, 201, 255, 0.9),
+        0 0 10px rgba(143, 201, 255, 0.55),
+        0 0 22px rgba(143, 201, 255, 0.25);
+
+    opacity: 0.9;
+}
+
+
+/* 중앙에서 오른쪽으로 */
+
+.path-1 {
+
+    left: 12%;
+    top: 51%;
+
+    width: 27%;
+    height: 3px;
+}
+
+
+/* 올라가는 선 */
+
+.path-2 {
+
+    left: 39%;
+    top: 34%;
+
+    width: 3px;
+    height: 17%;
+}
+
+
+/* 오른쪽으로 */
+
+.path-3 {
+
+    left: 39%;
+    top: 34%;
+
+    width: 25%;
+    height: 3px;
+}
+
+
+/* 마지막 상승 */
+
+.path-4 {
+
+    left: 64%;
+    top: 20%;
+
+    width: 3px;
+    height: 14%;
+}
+
+
+/* ===================================
+   PATH NODES
+=================================== */
+
+.path-node {
+
+    position: absolute;
+
+    width: 9px;
+    height: 9px;
+
+    transform: translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    background: #c6e5ff;
+
+    box-shadow:
+        0 0 8px #9fd2ff,
+        0 0 18px rgba(140, 198, 255, 0.7),
+        0 0 30px rgba(140, 198, 255, 0.35);
+
+    animation: pulse 1.8s infinite alternate;
+}
+
+.node-1 {
+    left: 39%;
+    top: 51%;
+}
+
+.node-2 {
+    left: 64%;
+    top: 34%;
+}
+
+.node-3 {
+    left: 64%;
+    top: 20%;
+}
+
+
+@keyframes pulse {
+
+    from {
+        opacity: 0.55;
+        transform:
+            translate(-50%, -50%)
+            scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform:
+            translate(-50%, -50%)
+            scale(1.15);
+    }
+}
+
+
+/* ===================================
+   WRONG PATH
+=================================== */
+
+#wrong-path {
+
+    position: absolute;
+
+    left: 63%;
+    top: 65%;
+
+    width: 180px;
+    height: 2px;
+
+    transform: rotate(-28deg);
+
+    background: rgba(113, 123, 137, 0.25);
+
+    box-shadow:
+        0 0 10px rgba(113, 123, 137, 0.08);
 }
 
 
@@ -81,10 +266,11 @@ body {
 =================================== */
 
 #player {
+
     position: absolute;
 
     left: 50%;
-    top: 50%;
+    top: 75%;
 
     width: 42px;
     height: 64px;
@@ -93,13 +279,14 @@ body {
 
     z-index: 20;
 
-    image-rendering: pixelated;
+    transition: opacity 0.5s ease;
 }
 
 
-/* 임시 플레이어 */
+/* 머리 */
 
 .player-head {
+
     position: absolute;
 
     left: 10px;
@@ -114,7 +301,10 @@ body {
 }
 
 
+/* 몸 */
+
 .player-body {
+
     position: absolute;
 
     left: 6px;
@@ -130,23 +320,254 @@ body {
 
 
 /* ===================================
-   OBJECT
+   SYSTEM GATE
 =================================== */
 
-.object {
+#system-gate {
+
+    position: absolute;
+
+    left: 64%;
+    top: 20%;
+
+    transform: translate(-50%, -50%);
+
+    width: 90px;
+    height: 90px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    z-index: 8;
+
+    opacity: 0.95;
+}
+
+
+.gate-line {
+
+    position: absolute;
+
+    width: 66px;
+    height: 66px;
+
+    border: 1px solid rgba(166, 212, 255, 0.55);
+
+    box-shadow:
+        0 0 8px rgba(130, 190, 255, 0.25),
+        inset 0 0 10px rgba(130, 190, 255, 0.08);
+
+    transform: rotate(45deg);
+}
+
+
+.gate-core {
+
+    width: 13px;
+    height: 13px;
+
+    background: #d4edff;
+
+    box-shadow:
+        0 0 10px #aad7ff,
+        0 0 28px rgba(135, 200, 255, 0.7);
+
+    animation: gatePulse 1.5s infinite alternate;
+}
+
+
+@keyframes gatePulse {
+
+    from {
+        transform: scale(0.7);
+        opacity: 0.6;
+    }
+
+    to {
+        transform: scale(1.25);
+        opacity: 1;
+    }
+}
+
+
+.gate-label {
+
+    position: absolute;
+
+    top: 70px;
+
+    font-size: 9px;
+
+    letter-spacing: 2px;
+
+    color: #8295a9;
+}
+
+
+/* ===================================
+   FILE SPACE
+=================================== */
+
+#file-space {
+
+    position: absolute;
+
+    inset: 0;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+        opacity 1s ease;
+
+    background:
+        linear-gradient(
+            rgba(255,255,255,0.02) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,0.02) 1px,
+            transparent 1px
+        ),
+        #26313d;
+
+    background-size: 48px 48px;
+}
+
+
+/* ===================================
+   FILE OBJECT
+=================================== */
+
+.file-object {
+
     position: absolute;
 
     transform: translate(-50%, -50%);
 
-    font-size: 48px;
+    width: 110px;
 
-    cursor: default;
+    display: flex;
 
-    image-rendering: pixelated;
+    flex-direction: column;
 
-    filter: drop-shadow(0 5px 3px rgba(0,0,0,0.5));
+    align-items: center;
 
-    z-index: 10;
+    gap: 8px;
+
+    color: #d4dde7;
+
+    font-size: 11px;
+
+    text-align: center;
+}
+
+
+/* 파일 아이콘 */
+
+.file-icon {
+
+    width: 42px;
+    height: 34px;
+
+    border: 2px solid #9aa8b7;
+
+    background: #3c4856;
+
+    box-shadow:
+        0 3px 0 rgba(0,0,0,0.2);
+
+    position: relative;
+}
+
+
+/* 폴더 */
+
+.folder-icon {
+
+    background: #465665;
+
+    border-color: #a3b1bf;
+}
+
+.folder-icon::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 5px;
+    top: -7px;
+
+    width: 15px;
+    height: 7px;
+
+    background: #465665;
+
+    border:
+        2px solid #a3b1bf;
+
+    border-bottom: none;
+}
+
+
+/* SYSTEM */
+
+.system-icon {
+
+    background: #303c49;
+}
+
+
+/* 문서 */
+
+.text-icon {
+
+    background: #d8dde3;
+
+    border-color: #7c8b9b;
+}
+
+.text-icon::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: 8px;
+    top: 7px;
+
+    width: 22px;
+    height: 2px;
+
+    background: #687684;
+
+    box-shadow:
+        0 7px 0 #687684,
+        0 14px 0 #687684;
+}
+
+
+/* UNKNOWN */
+
+.unknown-icon {
+
+    border-style: dashed;
+
+    background: #252e39;
+}
+
+
+/* TRASH */
+
+.trash-icon {
+
+    width: 30px;
+    height: 32px;
 }
 
 
@@ -155,60 +576,67 @@ body {
 =================================== */
 
 #system-status {
+
     position: absolute;
 
-    left: 24px;
-    top: 24px;
+    left: 16px;
+    top: 16px;
 
-    width: 310px;
+    width: 205px;
 
-    padding: 18px 20px;
+    padding: 10px 12px;
 
-    background: rgba(11, 19, 27, 0.92);
+    background: rgba(15, 22, 31, 0.92);
 
-    border: 2px solid #69737e;
+    border: 1px solid #69737e;
 
-    border-radius: 8px;
+    border-radius: 4px;
 
     box-shadow:
-        0 0 0 2px #1b222b,
-        0 10px 30px rgba(0,0,0,0.4);
+        0 0 0 1px #202933,
+        0 6px 15px rgba(0,0,0,0.3);
 
     z-index: 100;
 }
 
 
 .status-title {
-    margin-bottom: 15px;
+
+    margin-bottom: 7px;
+
+    padding-bottom: 6px;
 
     color: #dce5eb;
 
-    font-size: 20px;
+    font-size: 13px;
+
     font-weight: bold;
 
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 
     border-bottom: 1px solid #56616d;
-
-    padding-bottom: 10px;
 }
 
 
 .status-line {
+
     display: flex;
 
     align-items: center;
 
-    gap: 10px;
+    gap: 6px;
 
-    margin: 12px 0;
+    margin: 7px 0;
 
-    font-size: 16px;
+    font-size: 11px;
 }
 
 
 .status-line > span:first-child {
-    width: 55px;
+
+    width: 38px;
+
+    color: #aeb8c4;
 }
 
 
@@ -217,29 +645,31 @@ body {
 =================================== */
 
 .gauge {
-    width: 105px;
-    height: 15px;
+
+    width: 65px;
+    height: 8px;
+
+    overflow: hidden;
 
     background: #18222b;
 
     border: 1px solid #33414c;
 
     display: flex;
-
-    overflow: hidden;
 }
 
 
 .filled {
+
     display: block;
 
     width: 70%;
     height: 100%;
 
-    background: #54c94d;
+    background: #8eb9dc;
 
-    box-shadow:
-        inset 0 0 4px rgba(255,255,255,0.25);
+    transition:
+        width 0.25s ease;
 }
 
 
@@ -254,11 +684,14 @@ body {
 
 
 .status-line > span:last-child {
+
     margin-left: auto;
 
-    width: 55px;
+    width: 40px;
 
     text-align: right;
+
+    color: #e4e9f1;
 }
 
 
@@ -267,90 +700,118 @@ body {
 =================================== */
 
 #dialogue {
+
     position: absolute;
 
     left: 50%;
-    bottom: 28px;
+    bottom: 24px;
 
-    width: min(900px, 80vw);
+    width: min(760px, 80vw);
 
     transform: translateX(-50%);
 
-    min-height: 110px;
+    min-height: 82px;
 
-    padding: 25px 30px;
+    padding: 16px 20px;
 
-    background: rgba(9, 17, 26, 0.96);
+    background: rgba(20, 28, 38, 0.96);
 
-    border: 2px solid #788490;
+    border: 1px solid #8996a5;
+
+    border-radius: 3px;
 
     box-shadow:
-        0 0 0 3px #202933,
-        0 10px 30px rgba(0,0,0,0.45);
+        0 5px 15px rgba(0,0,0,0.35);
 
     z-index: 100;
 }
 
 
 #dialogue-text {
-    font-size: 20px;
 
-    line-height: 1.6;
+    min-height: 40px;
 
-    min-height: 45px;
+    font-size: 16px;
+
+    line-height: 1.5;
 }
 
 
 #dialogue-hint {
+
     position: absolute;
 
-    right: 18px;
-    bottom: -24px;
+    right: 12px;
+    bottom: 7px;
 
-    padding: 5px 15px;
+    padding: 0;
 
-    background: #101820;
+    background: none;
 
-    border-radius: 0 0 8px 8px;
+    color: #aeb8c4;
 
-    color: #e8edf0;
-
-    font-size: 14px;
+    font-size: 10px;
 }
 
 
 /* ===================================
-   RESPONSIVE
+   FILE MODE
+=================================== */
+
+.file-mode #light-path,
+.file-mode #wrong-path,
+.file-mode #system-gate {
+
+    opacity: 0;
+}
+
+
+.file-mode #file-space {
+
+    opacity: 1;
+
+    pointer-events: auto;
+}
+
+
+.file-mode #game-world {
+
+    background: #26313d;
+}
+
+
+.file-mode #player {
+
+    z-index: 30;
+}
+
+
+/* ===================================
+   MOBILE
 =================================== */
 
 @media (max-width: 700px) {
 
     #system-status {
-        left: 12px;
-        top: 12px;
 
-        width: 250px;
+        left: 10px;
+        top: 10px;
 
-        padding: 13px;
+        width: 175px;
     }
 
-    .status-line {
-        font-size: 13px;
-    }
-
-    .gauge {
-        width: 75px;
-    }
 
     #dialogue {
-        width: 90vw;
 
-        bottom: 20px;
+        width: calc(100vw - 20px);
 
-        padding: 18px;
+        bottom: 12px;
     }
+
 
     #dialogue-text {
-        font-size: 16px;
+
+        font-size: 14px;
     }
+
 }
