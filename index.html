@@ -13,36 +13,41 @@
 
 <main id="game">
 
-    <!-- =================================
+    <!-- =========================================
          WORLD
-    ================================== -->
+    ========================================== -->
 
     <div id="world">
 
-        <!-- =================================
+        <!-- =====================================
              INTRO AREA
-        ================================== -->
+        ====================================== -->
 
         <section id="intro-area">
 
-            <!-- 전체 공간의 미세한 안개 -->
-            <div class="ambient-fade"></div>
+            <div class="intro-fade"></div>
 
-            <!-- 오른쪽으로 이어지는 빛 -->
+            <div class="intro-title">
+                CONNECTION LOST
+            </div>
+
+            <div class="intro-subtitle">
+                RECONNECTING...
+            </div>
+
+            <!-- 오른쪽으로 이어지는 부드러운 빛 -->
             <div class="light-path"></div>
 
-            <!-- 빛의 중심 -->
             <div class="light-core"></div>
 
-            <!-- SYSTEM -->
-            <div id="access-point">
+            <div class="system-access">
 
-                <div class="access-ring"></div>
+                <div class="access-frame"></div>
 
                 <div class="access-core"></div>
 
-                <div class="access-label">
-                    SYSTEM
+                <div class="access-text">
+                    SYSTEM ACCESS
                 </div>
 
             </div>
@@ -50,77 +55,131 @@
         </section>
 
 
-        <!-- =================================
-             FILE SYSTEM AREA
-        ================================== -->
+        <!-- =====================================
+             FILE SYSTEM
+        ====================================== -->
 
-        <section id="file-area">
+        <section id="system-area">
 
-            <div class="file-area-title">
-                LOCAL SYSTEM
+            <div class="system-header">
+
+                <span>
+                    LOCAL SYSTEM
+                </span>
+
+                <span class="system-status-small">
+                    ONLINE
+                </span>
+
             </div>
 
 
-            <!-- Documents -->
+            <!-- =================================
+                 DOCUMENTS
+            ================================== -->
+
             <div
-                class="file-object"
-                style="left: 220px; top: 250px;"
-                data-message="Documents 폴더다. 여러 파일이 저장되어 있다."
+                class="system-object"
+                style="left: 170px; top: 180px;"
+                data-type="documents"
             >
 
-                <div class="folder-icon">
-                    <div class="folder-tab"></div>
-                </div>
+                <div class="folder-icon"></div>
 
-                <span>Documents</span>
+                <span>
+                    Documents
+                </span>
 
             </div>
 
 
-            <!-- Pictures -->
+            <!-- =================================
+                 SENSORS
+            ================================== -->
+
             <div
-                class="file-object"
-                style="left: 470px; top: 390px;"
-                data-message="이미지 파일들이 저장된 폴더다."
+                class="system-object"
+                style="left: 450px; top: 180px;"
+                data-type="sensors"
             >
 
-                <div class="folder-icon">
-                    <div class="folder-tab"></div>
-                </div>
+                <div class="folder-icon"></div>
 
-                <span>Pictures</span>
+                <span>
+                    Sensors
+                </span>
 
             </div>
 
 
-            <!-- SYSTEM -->
+            <!-- =================================
+                 CONTROL
+            ================================== -->
+
             <div
-                class="file-object"
-                style="left: 520px; top: 190px;"
-                data-message="SYSTEM 폴더다. 접근 권한이 필요하다."
+                class="system-object"
+                style="left: 730px; top: 180px;"
+                data-type="control"
             >
 
-                <div class="system-icon">
+                <div class="folder-icon"></div>
 
-                    <div class="system-symbol"></div>
-
-                </div>
-
-                <span>System</span>
+                <span>
+                    Control
+                </span>
 
             </div>
 
 
-            <!-- ERROR LOG -->
+            <!-- =================================
+                 POWER
+            ================================== -->
+
             <div
-                class="file-object"
-                style="left: 770px; top: 280px;"
-                data-message="ERROR_LOG.txt 파일이다. 최근 시스템 오류가 기록되어 있다."
+                class="system-object"
+                style="left: 1010px; top: 180px;"
+                data-type="power"
+            >
+
+                <div class="folder-icon"></div>
+
+                <span>
+                    Power
+                </span>
+
+            </div>
+
+
+            <!-- =================================
+                 DIAGNOSTICS
+            ================================== -->
+
+            <div
+                class="system-object"
+                style="left: 300px; top: 420px;"
+                data-type="diagnostics"
+            >
+
+                <div class="folder-icon"></div>
+
+                <span>
+                    Diagnostics
+                </span>
+
+            </div>
+
+
+            <!-- =================================
+                 ERROR LOG
+            ================================== -->
+
+            <div
+                class="system-object"
+                style="left: 610px; top: 430px;"
+                data-type="error"
             >
 
                 <div class="document-icon">
-
-                    <div class="document-corner"></div>
 
                     <div class="document-lines">
                         <i></i>
@@ -128,70 +187,48 @@
                         <i></i>
                     </div>
 
-                    <div class="extension-tag">
+                    <div class="extension">
                         txt
                     </div>
 
                 </div>
 
-                <span>ERROR_LOG.txt</span>
+                <span>
+                    ERROR_LOG.txt
+                </span>
 
             </div>
 
 
-            <!-- IMAGE FILE -->
+            <!-- =================================
+                 EXIT
+            ================================== -->
+
             <div
-                class="file-object"
-                style="left: 930px; top: 430px;"
-                data-message="IMAGE_001.jpg 파일이다."
+                id="exit-door"
+                style="left: 1100px; top: 520px;"
+                data-type="exit"
             >
 
-                <div class="document-icon">
-
-                    <div class="document-corner"></div>
-
-                    <div class="document-lines">
-                        <i></i>
-                        <i></i>
-                        <i></i>
-                    </div>
-
-                    <div class="extension-tag">
-                        jpg
-                    </div>
-
+                <div class="exit-symbol">
+                    EXIT
                 </div>
 
-                <span>IMAGE_001.jpg</span>
+                <span>
+                    EXIT
+                </span>
 
             </div>
 
 
-            <!-- UNKNOWN -->
+            <!-- =================================
+                 TRASH
+            ================================== -->
+
             <div
-                class="file-object"
-                style="left: 690px; top: 520px;"
-                data-message="파일명이 UNKNOWN으로 표시되어 있다."
-            >
-
-                <div class="document-icon unknown-file">
-
-                    <div class="question-mark">
-                        ?
-                    </div>
-
-                </div>
-
-                <span>UNKNOWN</span>
-
-            </div>
-
-
-            <!-- TRASH -->
-            <div
-                class="file-object"
-                style="left: 1120px; top: 520px;"
-                data-message="휴지통이다. 현재 비어 있다."
+                class="system-object"
+                style="left: 900px; top: 470px;"
+                data-type="trash"
             >
 
                 <div class="trash">
@@ -201,42 +238,67 @@
                     <div class="trash-lid"></div>
 
                     <div class="trash-body">
-
                         <i></i>
                         <i></i>
                         <i></i>
-
                     </div>
 
                 </div>
 
-                <span>Trash</span>
+                <span>
+                    Trash
+                </span>
+
+            </div>
+
+
+            <!-- =================================
+                 HIDDEN MACHINE
+            ================================== -->
+
+            <div
+                id="machine"
+                style="left: 1170px; top: 250px;"
+                data-type="machine"
+            >
+
+                <div class="machine-screen">
+                    SYSTEM
+                </div>
+
+                <div class="machine-body">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================
+                 PLAYER
+            ================================== -->
+
+            <div id="player">
+
+                <div class="player-shadow"></div>
+
+                <div class="player-head"></div>
+
+                <div class="player-body"></div>
 
             </div>
 
         </section>
 
-
-        <!-- =================================
-             PLAYER
-        ================================== -->
-
-        <div id="player">
-
-            <div class="player-shadow"></div>
-
-            <div class="player-head"></div>
-
-            <div class="player-body"></div>
-
-        </div>
-
     </div>
 
 
-    <!-- =================================
+    <!-- =========================================
          SYSTEM STATUS
-    ================================== -->
+    ========================================== -->
 
     <section id="system-status">
 
@@ -244,12 +306,16 @@
             SYS STATUS
         </div>
 
-        <div class="status-line">
+        <div class="status-row">
 
-            <span>DIST.</span>
+            <span>
+                DIST.
+            </span>
 
             <div class="gauge">
-                <span id="distance-gauge"></span>
+                <span
+                    id="distance-gauge"
+                ></span>
             </div>
 
             <strong id="distance-value">
@@ -259,27 +325,35 @@
         </div>
 
 
-        <div class="status-line">
+        <div class="status-row">
 
-            <span>TEMP.</span>
+            <span>
+                TEMP.
+            </span>
 
             <div class="gauge">
-                <span id="temperature-gauge"></span>
+                <span
+                    id="temperature-gauge"
+                ></span>
             </div>
 
-            <strong>
+            <strong id="temperature-value">
                 24°C
             </strong>
 
         </div>
 
 
-        <div class="status-line">
+        <div class="status-row">
 
-            <span>HP</span>
+            <span>
+                HP
+            </span>
 
             <div class="gauge">
-                <span id="hp-gauge"></span>
+                <span
+                    id="hp-gauge"
+                ></span>
             </div>
 
             <strong>
@@ -291,9 +365,9 @@
     </section>
 
 
-    <!-- =================================
+    <!-- =========================================
          DIALOGUE
-    ================================== -->
+    ========================================== -->
 
     <section id="dialogue">
 
@@ -306,6 +380,37 @@
         </div>
 
     </section>
+
+
+    <!-- =========================================
+         MODAL
+    ========================================== -->
+
+    <section id="modal">
+
+        <div id="modal-window">
+
+            <div id="modal-header">
+
+                <span id="modal-title">
+                    SYSTEM
+                </span>
+
+                <button id="modal-close">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div id="modal-content">
+
+            </div>
+
+        </div>
+
+    </section>
+
 
 </main>
 
