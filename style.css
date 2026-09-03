@@ -16,11 +16,10 @@ body {
 }
 
 body {
-    background: #0a0f16;
+    background: #080c12;
+    color: white;
 
     font-family: "Courier New", monospace;
-
-    color: #ffffff;
 
     image-rendering: pixelated;
 }
@@ -38,7 +37,7 @@ body {
 
     overflow: hidden;
 
-    background: #111821;
+    background: #0d141d;
 }
 
 
@@ -52,26 +51,24 @@ body {
     left: 0;
     top: 0;
 
-    width: 100%;
+    width: 2400px;
     height: 100%;
-
-    overflow: hidden;
 
     background:
         radial-gradient(
-            circle at center,
-            #1d2937 0%,
-            #111821 52%,
-            #0a0f15 100%
+            ellipse at 72% 50%,
+            #293a4c 0%,
+            #172330 30%,
+            #0f1720 60%,
+            #080d13 100%
         );
 
-    transition:
-        background 1.2s ease;
+    will-change: transform;
 }
 
 
 /* ===================================
-   SUBTLE GRID
+   SUBTLE WORLD GRID
 =================================== */
 
 #game-world::after {
@@ -86,178 +83,186 @@ body {
 
     background-image:
         linear-gradient(
-            rgba(255,255,255,0.018) 1px,
+            rgba(255,255,255,0.015) 1px,
             transparent 1px
         ),
         linear-gradient(
             90deg,
-            rgba(255,255,255,0.018) 1px,
+            rgba(255,255,255,0.015) 1px,
             transparent 1px
         );
 
     background-size: 48px 48px;
-
-    opacity: 0.65;
 }
 
 
 /* ===================================
-   LIGHT PATH
+   LIGHT FIELD
 =================================== */
 
-#light-path {
+#light-field {
+
+    position: absolute;
+
+    top: 0;
+    right: 250px;
+
+    width: 1000px;
+    height: 100%;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            rgba(156, 211, 255, 0.20) 0%,
+            rgba(119, 189, 245, 0.12) 18%,
+            rgba(92, 158, 217, 0.06) 34%,
+            rgba(40, 80, 110, 0.02) 55%,
+            transparent 74%
+        );
+
+    filter: blur(6px);
+
+    opacity: 0.95;
+
+    transition:
+        opacity 0.5s ease,
+        filter 0.5s ease;
+}
+
+
+/* ===================================
+   LIGHT ROAD
+=================================== */
+
+#light-road {
+
     position: absolute;
 
     inset: 0;
 
     pointer-events: none;
+
+    z-index: 3;
 }
 
 
-/* 빛나는 선 */
+/* main line */
 
-.path-segment {
+.road-line {
 
     position: absolute;
 
-    background: #8fc9ff;
+    height: 3px;
+
+    background: linear-gradient(
+        90deg,
+        rgba(104, 167, 216, 0),
+        rgba(141, 207, 255, 0.40) 12%,
+        rgba(183, 226, 255, 0.90) 55%,
+        rgba(216, 244, 255, 1)
+    );
 
     box-shadow:
-        0 0 4px rgba(143, 201, 255, 0.9),
-        0 0 10px rgba(143, 201, 255, 0.55),
-        0 0 22px rgba(143, 201, 255, 0.25);
-
-    opacity: 0.9;
+        0 0 5px rgba(140, 207, 255, 0.85),
+        0 0 15px rgba(140, 207, 255, 0.50),
+        0 0 35px rgba(140, 207, 255, 0.22);
 }
 
 
-/* 중앙에서 오른쪽으로 */
+.road-main {
 
-.path-1 {
+    left: 120px;
+    top: 60%;
 
-    left: 12%;
-    top: 51%;
+    width: 1300px;
 
-    width: 27%;
-    height: 3px;
+    transform:
+        rotate(-3deg);
 }
 
 
-/* 올라가는 선 */
+/* branch */
 
-.path-2 {
+.road-branch {
 
-    left: 39%;
-    top: 34%;
+    left: 1000px;
+    top: 42%;
 
-    width: 3px;
-    height: 17%;
-}
+    width: 420px;
 
+    transform:
+        rotate(-28deg);
 
-/* 오른쪽으로 */
-
-.path-3 {
-
-    left: 39%;
-    top: 34%;
-
-    width: 25%;
-    height: 3px;
-}
-
-
-/* 마지막 상승 */
-
-.path-4 {
-
-    left: 64%;
-    top: 20%;
-
-    width: 3px;
-    height: 14%;
+    opacity: 0.35;
 }
 
 
 /* ===================================
-   PATH NODES
+   ROAD NODES
 =================================== */
 
-.path-node {
+.road-node {
 
     position: absolute;
 
-    width: 9px;
-    height: 9px;
-
-    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
 
     border-radius: 50%;
 
-    background: #c6e5ff;
+    background: #d7f1ff;
 
     box-shadow:
-        0 0 8px #9fd2ff,
-        0 0 18px rgba(140, 198, 255, 0.7),
-        0 0 30px rgba(140, 198, 255, 0.35);
+        0 0 7px #bce7ff,
+        0 0 18px #8ad0ff,
+        0 0 35px rgba(121, 197, 255, 0.60);
 
-    animation: pulse 1.8s infinite alternate;
-}
-
-.node-1 {
-    left: 39%;
-    top: 51%;
-}
-
-.node-2 {
-    left: 64%;
-    top: 34%;
-}
-
-.node-3 {
-    left: 64%;
-    top: 20%;
+    animation:
+        nodePulse 1.6s infinite alternate;
 }
 
 
-@keyframes pulse {
+.node-a {
+
+    left: 480px;
+    top: 57%;
+}
+
+
+.node-b {
+
+    left: 800px;
+    top: 54%;
+}
+
+
+.node-c {
+
+    left: 1100px;
+    top: 50%;
+}
+
+
+.node-d {
+
+    left: 1420px;
+    top: 38%;
+}
+
+
+@keyframes nodePulse {
 
     from {
+        transform: scale(0.75);
         opacity: 0.55;
-        transform:
-            translate(-50%, -50%)
-            scale(0.8);
     }
 
     to {
+        transform: scale(1.25);
         opacity: 1;
-        transform:
-            translate(-50%, -50%)
-            scale(1.15);
     }
-}
-
-
-/* ===================================
-   WRONG PATH
-=================================== */
-
-#wrong-path {
-
-    position: absolute;
-
-    left: 63%;
-    top: 65%;
-
-    width: 180px;
-    height: 2px;
-
-    transform: rotate(-28deg);
-
-    background: rgba(113, 123, 137, 0.25);
-
-    box-shadow:
-        0 0 10px rgba(113, 123, 137, 0.08);
 }
 
 
@@ -267,23 +272,22 @@ body {
 
 #player {
 
-    position: absolute;
+    position: fixed;
 
     left: 50%;
-    top: 75%;
+    top: 50%;
 
     width: 42px;
     height: 64px;
 
-    transform: translate(-50%, -50%);
+    transform:
+        translate(-50%, -50%);
 
     z-index: 20;
-
-    transition: opacity 0.5s ease;
 }
 
 
-/* 머리 */
+/* head */
 
 .player-head {
 
@@ -301,7 +305,7 @@ body {
 }
 
 
-/* 몸 */
+/* body */
 
 .player-body {
 
@@ -327,115 +331,117 @@ body {
 
     position: absolute;
 
-    left: 64%;
-    top: 20%;
+    left: 1420px;
+    top: 38%;
 
-    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
 
-    width: 90px;
-    height: 90px;
+    transform:
+        translate(-50%, -50%);
 
     display: flex;
 
-    align-items: center;
     justify-content: center;
+    align-items: center;
 
     z-index: 8;
-
-    opacity: 0.95;
 }
 
 
-.gate-line {
+.gate-ring {
 
     position: absolute;
 
-    width: 66px;
-    height: 66px;
+    width: 82px;
+    height: 82px;
 
-    border: 1px solid rgba(166, 212, 255, 0.55);
+    border:
+        1px solid rgba(180, 224, 255, 0.65);
+
+    transform:
+        rotate(45deg);
 
     box-shadow:
-        0 0 8px rgba(130, 190, 255, 0.25),
-        inset 0 0 10px rgba(130, 190, 255, 0.08);
-
-    transform: rotate(45deg);
+        0 0 12px rgba(154, 216, 255, 0.25),
+        inset 0 0 12px rgba(154, 216, 255, 0.08);
 }
 
 
 .gate-core {
 
-    width: 13px;
-    height: 13px;
+    width: 14px;
+    height: 14px;
 
-    background: #d4edff;
+    background: #ecf9ff;
 
     box-shadow:
-        0 0 10px #aad7ff,
-        0 0 28px rgba(135, 200, 255, 0.7);
+        0 0 10px #d1efff,
+        0 0 30px rgba(136, 210, 255, 0.75);
 
-    animation: gatePulse 1.5s infinite alternate;
+    animation:
+        gatePulse 1.4s infinite alternate;
 }
 
 
 @keyframes gatePulse {
 
     from {
-        transform: scale(0.7);
-        opacity: 0.6;
+        transform: scale(0.65);
+        opacity: 0.55;
     }
 
     to {
-        transform: scale(1.25);
+        transform: scale(1.3);
         opacity: 1;
     }
 }
 
 
-.gate-label {
+.gate-text {
 
     position: absolute;
 
-    top: 70px;
+    top: 98px;
+
+    color: #90a7bb;
 
     font-size: 9px;
 
-    letter-spacing: 2px;
-
-    color: #8295a9;
+    letter-spacing: 3px;
 }
 
 
 /* ===================================
-   FILE SPACE
+   FILE SYSTEM
 =================================== */
 
 #file-space {
 
     position: absolute;
 
-    inset: 0;
+    left: 1000px;
+    top: 0;
 
-    opacity: 0;
-
-    pointer-events: none;
-
-    transition:
-        opacity 1s ease;
+    width: 1000px;
+    height: 100%;
 
     background:
         linear-gradient(
-            rgba(255,255,255,0.02) 1px,
+            rgba(255,255,255,0.018) 1px,
             transparent 1px
         ),
         linear-gradient(
             90deg,
-            rgba(255,255,255,0.02) 1px,
+            rgba(255,255,255,0.018) 1px,
             transparent 1px
         ),
-        #26313d;
+        #252f3b;
 
     background-size: 48px 48px;
+
+    box-shadow:
+        inset 150px 0 150px rgba(147, 202, 245, 0.035);
 }
 
 
@@ -447,9 +453,10 @@ body {
 
     position: absolute;
 
-    transform: translate(-50%, -50%);
+    width: 130px;
 
-    width: 110px;
+    transform:
+        translate(-50%, -50%);
 
     display: flex;
 
@@ -459,115 +466,286 @@ body {
 
     gap: 8px;
 
-    color: #d4dde7;
+    color: #d9e3ec;
 
     font-size: 11px;
 
     text-align: center;
+
+    z-index: 10;
 }
 
 
-/* 파일 아이콘 */
+.file-object:hover {
 
-.file-icon {
+    color: #ffffff;
 
-    width: 42px;
-    height: 34px;
+    filter:
+        brightness(1.15);
+}
 
-    border: 2px solid #9aa8b7;
 
-    background: #3c4856;
+/* ===================================
+   GENERAL ICON
+=================================== */
 
-    box-shadow:
-        0 3px 0 rgba(0,0,0,0.2);
+.icon {
 
     position: relative;
+
+    width: 48px;
+    height: 40px;
+
+    background: #465462;
+
+    border: 2px solid #a9b8c5;
+
+    box-shadow:
+        0 4px 0 rgba(0,0,0,0.22),
+        0 0 12px rgba(140, 170, 195, 0.08);
 }
 
 
-/* 폴더 */
+/* ===================================
+   FOLDER
+=================================== */
 
 .folder-icon {
 
-    background: #465665;
+    background: #4d5e6d;
 
-    border-color: #a3b1bf;
+    margin-top: 5px;
 }
 
-.folder-icon::before {
 
-    content: "";
+.folder-tab {
 
     position: absolute;
 
-    left: 5px;
-    top: -7px;
+    left: 4px;
+    top: -8px;
 
-    width: 15px;
-    height: 7px;
+    width: 19px;
+    height: 8px;
 
-    background: #465665;
+    background: #4d5e6d;
 
     border:
-        2px solid #a3b1bf;
+        2px solid #a9b8c5;
 
     border-bottom: none;
 }
 
 
-/* SYSTEM */
+/* ===================================
+   SYSTEM ICON
+=================================== */
 
 .system-icon {
 
-    background: #303c49;
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4f5e6d,
+            #293440
+        );
 }
 
 
-/* 문서 */
+.system-mark {
 
-.text-icon {
+    width: 17px;
+    height: 17px;
 
-    background: #d8dde3;
+    border:
+        2px solid #c0d0dc;
 
-    border-color: #7c8b9b;
+    transform:
+        rotate(45deg);
 }
 
-.text-icon::after {
+
+/* ===================================
+   DOCUMENT
+=================================== */
+
+.document-icon {
+
+    background: #dbe1e6;
+
+    border-color: #8796a4;
+}
+
+
+.document-fold {
+
+    position: absolute;
+
+    right: -2px;
+    top: -2px;
+
+    width: 12px;
+    height: 12px;
+
+    background: #b7c1cb;
+
+    clip-path:
+        polygon(0 0, 100% 100%, 0 100%);
+}
+
+
+.document-lines {
+
+    position: absolute;
+
+    left: 8px;
+    top: 11px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+
+.document-lines i {
+
+    display: block;
+
+    width: 27px;
+    height: 2px;
+
+    background: #788895;
+}
+
+
+/* ===================================
+   UNKNOWN
+=================================== */
+
+.unknown-icon {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #28323d;
+
+    border:
+        2px dashed #9eacba;
+
+    color: #c8d7e3;
+
+    font-size: 20px;
+    font-weight: bold;
+}
+
+
+/* ===================================
+   TRASH CAN
+=================================== */
+
+.trash-can {
+
+    position: relative;
+
+    width: 48px;
+    height: 52px;
+}
+
+
+/* lid */
+
+.trash-lid {
+
+    position: absolute;
+
+    left: 4px;
+    top: 4px;
+
+    width: 40px;
+    height: 7px;
+
+    background: #8e9ba7;
+
+    border:
+        2px solid #bcc7d0;
+
+    border-radius: 2px;
+}
+
+
+/* handle */
+
+.trash-lid::before {
 
     content: "";
 
     position: absolute;
 
+    left: 13px;
+    top: -7px;
+
+    width: 10px;
+    height: 6px;
+
+    border:
+        2px solid #bcc7d0;
+
+    border-bottom: none;
+}
+
+
+/* body */
+
+.trash-body {
+
+    position: absolute;
+
     left: 8px;
-    top: 7px;
+    top: 12px;
 
-    width: 22px;
-    height: 2px;
+    width: 32px;
+    height: 36px;
 
-    background: #687684;
+    background: #667581;
 
-    box-shadow:
-        0 7px 0 #687684,
-        0 14px 0 #687684;
+    border:
+        2px solid #b5c2cc;
+
+    clip-path:
+        polygon(
+            8% 0,
+            92% 0,
+            82% 100%,
+            18% 100%
+        );
+
+    display: flex;
+
+    justify-content: space-evenly;
 }
 
 
-/* UNKNOWN */
+/* vertical slots */
 
-.unknown-icon {
+.trash-body span {
 
-    border-style: dashed;
+    display: block;
 
-    background: #252e39;
-}
+    width: 2px;
+    height: 23px;
 
+    margin-top: 7px;
 
-/* TRASH */
-
-.trash-icon {
-
-    width: 30px;
-    height: 32px;
+    background: #3b4651;
 }
 
 
@@ -577,7 +755,7 @@ body {
 
 #system-status {
 
-    position: absolute;
+    position: fixed;
 
     left: 16px;
     top: 16px;
@@ -586,15 +764,12 @@ body {
 
     padding: 10px 12px;
 
-    background: rgba(15, 22, 31, 0.92);
+    background: rgba(15, 22, 31, 0.90);
 
-    border: 1px solid #69737e;
+    border:
+        1px solid #69737e;
 
     border-radius: 4px;
-
-    box-shadow:
-        0 0 0 1px #202933,
-        0 6px 15px rgba(0,0,0,0.3);
 
     z-index: 100;
 }
@@ -614,7 +789,8 @@ body {
 
     letter-spacing: 1px;
 
-    border-bottom: 1px solid #56616d;
+    border-bottom:
+        1px solid #56616d;
 }
 
 
@@ -653,7 +829,8 @@ body {
 
     background: #18222b;
 
-    border: 1px solid #33414c;
+    border:
+        1px solid #33414c;
 
     display: flex;
 }
@@ -701,27 +878,30 @@ body {
 
 #dialogue {
 
-    position: absolute;
+    position: fixed;
 
     left: 50%;
     bottom: 24px;
 
     width: min(760px, 80vw);
 
-    transform: translateX(-50%);
+    transform:
+        translateX(-50%);
 
-    min-height: 82px;
+    min-height: 78px;
 
-    padding: 16px 20px;
+    padding: 15px 20px;
 
-    background: rgba(20, 28, 38, 0.96);
+    background:
+        rgba(19, 27, 36, 0.96);
 
-    border: 1px solid #8996a5;
+    border:
+        1px solid #8996a5;
 
     border-radius: 3px;
 
     box-shadow:
-        0 5px 15px rgba(0,0,0,0.35);
+        0 6px 20px rgba(0,0,0,0.35);
 
     z-index: 100;
 }
@@ -744,74 +924,7 @@ body {
     right: 12px;
     bottom: 7px;
 
-    padding: 0;
-
-    background: none;
-
     color: #aeb8c4;
 
     font-size: 10px;
-}
-
-
-/* ===================================
-   FILE MODE
-=================================== */
-
-.file-mode #light-path,
-.file-mode #wrong-path,
-.file-mode #system-gate {
-
-    opacity: 0;
-}
-
-
-.file-mode #file-space {
-
-    opacity: 1;
-
-    pointer-events: auto;
-}
-
-
-.file-mode #game-world {
-
-    background: #26313d;
-}
-
-
-.file-mode #player {
-
-    z-index: 30;
-}
-
-
-/* ===================================
-   MOBILE
-=================================== */
-
-@media (max-width: 700px) {
-
-    #system-status {
-
-        left: 10px;
-        top: 10px;
-
-        width: 175px;
-    }
-
-
-    #dialogue {
-
-        width: calc(100vw - 20px);
-
-        bottom: 12px;
-    }
-
-
-    #dialogue-text {
-
-        font-size: 14px;
-    }
-
 }

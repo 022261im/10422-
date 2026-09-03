@@ -1,29 +1,56 @@
 /* ===================================
-   BASIC SETUP
+   ELEMENTS
 =================================== */
 
 const game = document.getElementById("game");
 const world = document.getElementById("game-world");
 const player = document.getElementById("player");
 
-const dialogueText = document.getElementById("dialogue-text");
+const dialogueText =
+    document.getElementById("dialogue-text");
 
-const distanceValue = document.getElementById("distance-value");
-const distanceGauge = document.getElementById("distance-gauge");
+const distanceValue =
+    document.getElementById("distance-value");
 
-const fileObjects = document.querySelectorAll(".file-object");
+const distanceGauge =
+    document.getElementById("distance-gauge");
+
+const lightField =
+    document.getElementById("light-field");
+
+const fileObjects =
+    document.querySelectorAll(".file-object");
 
 const keys = {};
 
-const speed = 4;
+
+/* ===================================
+   WORLD
+=================================== */
+
+const WORLD_WIDTH = 2400;
 
 
 /* ===================================
-   PLAYER POSITION
+   PLAYER
 =================================== */
 
-let playerX = game.clientWidth / 2;
-let playerY = game.clientHeight * 0.75;
+/*
+    플레이어는 실제로 월드 안에서 움직인다.
+    화면에서는 항상 중앙에 보인다.
+*/
+
+let playerX = 250;
+let playerY = window.innerHeight * 0.60;
+
+
+/* ===================================
+   CAMERA
+=================================== */
+
+let cameraX = 0;
+
+const speed = 4;
 
 
 /* ===================================
@@ -32,39 +59,41 @@ let playerY = game.clientHeight * 0.75;
 
 let gameMode = "main";
 
-let systemMessageCooldown = 0;
-
 let enteredFileSpace = false;
+
+let wrongMessageCooldown = 0;
 
 
 /* ===================================
    KEYBOARD
 =================================== */
 
-document.addEventListener("keydown", (event) => {
+document.addEventListener(
+    "keydown",
+    (event) => {
 
-    const key = event.key.toLowerCase();
-
-    keys[key] = true;
+        keys[event.key.toLowerCase()] = true;
 
 
-    /* SPACE */
+        if (event.code === "Space") {
 
-    if (event.code === "Space") {
+            event.preventDefault();
 
-        event.preventDefault();
+            interact();
+        }
 
-        interact();
     }
+);
 
-});
 
+document.addEventListener(
+    "keyup",
+    (event) => {
 
-document.addEventListener("keyup", (event) => {
+        keys[event.key.toLowerCase()] = false;
 
-    keys[event.key.toLowerCase()] = false;
-
-});
+    }
+);
 
 
 /* ===================================
@@ -76,7 +105,12 @@ function updatePlayer() {
     let moving = false;
 
 
-    if (keys["w"] || keys["arrowup"]) {
+    /* ↑ */
+
+    if (
+        keys["w"] ||
+        keys["arrowup"]
+    ) {
 
         playerY -= speed;
 
@@ -84,7 +118,12 @@ function updatePlayer() {
     }
 
 
-    if (keys["s"] || keys["arrowdown"]) {
+    /* ↓ */
+
+    if (
+        keys["s"] ||
+        keys["arrowdown"]
+    ) {
 
         playerY += speed;
 
@@ -92,7 +131,12 @@ function updatePlayer() {
     }
 
 
-    if (keys["a"] || keys["arrowleft"]) {
+    /* ← */
+
+    if (
+        keys["a"] ||
+        keys["arrowleft"]
+    ) {
 
         playerX -= speed;
 
@@ -100,7 +144,12 @@ function updatePlayer() {
     }
 
 
-    if (keys["d"] || keys["arrowright"]) {
+    /* → */
+
+    if (
+        keys["d"] ||
+        keys["arrowright"]
+    ) {
 
         playerX += speed;
 
@@ -109,44 +158,55 @@ function updatePlayer() {
 
 
     /* ===================================
-       SCREEN LIMIT
+       WORLD LIMIT
     =================================== */
 
-    const halfWidth = player.offsetWidth / 2;
-    const halfHeight = player.offsetHeight / 2;
+    const halfWidth =
+        player.offsetWidth / 2;
+
+    const halfHeight =
+        player.offsetHeight / 2;
 
 
     playerX = Math.max(
-        halfWidth,
+        60,
         Math.min(
-            game.clientWidth - halfWidth,
+            WORLD_WIDTH - 60,
             playerX
         )
     );
 
 
     playerY = Math.max(
-        halfHeight,
+        60,
         Math.min(
-            game.clientHeight - halfHeight,
+            game.clientHeight - 60,
             playerY
         )
     );
 
 
-    player.style.left = playerX + "px";
-    player.style.top = playerY + "px";
+    /* ===================================
+       CAMERA
+    =================================== */
+
+    updateCamera();
 
 
     /* ===================================
-       WORLD CHECK
+       SENSOR
+    =================================== */
+
+    updateDistanceSensor();
+
+
+    /* ===================================
+       WRONG WAY
     =================================== */
 
     if (gameMode === "main") {
 
         checkWrongWay();
-
-        updateDistanceToGate();
 
         checkSystemGate();
     }
@@ -154,14 +214,147 @@ function updatePlayer() {
 
     if (gameMode === "file") {
 
-        updateFileDistance();
+        updateFileSensor();
     }
 
 
     if (moving) {
 
-        updateCooldown();
+        if (
+            wrongMessageCooldown > 0
+        ) {
+
+            wrongMessageCooldown--;
+        }
     }
+
+}
+
+
+/* ===================================
+   CAMERA
+=================================== */
+
+function updateCamera() {
+
+    const screenCenter =
+        window.innerWidth / 2;
+
+
+    /*
+        캐릭터를 화면 중앙에 놓기 위해
+        월드를 반대로 이동한다.
+    */
+
+    cameraX =
+        playerX - screenCenter;
+
+
+    /*
+        월드가 화면 왼쪽으로
+        너무 많이 빠지지 않게 한다.
+    */
+
+    const maxCamera =
+        WORLD_WIDTH - window.innerWidth;
+
+
+    cameraX = Math.max(
+        0,
+        Math.min(
+            maxCamera,
+            cameraX
+        )
+    );
+
+
+    world.style.transform =
+        `translateX(${-cameraX}px)`;
+
+
+    /*
+        플레이어는 화면 중앙 고정
+    */
+
+    player.style.left =
+        "50%";
+
+    player.style.top =
+        `${playerY}px`;
+}
+
+
+/* ===================================
+   DISTANCE SENSOR
+=================================== */
+
+function updateDistanceSensor() {
+
+    const gateX = 1420;
+    const gateY =
+        game.clientHeight * 0.38;
+
+
+    const distance = Math.sqrt(
+        Math.pow(
+            playerX - gateX,
+            2
+        ) +
+        Math.pow(
+            playerY - gateY,
+            2
+        )
+    );
+
+
+    const rounded =
+        Math.round(distance);
+
+
+    distanceValue.textContent =
+        rounded + "cm";
+
+
+    /*
+        가까워질수록 게이지 상승
+    */
+
+    const gauge =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                100 - rounded / 12
+            )
+        );
+
+
+    distanceGauge.style.width =
+        gauge + "%";
+
+
+    /*
+        오른쪽으로 갈수록
+        빛의 강도가 증가
+    */
+
+    const lightProgress =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                playerX / 1450
+            )
+        );
+
+
+    lightField.style.opacity =
+        0.15 +
+        lightProgress * 0.90;
+
+
+    lightField.style.filter =
+        `blur(${10 - lightProgress * 6}px)`;
 }
 
 
@@ -171,115 +364,65 @@ function updatePlayer() {
 
 function checkWrongWay() {
 
-    if (systemMessageCooldown > 0) {
-        return;
-    }
-
-
-    /*
-        플레이어가 오른쪽 아래나
-        너무 바깥쪽으로 이동했을 경우
-    */
-
     if (
-        playerX > game.clientWidth * 0.70 &&
-        playerY > game.clientHeight * 0.62
+        wrongMessageCooldown > 0
     ) {
-
-        showMessage("여긴 아닌 것 같다.");
-
-        systemMessageCooldown = 90;
 
         return;
     }
 
 
     /*
-        왼쪽 위로 너무 멀리 갔을 경우
+        너무 뒤로 가면
     */
 
-    if (
-        playerX < game.clientWidth * 0.12 &&
-        playerY < game.clientHeight * 0.25
-    ) {
+    if (playerX < 100) {
 
-        showMessage("아무것도 없다.");
+        showMessage(
+            "여긴 아닌 것 같다."
+        );
 
-        systemMessageCooldown = 90;
+        wrongMessageCooldown = 90;
 
         return;
     }
 
 
     /*
-        아래쪽으로 크게 벗어나는 경우
+        빛의 주 경로에서
+        지나치게 벗어났을 때
     */
 
-    if (
-        playerY > game.clientHeight * 0.90
-    ) {
-
-        showMessage("돌아가는 길은 아닌 것 같다.");
-
-        systemMessageCooldown = 90;
-    }
-
-}
-
-
-/* ===================================
-   COOLDOWN
-=================================== */
-
-function updateCooldown() {
-
-    if (systemMessageCooldown > 0) {
-
-        systemMessageCooldown--;
-    }
-}
+    const expectedY =
+        0.60 -
+        (
+            Math.max(
+                0,
+                playerX - 100
+            ) /
+            1300
+        ) *
+        0.08;
 
 
-/* ===================================
-   DISTANCE TO SYSTEM GATE
-=================================== */
-
-function updateDistanceToGate() {
-
-    const gateX = game.clientWidth * 0.64;
-    const gateY = game.clientHeight * 0.20;
-
-
-    const distance = Math.sqrt(
-        Math.pow(playerX - gateX, 2) +
-        Math.pow(playerY - gateY, 2)
-    );
-
-
-    const roundedDistance = Math.round(distance);
-
-
-    distanceValue.textContent =
-        roundedDistance + "px";
-
-
-    /*
-        거리가 가까울수록
-        게이지가 줄어든다.
-    */
-
-    const percentage =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                100 - roundedDistance / 8
-            )
+    const distanceFromRoad =
+        Math.abs(
+            playerY -
+            game.clientHeight * expectedY
         );
 
 
-    distanceGauge.style.width =
-        percentage + "%";
+    if (
+        distanceFromRoad > 180
+    ) {
+
+        showMessage(
+            "빛이 이쪽으로 이어지지 않는다."
+        );
+
+        wrongMessageCooldown = 100;
+    }
+
 }
 
 
@@ -289,170 +432,174 @@ function updateDistanceToGate() {
 
 function checkSystemGate() {
 
-    const gateX = game.clientWidth * 0.64;
-    const gateY = game.clientHeight * 0.20;
+    const gateX = 1420;
+    const gateY =
+        game.clientHeight * 0.38;
 
 
     const distance = Math.sqrt(
-        Math.pow(playerX - gateX, 2) +
-        Math.pow(playerY - gateY, 2)
+        Math.pow(
+            playerX - gateX,
+            2
+        ) +
+        Math.pow(
+            playerY - gateY,
+            2
+        )
     );
 
 
-    if (distance < 55) {
+    if (
+        distance < 130
+    ) {
 
-        if (!enteredFileSpace) {
-
-            dialogueText.textContent =
-                "SYSTEM에 접근하고 있다...";
-
-        }
+        showMessage(
+            "빛이 강해지고 있다. 무언가에 연결되어 있는 것 같다."
+        );
+    }
 
 
-        if (distance < 35) {
+    if (
+        distance < 60 &&
+        !enteredFileSpace
+    ) {
 
-            enterFileSpace();
-        }
-
+        enterFileSpace();
     }
 
 }
 
 
 /* ===================================
-   ENTER FILE SPACE
+   ENTER FILE SYSTEM
 =================================== */
 
 function enterFileSpace() {
-
-    if (enteredFileSpace) {
-        return;
-    }
-
 
     enteredFileSpace = true;
 
     gameMode = "file";
 
 
-    game.classList.add("file-mode");
+    /*
+        여기서는 화면 자체를 전환하기보다
+        월드가 계속 움직이는 방식으로
+        파일 공간에 진입한다.
+    */
+
+    showMessage(
+        "SYSTEM에 접속했다."
+    );
 
 
     /*
-        새로운 위치에서 시작
+        빛의 길을 숨기고
+        파일 시스템 영역을 강조
     */
 
-    playerX = game.clientWidth * 0.15;
-    playerY = game.clientHeight * 0.78;
+    document
+        .getElementById("light-road")
+        .style.opacity = "0";
 
 
-    player.style.left =
-        playerX + "px";
-
-    player.style.top =
-        playerY + "px";
-
-
-    showMessage(
-        "SYSTEM에 접속했다. 이곳은... 파일 시스템인가?"
-    );
+    document
+        .getElementById("light-field")
+        .style.opacity = "0.05";
 }
 
 
 /* ===================================
-   FILE OBJECT INTERACTION
+   FILE SENSOR
 =================================== */
 
-function interactWithFileObject() {
+function updateFileSensor() {
 
-    let nearestObject = null;
-
-    let nearestDistance = Infinity;
-
-
-    fileObjects.forEach((object) => {
-
-        const rect =
-            object.getBoundingClientRect();
+    let closest =
+        Infinity;
 
 
-        const objectX =
-            rect.left + rect.width / 2;
+    fileObjects.forEach(
+        (object) => {
 
-        const objectY =
-            rect.top + rect.height / 2;
-
-
-        const distance =
-            Math.sqrt(
-                Math.pow(
-                    playerX - objectX,
-                    2
-                ) +
-                Math.pow(
-                    playerY - objectY,
-                    2
-                )
-            );
+            const rect =
+                object.getBoundingClientRect();
 
 
-        if (
-            distance < nearestDistance
-        ) {
+            const objectX =
+                playerX -
+                cameraX +
+                rect.width / 2;
 
-            nearestDistance =
-                distance;
+            const objectY =
+                rect.top +
+                rect.height / 2;
 
-            nearestObject =
-                object;
+
+            const distance =
+                Math.sqrt(
+                    Math.pow(
+                        playerX -
+                        (
+                            objectX +
+                            cameraX
+                        ),
+                        2
+                    ) +
+                    Math.pow(
+                        playerY -
+                        objectY,
+                        2
+                    )
+                );
+
+
+            if (
+                distance <
+                closest
+            ) {
+
+                closest =
+                    distance;
+            }
+
         }
+    );
 
-    });
 
-
-    if (
-        nearestObject &&
-        nearestDistance < 120
-    ) {
-
-        showMessage(
-            nearestObject.dataset.message
-        );
-
-    }
-
-    else {
-
-        showMessage(
-            "주변에 조사할 수 있는 파일이 없다."
-        );
-
-    }
+    distanceValue.textContent =
+        Math.round(closest) + "cm";
 }
 
 
 /* ===================================
-   MAIN INTERACTION
+   INTERACTION
 =================================== */
 
 function interact() {
 
+    /*
+        파일 시스템
+    */
+
     if (gameMode === "file") {
 
-        interactWithFileObject();
+        interactWithFile();
 
         return;
     }
 
 
-    const gateX =
-        game.clientWidth * 0.64;
+    /*
+        메인 공간
+    */
+
+    const gateX = 1420;
 
     const gateY =
-        game.clientHeight * 0.20;
+        game.clientHeight * 0.38;
 
 
-    const gateDistance =
+    const distance =
         Math.sqrt(
             Math.pow(
                 playerX - gateX,
@@ -465,10 +612,12 @@ function interact() {
         );
 
 
-    if (gateDistance < 100) {
+    if (
+        distance < 120
+    ) {
 
         showMessage(
-            "빛이 깜빡이고 있다. 가까이 가면 들어갈 수 있을 것 같다."
+            "SYSTEM에 접근 중이다..."
         );
 
         return;
@@ -476,78 +625,103 @@ function interact() {
 
 
     showMessage(
-        "아직 아무것도 없다."
+        "아무것도 없다."
     );
+
 }
 
 
 /* ===================================
-   FILE DISTANCE
+   FILE INTERACTION
 =================================== */
 
-function updateFileDistance() {
+function interactWithFile() {
 
-    let closestDistance =
+    let nearest =
+        null;
+
+    let nearestDistance =
         Infinity;
 
 
-    fileObjects.forEach((object) => {
+    fileObjects.forEach(
+        (object) => {
 
-        const rect =
-            object.getBoundingClientRect();
-
-
-        const objectX =
-            rect.left + rect.width / 2;
-
-        const objectY =
-            rect.top + rect.height / 2;
+            const rect =
+                object.getBoundingClientRect();
 
 
-        const distance =
-            Math.sqrt(
-                Math.pow(
-                    playerX - objectX,
-                    2
-                ) +
-                Math.pow(
-                    playerY - objectY,
-                    2
-                )
-            );
+            /*
+                화면 기준으로 실제 플레이어와
+                오브젝트의 거리를 계산한다.
+            */
+
+            const objectX =
+                rect.left +
+                rect.width / 2;
+
+            const objectY =
+                rect.top +
+                rect.height / 2;
 
 
-        if (
-            distance < closestDistance
-        ) {
+            const playerScreenX =
+                window.innerWidth / 2;
 
-            closestDistance =
-                distance;
+
+            const playerScreenY =
+                playerY;
+
+
+            const distance =
+                Math.sqrt(
+                    Math.pow(
+                        playerScreenX -
+                        objectX,
+                        2
+                    ) +
+                    Math.pow(
+                        playerScreenY -
+                        objectY,
+                        2
+                    )
+                );
+
+
+            if (
+                distance <
+                nearestDistance
+            ) {
+
+                nearestDistance =
+                    distance;
+
+                nearest =
+                    object;
+            }
+
         }
-
-    });
-
-
-    const rounded =
-        Math.round(closestDistance);
+    );
 
 
-    distanceValue.textContent =
-        rounded + "px";
+    if (
+        nearest &&
+        nearestDistance < 120
+    ) {
 
-
-    const percentage =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                100 - rounded / 5
-            )
+        showMessage(
+            nearest.dataset.message
         );
 
+    }
 
-    distanceGauge.style.width =
-        percentage + "%";
+    else {
+
+        showMessage(
+            "주변에 조사할 수 있는 것이 없다."
+        );
+    }
+
 }
 
 
@@ -563,28 +737,14 @@ function showMessage(message) {
 
 
 /* ===================================
-   WINDOW RESIZE
+   RESIZE
 =================================== */
 
 window.addEventListener(
     "resize",
     () => {
 
-        if (gameMode === "main") {
-
-            playerX =
-                Math.min(
-                    playerX,
-                    game.clientWidth
-                );
-
-            playerY =
-                Math.min(
-                    playerY,
-                    game.clientHeight
-                );
-        }
-
+        updateCamera();
     }
 );
 
@@ -597,12 +757,18 @@ function gameLoop() {
 
     updatePlayer();
 
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(
+        gameLoop
+    );
 }
 
 
 /* ===================================
    START
 =================================== */
+
+updateCamera();
+
+updateDistanceSensor();
 
 gameLoop();

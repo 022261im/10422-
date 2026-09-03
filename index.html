@@ -16,96 +16,147 @@
     <!-- =========================================
          GAME WORLD
     ========================================== -->
-
     <div id="game-world">
 
-        <!-- 빛의 길 -->
-        <div id="light-path">
+        <!-- 화면 전체에 들어오는 빛 -->
+        <div id="light-field"></div>
 
-            <div class="path-segment path-1"></div>
-            <div class="path-segment path-2"></div>
-            <div class="path-segment path-3"></div>
-            <div class="path-segment path-4"></div>
-            <div class="path-node node-1"></div>
-            <div class="path-node node-2"></div>
-            <div class="path-node node-3"></div>
+        <!-- 플레이어를 안내하는 빛의 회로 -->
+        <div id="light-road">
 
-        </div>
+            <div class="road-line road-main"></div>
+            <div class="road-line road-branch"></div>
 
-
-        <!-- 다른 길처럼 보이는 가짜 경로 -->
-        <div id="wrong-path"></div>
-
-
-        <!-- 플레이어 -->
-        <div id="player">
-
-            <div class="player-head"></div>
-            <div class="player-body"></div>
+            <div class="road-node node-a"></div>
+            <div class="road-node node-b"></div>
+            <div class="road-node node-c"></div>
+            <div class="road-node node-d"></div>
 
         </div>
 
 
-        <!-- 파일 시스템 공간 -->
+        <!-- =====================================
+             FILE SYSTEM AREA
+        ====================================== -->
+
         <div id="file-space">
 
+            <!-- Documents -->
             <div
                 class="file-object"
-                style="left: 22%; top: 30%;"
-                data-message="Documents 폴더. 열어볼 수 있다."
+                style="left: 1200px; top: 280px;"
+                data-message="Documents 폴더다. 여러 파일이 저장되어 있다."
             >
-                <div class="file-icon folder-icon"></div>
+                <div class="icon folder-icon">
+                    <div class="folder-tab"></div>
+                </div>
+
                 <span>Documents</span>
             </div>
 
 
+            <!-- System -->
             <div
                 class="file-object"
-                style="left: 42%; top: 22%;"
-                data-message="SYSTEM 폴더. 접근 권한이 필요하다."
+                style="left: 1450px; top: 210px;"
+                data-message="SYSTEM 폴더다. 접근 권한이 필요하다."
             >
-                <div class="file-icon system-icon"></div>
+                <div class="icon system-icon">
+                    <div class="system-mark"></div>
+                </div>
+
                 <span>System</span>
             </div>
 
 
+            <!-- ERROR LOG -->
             <div
                 class="file-object"
-                style="left: 69%; top: 34%;"
-                data-message="ERROR_LOG.txt 파일이 있다."
+                style="left: 1710px; top: 310px;"
+                data-message="ERROR_LOG.txt 파일이다. 최근 시스템 오류가 기록되어 있다."
             >
-                <div class="file-icon text-icon"></div>
+                <div class="icon document-icon">
+
+                    <div class="document-fold"></div>
+
+                    <div class="document-lines">
+                        <i></i>
+                        <i></i>
+                        <i></i>
+                    </div>
+
+                </div>
+
                 <span>ERROR_LOG.txt</span>
             </div>
 
 
+            <!-- UNKNOWN -->
             <div
                 class="file-object"
-                style="left: 55%; top: 67%;"
-                data-message="알 수 없는 파일이다. 이름이 UNKNOWN으로 표시되어 있다."
+                style="left: 1450px; top: 500px;"
+                data-message="파일명이 UNKNOWN으로 표시되어 있다."
             >
-                <div class="file-icon unknown-icon"></div>
+                <div class="icon unknown-icon">
+                    ?
+                </div>
+
                 <span>UNKNOWN</span>
             </div>
 
 
+            <!-- TRASH -->
             <div
-                class="file-object"
-                style="left: 80%; top: 73%;"
-                data-message="휴지통. 비어 있다."
+                class="file-object trash-object"
+                style="left: 1860px; top: 540px;"
+                data-message="휴지통이다. 현재 비어 있다."
             >
-                <div class="file-icon trash-icon"></div>
-                <span>TRASH</span>
+
+                <div class="trash-can">
+
+                    <div class="trash-lid"></div>
+
+                    <div class="trash-body">
+
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                    </div>
+
+                </div>
+
+                <span>Trash</span>
+
             </div>
 
         </div>
 
 
-        <!-- 파일 공간 진입 오브젝트 -->
+        <!-- SYSTEM ACCESS -->
         <div id="system-gate">
-            <div class="gate-line"></div>
+
+            <div class="gate-ring"></div>
+
             <div class="gate-core"></div>
-            <div class="gate-label">SYSTEM</div>
+
+            <div class="gate-text">
+                SYSTEM
+            </div>
+
+        </div>
+
+
+        <!-- =====================================
+             PLAYER
+        ====================================== -->
+
+        <div id="player">
+
+            <div class="player-head"></div>
+
+            <div class="player-body"></div>
+
         </div>
 
     </div>
@@ -132,7 +183,9 @@
                 ></span>
             </div>
 
-            <span id="distance-value">--cm</span>
+            <span id="distance-value">
+                --cm
+            </span>
 
         </div>
 
@@ -142,13 +195,17 @@
             <span>TEMP.</span>
 
             <div class="gauge">
+
                 <span
                     class="filled"
                     id="temperature-gauge"
                 ></span>
+
             </div>
 
-            <span id="temperature-value">24°C</span>
+            <span id="temperature-value">
+                24°C
+            </span>
 
         </div>
 
@@ -158,13 +215,17 @@
             <span>HP</span>
 
             <div class="gauge">
+
                 <span
                     class="filled"
                     id="hp-gauge"
                 ></span>
+
             </div>
 
-            <span id="hp-value">100%</span>
+            <span id="hp-value">
+                100%
+            </span>
 
         </div>
 
