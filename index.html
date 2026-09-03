@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>SYSTEM ERROR : UNKNOWN</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -11,72 +13,36 @@
 
 <main id="game">
 
+    <!-- =================================
+         WORLD
+    ================================== -->
+
     <div id="world">
 
         <!-- =================================
-             INTRO WORLD
+             INTRO AREA
         ================================== -->
 
         <section id="intro-area">
 
-            <div class="zone-label">SECTOR 00</div>
+            <!-- 전체 공간의 미세한 안개 -->
+            <div class="ambient-fade"></div>
 
-            <!-- 바닥 격자 -->
-            <div class="floor-grid"></div>
+            <!-- 오른쪽으로 이어지는 빛 -->
+            <div class="light-path"></div>
 
-            <!-- 데이터 포인트 -->
-            <div class="data-point p1">
-                <span>001</span>
-            </div>
+            <!-- 빛의 중심 -->
+            <div class="light-core"></div>
 
-            <div class="data-point p2">
-                <span>014</span>
-            </div>
-
-            <div class="data-point p3">
-                <span>029</span>
-            </div>
-
-            <div class="data-point p4">
-                <span>047</span>
-            </div>
-
-            <div class="data-point p5">
-                <span>063</span>
-            </div>
-
-            <!-- 데이터 선 -->
-            <div class="data-line line1"></div>
-            <div class="data-line line2"></div>
-            <div class="data-line line3"></div>
-            <div class="data-line line4"></div>
-
-            <!-- 떠 있는 시스템 문자 -->
-            <div class="floating-code code1">SYS_014</div>
-            <div class="floating-code code2">ERR_029</div>
-            <div class="floating-code code3">---</div>
-
-            <!-- 방향 표시 -->
-            <div class="direction-marker">
-                →
-            </div>
-
-            <div class="direction-text">
-                DATA CONTINUES
-            </div>
-
-
-            <!-- 진입 장치 -->
+            <!-- SYSTEM -->
             <div id="access-point">
 
-                <div class="access-frame"></div>
+                <div class="access-ring"></div>
 
-                <div class="access-screen">
+                <div class="access-core"></div>
+
+                <div class="access-label">
                     SYSTEM
-                </div>
-
-                <div class="access-text">
-                    ACCESS
                 </div>
 
             </div>
@@ -85,99 +51,167 @@
 
 
         <!-- =================================
-             FILE SYSTEM
+             FILE SYSTEM AREA
         ================================== -->
 
         <section id="file-area">
 
-            <div class="file-zone-title">
+            <div class="file-area-title">
                 LOCAL SYSTEM
             </div>
+
 
             <!-- Documents -->
             <div
                 class="file-object"
-                style="left: 250px; top: 260px;"
-                data-message="Documents 폴더다. 여러 문서가 저장되어 있다."
+                style="left: 220px; top: 250px;"
+                data-message="Documents 폴더다. 여러 파일이 저장되어 있다."
             >
+
                 <div class="folder-icon">
                     <div class="folder-tab"></div>
                 </div>
 
                 <span>Documents</span>
+
             </div>
 
 
-            <!-- System -->
+            <!-- Pictures -->
             <div
                 class="file-object"
-                style="left: 550px; top: 180px;"
+                style="left: 470px; top: 390px;"
+                data-message="이미지 파일들이 저장된 폴더다."
+            >
+
+                <div class="folder-icon">
+                    <div class="folder-tab"></div>
+                </div>
+
+                <span>Pictures</span>
+
+            </div>
+
+
+            <!-- SYSTEM -->
+            <div
+                class="file-object"
+                style="left: 520px; top: 190px;"
                 data-message="SYSTEM 폴더다. 접근 권한이 필요하다."
             >
+
                 <div class="system-icon">
-                    <div></div>
+
+                    <div class="system-symbol"></div>
+
                 </div>
 
                 <span>System</span>
+
             </div>
 
 
             <!-- ERROR LOG -->
             <div
                 class="file-object"
-                style="left: 850px; top: 290px;"
+                style="left: 770px; top: 280px;"
                 data-message="ERROR_LOG.txt 파일이다. 최근 시스템 오류가 기록되어 있다."
             >
+
                 <div class="document-icon">
 
-                    <div class="paper-fold"></div>
+                    <div class="document-corner"></div>
 
-                    <div class="paper-lines">
+                    <div class="document-lines">
                         <i></i>
                         <i></i>
                         <i></i>
                     </div>
 
+                    <div class="extension-tag">
+                        txt
+                    </div>
+
                 </div>
 
                 <span>ERROR_LOG.txt</span>
+
+            </div>
+
+
+            <!-- IMAGE FILE -->
+            <div
+                class="file-object"
+                style="left: 930px; top: 430px;"
+                data-message="IMAGE_001.jpg 파일이다."
+            >
+
+                <div class="document-icon">
+
+                    <div class="document-corner"></div>
+
+                    <div class="document-lines">
+                        <i></i>
+                        <i></i>
+                        <i></i>
+                    </div>
+
+                    <div class="extension-tag">
+                        jpg
+                    </div>
+
+                </div>
+
+                <span>IMAGE_001.jpg</span>
+
             </div>
 
 
             <!-- UNKNOWN -->
             <div
                 class="file-object"
-                style="left: 560px; top: 480px;"
+                style="left: 690px; top: 520px;"
                 data-message="파일명이 UNKNOWN으로 표시되어 있다."
             >
-                <div class="unknown-icon">
-                    ?
+
+                <div class="document-icon unknown-file">
+
+                    <div class="question-mark">
+                        ?
+                    </div>
+
                 </div>
 
                 <span>UNKNOWN</span>
+
             </div>
 
 
             <!-- TRASH -->
             <div
                 class="file-object"
-                style="left: 1050px; top: 500px;"
-                data-message="휴지통이다. 비어 있다."
+                style="left: 1120px; top: 520px;"
+                data-message="휴지통이다. 현재 비어 있다."
             >
+
                 <div class="trash">
 
                     <div class="trash-handle"></div>
+
                     <div class="trash-lid"></div>
 
                     <div class="trash-body">
+
                         <i></i>
                         <i></i>
                         <i></i>
+
                     </div>
 
                 </div>
 
                 <span>Trash</span>
+
             </div>
 
         </section>
@@ -189,9 +223,11 @@
 
         <div id="player">
 
-            <div class="player-head"></div>
-            <div class="player-body"></div>
             <div class="player-shadow"></div>
+
+            <div class="player-head"></div>
+
+            <div class="player-body"></div>
 
         </div>
 
@@ -199,7 +235,7 @@
 
 
     <!-- =================================
-         STATUS
+         SYSTEM STATUS
     ================================== -->
 
     <section id="system-status">
@@ -209,6 +245,7 @@
         </div>
 
         <div class="status-line">
+
             <span>DIST.</span>
 
             <div class="gauge">
@@ -216,11 +253,14 @@
             </div>
 
             <strong id="distance-value">
-                0px
+                --cm
             </strong>
+
         </div>
 
+
         <div class="status-line">
+
             <span>TEMP.</span>
 
             <div class="gauge">
@@ -230,9 +270,12 @@
             <strong>
                 24°C
             </strong>
+
         </div>
 
+
         <div class="status-line">
+
             <span>HP</span>
 
             <div class="gauge">
@@ -242,6 +285,7 @@
             <strong>
                 100%
             </strong>
+
         </div>
 
     </section>
@@ -264,6 +308,7 @@
     </section>
 
 </main>
+
 
 <script src="script.js"></script>
 

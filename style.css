@@ -1,3 +1,7 @@
+/* =================================
+   RESET
+================================= */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -14,7 +18,9 @@ body {
 body {
     background: #080d13;
     color: #dce6ef;
+
     font-family: "Courier New", monospace;
+
     image-rendering: pixelated;
 }
 
@@ -25,10 +31,13 @@ body {
 
 #game {
     position: relative;
+
     width: 100vw;
     height: 100vh;
+
     overflow: hidden;
-    background: #0d141d;
+
+    background: #0b1118;
 }
 
 
@@ -42,17 +51,15 @@ body {
     left: 0;
     top: 0;
 
-    width: 3000px;
+    width: 3200px;
     height: 100%;
 
     will-change: transform;
-
-    transition: transform 0.08s linear;
 }
 
 
 /* =================================
-   INTRO
+   INTRO AREA
 ================================= */
 
 #intro-area {
@@ -61,310 +68,207 @@ body {
     left: 0;
     top: 0;
 
-    width: 1700px;
+    width: 1800px;
     height: 100%;
 
     overflow: hidden;
 
     background:
         radial-gradient(
-            circle at 75% 45%,
-            rgba(61, 89, 115, 0.18),
-            transparent 35%
-        ),
-        #111a24;
+            ellipse at 78% 50%,
+            #1e2c3b 0%,
+            #172330 25%,
+            #101821 55%,
+            #090e14 100%
+        );
 }
 
 
 /* =================================
-   FLOOR GRID
+   AMBIENT FADE
 ================================= */
 
-.floor-grid {
+.ambient-fade {
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(8, 13, 19, 0.95) 0%,
+            rgba(8, 13, 19, 0.55) 36%,
+            rgba(8, 13, 19, 0.10) 72%,
+            rgba(8, 13, 19, 0) 100%
+        );
+}
+
+
+/* =================================
+   MAIN LIGHT PATH
+================================= */
+
+.light-path {
     position: absolute;
 
     left: 0;
-    right: 0;
-    bottom: 0;
+    top: 50%;
 
-    height: 72%;
-
-    background-image:
-        linear-gradient(
-            rgba(126, 157, 182, 0.07) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            90deg,
-            rgba(126, 157, 182, 0.07) 1px,
-            transparent 1px
-        );
-
-    background-size: 64px 64px;
+    width: 1580px;
+    height: 240px;
 
     transform:
-        perspective(500px)
-        rotateX(52deg);
+        translateY(-50%);
 
-    transform-origin: center bottom;
+    pointer-events: none;
 
-    opacity: 0.7;
+    background:
+        linear-gradient(
+            90deg,
+
+            rgba(96, 164, 214, 0) 0%,
+
+            rgba(100, 170, 220, 0.025) 22%,
+
+            rgba(107, 184, 235, 0.07) 40%,
+
+            rgba(131, 203, 248, 0.13) 58%,
+
+            rgba(157, 220, 255, 0.22) 73%,
+
+            rgba(186, 232, 255, 0.34) 86%,
+
+            rgba(210, 243, 255, 0.58) 100%
+        );
+
+    filter: blur(32px);
+
+    opacity: 0.95;
 }
 
 
 /* =================================
-   LABEL
+   LIGHT CORE
 ================================= */
 
-.zone-label {
+.light-core {
     position: absolute;
 
-    left: 100px;
-    top: 100px;
+    left: 80px;
+    top: 50%;
 
-    color: #536678;
+    width: 1470px;
+    height: 22px;
 
-    font-size: 12px;
+    transform:
+        translateY(-50%);
 
-    letter-spacing: 3px;
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            90deg,
+
+            rgba(108, 178, 225, 0) 0%,
+
+            rgba(119, 188, 229, 0.025) 20%,
+
+            rgba(144, 207, 245, 0.10) 44%,
+
+            rgba(174, 222, 252, 0.22) 68%,
+
+            rgba(210, 240, 255, 0.62) 100%
+        );
+
+    filter: blur(12px);
+
+    opacity: 0.8;
 }
 
 
 /* =================================
-   DATA LINES
-================================= */
-
-.data-line {
-    position: absolute;
-
-    height: 2px;
-
-    background: #657f96;
-
-    opacity: 0.45;
-
-    box-shadow:
-        0 0 8px rgba(118, 160, 190, 0.25);
-}
-
-.line1 {
-    left: 170px;
-    top: 55%;
-    width: 310px;
-}
-
-.line2 {
-    left: 480px;
-    top: 55%;
-    width: 240px;
-    transform: rotate(-23deg);
-    transform-origin: left center;
-}
-
-.line3 {
-    left: 700px;
-    top: 44%;
-    width: 300px;
-}
-
-.line4 {
-    left: 1000px;
-    top: 44%;
-    width: 260px;
-    transform: rotate(22deg);
-    transform-origin: left center;
-}
-
-
-/* =================================
-   DATA POINTS
-================================= */
-
-.data-point {
-    position: absolute;
-
-    width: 13px;
-    height: 13px;
-
-    border: 2px solid #91adc2;
-
-    background: #172330;
-
-    box-shadow:
-        0 0 12px rgba(113, 169, 208, 0.25);
-}
-
-.data-point span {
-    position: absolute;
-
-    left: 20px;
-    top: -3px;
-
-    color: #667d91;
-
-    font-size: 9px;
-
-    white-space: nowrap;
-}
-
-.p1 {
-    left: 170px;
-    top: 55%;
-}
-
-.p2 {
-    left: 480px;
-    top: 55%;
-}
-
-.p3 {
-    left: 720px;
-    top: 44%;
-}
-
-.p4 {
-    left: 1000px;
-    top: 44%;
-}
-
-.p5 {
-    left: 1260px;
-    top: 54%;
-}
-
-
-/* =================================
-   FLOATING CODE
-================================= */
-
-.floating-code {
-    position: absolute;
-
-    color: rgba(133, 163, 186, 0.4);
-
-    font-size: 11px;
-
-    letter-spacing: 2px;
-}
-
-.code1 {
-    left: 360px;
-    top: 34%;
-}
-
-.code2 {
-    left: 820px;
-    top: 30%;
-}
-
-.code3 {
-    left: 1110px;
-    top: 65%;
-}
-
-
-/* =================================
-   DIRECTION
-================================= */
-
-.direction-marker {
-    position: absolute;
-
-    left: 1210px;
-    top: 47%;
-
-    color: #9eb9cd;
-
-    font-size: 28px;
-
-    animation:
-        moveArrow 1.2s infinite alternate;
-}
-
-.direction-text {
-    position: absolute;
-
-    left: 1180px;
-    top: calc(47% + 38px);
-
-    color: #61798d;
-
-    font-size: 9px;
-
-    letter-spacing: 2px;
-}
-
-@keyframes moveArrow {
-    from {
-        transform: translateX(0);
-        opacity: 0.4;
-    }
-
-    to {
-        transform: translateX(10px);
-        opacity: 1;
-    }
-}
-
-
-/* =================================
-   ACCESS POINT
+   SYSTEM
 ================================= */
 
 #access-point {
     position: absolute;
 
-    left: 1530px;
+    left: 1580px;
     top: 50%;
 
-    transform: translateY(-50%);
+    width: 130px;
+    height: 130px;
 
-    width: 150px;
-    height: 190px;
+    transform:
+        translate(-50%, -50%);
 
     display: flex;
 
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+
+    z-index: 10;
 }
 
-.access-frame {
+
+.access-ring {
+
     position: absolute;
 
-    width: 140px;
-    height: 180px;
+    width: 82px;
+    height: 82px;
 
-    border: 2px solid #65798c;
+    border:
+        1px solid rgba(181, 225, 255, 0.70);
+
+    transform:
+        rotate(45deg);
 
     box-shadow:
-        inset 0 0 30px rgba(95, 133, 160, 0.1),
-        0 0 20px rgba(81, 121, 151, 0.12);
+        0 0 12px rgba(154, 217, 255, 0.30),
+        0 0 30px rgba(154, 217, 255, 0.10);
 }
 
-.access-screen {
-    display: flex;
 
-    justify-content: center;
-    align-items: center;
+.access-core {
 
-    width: 92px;
-    height: 45px;
+    width: 17px;
+    height: 17px;
 
-    border: 1px solid #738ca1;
+    background: #dff5ff;
 
-    background: #172330;
+    box-shadow:
+        0 0 12px #d2efff,
+        0 0 32px rgba(129, 205, 255, 0.80);
 
-    color: #a7c0d3;
-
-    font-size: 12px;
+    animation:
+        accessPulse 1.5s infinite alternate;
 }
 
-.access-text {
+
+@keyframes accessPulse {
+
+    from {
+        transform: scale(0.65);
+        opacity: 0.55;
+    }
+
+    to {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+
+.access-label {
+
     position: absolute;
 
-    bottom: -25px;
+    top: 102px;
 
-    color: #617486;
+    color: #8ca4b8;
 
     font-size: 9px;
 
@@ -379,43 +283,45 @@ body {
 #file-area {
     position: absolute;
 
-    left: 1700px;
+    left: 1800px;
     top: 0;
 
-    width: 1300px;
+    width: 1400px;
     height: 100%;
 
     background:
         linear-gradient(
-            rgba(255,255,255,0.025) 1px,
+            rgba(255,255,255,0.018) 1px,
             transparent 1px
         ),
         linear-gradient(
             90deg,
-            rgba(255,255,255,0.025) 1px,
+            rgba(255,255,255,0.018) 1px,
             transparent 1px
         ),
-        #26313c;
+        #252f3a;
 
     background-size: 56px 56px;
 
-    border-left: 1px solid #566877;
+    border-left:
+        1px solid #586b7a;
 }
 
 
 /* =================================
-   FILE AREA TITLE
+   FILE TITLE
 ================================= */
 
-.file-zone-title {
+.file-area-title {
+
     position: absolute;
 
     left: 90px;
-    top: 70px;
+    top: 65px;
 
-    color: #90a2b2;
+    color: #879aa9;
 
-    font-size: 13px;
+    font-size: 12px;
 
     letter-spacing: 3px;
 }
@@ -426,6 +332,7 @@ body {
 ================================= */
 
 #player {
+
     position: absolute;
 
     width: 42px;
@@ -437,7 +344,26 @@ body {
     z-index: 50;
 }
 
+
+.player-shadow {
+
+    position: absolute;
+
+    left: 4px;
+    top: 52px;
+
+    width: 34px;
+    height: 7px;
+
+    background:
+        rgba(0,0,0,0.42);
+
+    border-radius: 50%;
+}
+
+
 .player-head {
+
     position: absolute;
 
     left: 10px;
@@ -448,10 +374,13 @@ body {
 
     background: #9b623c;
 
-    border: 3px solid #16191d;
+    border:
+        3px solid #16191d;
 }
 
+
 .player-body {
+
     position: absolute;
 
     left: 6px;
@@ -460,23 +389,10 @@ body {
     width: 30px;
     height: 30px;
 
-    background: #d8e0e5;
+    background: #dbe3e7;
 
-    border: 3px solid #16191d;
-}
-
-.player-shadow {
-    position: absolute;
-
-    left: 5px;
-    top: 52px;
-
-    width: 32px;
-    height: 6px;
-
-    background: rgba(0,0,0,0.4);
-
-    border-radius: 50%;
+    border:
+        3px solid #16191d;
 }
 
 
@@ -485,11 +401,13 @@ body {
 ================================= */
 
 .file-object {
+
     position: absolute;
 
-    width: 130px;
+    width: 140px;
 
-    transform: translate(-50%, -50%);
+    transform:
+        translate(-50%, -50%);
 
     display: flex;
 
@@ -497,78 +415,117 @@ body {
 
     align-items: center;
 
-    gap: 10px;
+    gap: 9px;
 
-    color: #c8d4de;
+    color: #d5dee6;
 
     font-size: 11px;
 
     text-align: center;
+
+    cursor: default;
+
+    transition:
+        filter 0.15s ease;
+}
+
+.file-object:hover {
+
+    filter:
+        brightness(1.14);
 }
 
 
 /* =================================
-   FOLDER
+   FOLDER ICON
 ================================= */
 
 .folder-icon {
+
     position: relative;
 
-    width: 54px;
-    height: 40px;
+    width: 58px;
+    height: 43px;
 
-    background: #536573;
-
-    border: 2px solid #a1b0bc;
-
-    box-shadow:
-        0 5px 0 rgba(0,0,0,0.18);
-}
-
-.folder-tab {
-    position: absolute;
-
-    left: 5px;
-    top: -9px;
-
-    width: 22px;
-    height: 9px;
-
-    background: #536573;
+    background:
+        linear-gradient(
+            #f4c83b,
+            #e6b51f
+        );
 
     border:
-        2px solid #a1b0bc;
+        3px solid #54430d;
 
-    border-bottom: none;
+    border-radius:
+        2px 4px 4px 4px;
+
+    box-shadow:
+        0 4px 0 rgba(0,0,0,0.18);
+}
+
+
+.folder-tab {
+
+    position: absolute;
+
+    left: -3px;
+    top: -11px;
+
+    width: 25px;
+    height: 12px;
+
+    background: #f4c83b;
+
+    border:
+        3px solid #54430d;
+
+    border-bottom:
+        none;
+
+    border-radius:
+        2px 2px 0 0;
 }
 
 
 /* =================================
-   SYSTEM
+   SYSTEM ICON
 ================================= */
 
 .system-icon {
-    width: 48px;
-    height: 48px;
+
+    width: 49px;
+    height: 49px;
 
     display: flex;
 
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 
-    background: #303d49;
-
-    border: 2px solid #a7b6c3;
-}
-
-.system-icon div {
-    width: 18px;
-    height: 18px;
+    background:
+        linear-gradient(
+            145deg,
+            #596876,
+            #303b46
+        );
 
     border:
-        2px solid #b9cbd8;
+        3px solid #9aa8b3;
 
-    transform: rotate(45deg);
+    box-shadow:
+        0 4px 0 rgba(0,0,0,0.2);
+}
+
+
+.system-symbol {
+
+    width: 20px;
+    height: 20px;
+
+    border:
+        3px solid #c2d1dc;
+
+    transform:
+        rotate(45deg);
 }
 
 
@@ -577,36 +534,49 @@ body {
 ================================= */
 
 .document-icon {
+
     position: relative;
 
-    width: 42px;
-    height: 52px;
+    width: 47px;
+    height: 57px;
 
-    background: #d8dfe5;
+    background: #f0f2f4;
 
-    border: 2px solid #8999a7;
+    border:
+        3px solid #20262d;
+
+    box-shadow:
+        0 4px 0 rgba(0,0,0,0.18);
 }
 
-.paper-fold {
+
+.document-corner {
+
     position: absolute;
 
-    right: -2px;
-    top: -2px;
+    right: -3px;
+    top: -3px;
 
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
 
-    background: #aebbc7;
+    background: #cad0d6;
 
     clip-path:
-        polygon(0 0, 100% 100%, 0 100%);
+        polygon(
+            0 0,
+            100% 100%,
+            0 100%
+        );
 }
 
-.paper-lines {
+
+.document-lines {
+
     position: absolute;
 
-    left: 7px;
-    top: 20px;
+    left: 9px;
+    top: 23px;
 
     display: flex;
 
@@ -615,36 +585,74 @@ body {
     gap: 6px;
 }
 
-.paper-lines i {
-    width: 24px;
-    height: 2px;
+
+.document-lines i {
+
+    width: 25px;
+    height: 3px;
 
     display: block;
 
-    background: #7b8b98;
+    background: #7e8992;
 }
 
 
 /* =================================
-   UNKNOWN
+   EXTENSION TAG
 ================================= */
 
-.unknown-icon {
-    width: 46px;
-    height: 46px;
+.extension-tag {
+
+    position: absolute;
+
+    right: -19px;
+    bottom: 1px;
+
+    min-width: 30px;
+    height: 18px;
+
+    padding: 0 4px;
 
     display: flex;
 
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 
-    border: 2px dashed #a6b5c0;
+    background: #eef1f3;
 
-    background: #2a3540;
+    border:
+        3px solid #20262d;
 
-    color: #c8d8e5;
+    color: #20262d;
 
-    font-size: 20px;
+    font-size: 9px;
+
+    line-height: 1;
+}
+
+
+/* =================================
+   UNKNOWN FILE
+================================= */
+
+.unknown-file {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background:
+        #28333d;
+
+    color: #dce8ef;
+}
+
+
+.question-mark {
+
+    font-size: 22px;
+
     font-weight: bold;
 }
 
@@ -654,64 +662,79 @@ body {
 ================================= */
 
 .trash {
+
     position: relative;
 
-    width: 52px;
-    height: 58px;
+    width: 56px;
+    height: 62px;
 }
+
 
 .trash-handle {
+
     position: absolute;
 
-    left: 20px;
+    left: 21px;
     top: 0;
 
-    width: 12px;
-    height: 7px;
-
-    border:
-        2px solid #abb9c3;
-
-    border-bottom: none;
-}
-
-.trash-lid {
-    position: absolute;
-
-    left: 4px;
-    top: 8px;
-
-    width: 44px;
+    width: 14px;
     height: 8px;
 
-    background: #8c9aa5;
-
     border:
-        2px solid #b7c3cc;
+        3px solid #c0cbd2;
 
-    border-radius: 2px;
+    border-bottom:
+        none;
 }
 
-.trash-body {
+
+.trash-lid {
+
     position: absolute;
 
-    left: 9px;
-    top: 16px;
+    left: 5px;
+    top: 9px;
 
-    width: 34px;
-    height: 38px;
+    width: 46px;
+    height: 9px;
 
-    background: #66747f;
+    background: #8997a1;
 
     border:
-        2px solid #b0bdc7;
+        3px solid #c0cbd2;
+
+    border-radius:
+        3px;
+}
+
+
+.trash-body {
+
+    position: absolute;
+
+    left: 10px;
+    top: 18px;
+
+    width: 36px;
+    height: 40px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #687680,
+            #7d8b95,
+            #687680
+        );
+
+    border:
+        3px solid #bcc7ce;
 
     clip-path:
         polygon(
-            5% 0,
-            95% 0,
-            82% 100%,
-            18% 100%
+            3% 0,
+            97% 0,
+            83% 100%,
+            17% 100%
         );
 
     display: flex;
@@ -719,13 +742,15 @@ body {
     justify-content: space-evenly;
 }
 
+
 .trash-body i {
-    width: 2px;
-    height: 25px;
+
+    width: 3px;
+    height: 27px;
 
     margin-top: 5px;
 
-    background: #3e4b56;
+    background: #46525c;
 }
 
 
@@ -734,6 +759,7 @@ body {
 ================================= */
 
 #system-status {
+
     position: fixed;
 
     left: 16px;
@@ -743,16 +769,20 @@ body {
 
     padding: 10px 12px;
 
-    background: rgba(13, 20, 28, 0.92);
+    background:
+        rgba(13,20,28,0.92);
 
-    border: 1px solid #687987;
+    border:
+        1px solid #687987;
 
     border-radius: 3px;
 
     z-index: 100;
 }
 
+
 .status-title {
+
     margin-bottom: 7px;
 
     padding-bottom: 6px;
@@ -764,10 +794,13 @@ body {
 
     letter-spacing: 1px;
 
-    border-bottom: 1px solid #4e606f;
+    border-bottom:
+        1px solid #4e606f;
 }
 
+
 .status-line {
+
     display: flex;
 
     align-items: center;
@@ -779,13 +812,17 @@ body {
     font-size: 10px;
 }
 
+
 .status-line span:first-child {
+
     width: 37px;
 
     color: #9babb8;
 }
 
+
 .status-line strong {
+
     width: 40px;
 
     text-align: right;
@@ -795,26 +832,32 @@ body {
     font-weight: normal;
 }
 
+
 .gauge {
+
     width: 65px;
     height: 8px;
 
     background: #18222b;
 
-    border: 1px solid #344551;
+    border:
+        1px solid #344551;
 
     overflow: hidden;
 }
 
+
 .gauge span {
+
     display: block;
 
-    width: 60%;
+    width: 50%;
     height: 100%;
 
     background: #91b4ce;
 
-    transition: width 0.2s;
+    transition:
+        width 0.2s ease;
 }
 
 
@@ -823,6 +866,7 @@ body {
 ================================= */
 
 #dialogue {
+
     position: fixed;
 
     left: 50%;
@@ -837,16 +881,20 @@ body {
 
     padding: 15px 20px;
 
-    background: rgba(17, 25, 34, 0.96);
+    background:
+        rgba(17,25,34,0.96);
 
-    border: 1px solid #7e8e9d;
+    border:
+        1px solid #7e8e9d;
 
     border-radius: 2px;
 
     z-index: 100;
 }
 
+
 #dialogue-text {
+
     min-height: 38px;
 
     font-size: 15px;
@@ -854,7 +902,9 @@ body {
     line-height: 1.5;
 }
 
+
 #dialogue-hint {
+
     position: absolute;
 
     right: 12px;
