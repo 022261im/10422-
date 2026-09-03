@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>SYSTEM ERROR : UNKNOWN</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -13,19 +11,15 @@
 
 <main id="game">
 
-    <!-- =========================================
+    <!-- =====================================================
          WORLD
-    ========================================== -->
+    ====================================================== -->
 
     <div id="world">
 
-        <!-- =====================================
-             INTRO AREA
-        ====================================== -->
+        <!-- ================= INTRO ================= -->
 
         <section id="intro-area">
-
-            <div class="intro-fade"></div>
 
             <div class="intro-title">
                 CONNECTION LOST
@@ -35,7 +29,6 @@
                 RECONNECTING...
             </div>
 
-            <!-- 오른쪽으로 이어지는 부드러운 빛 -->
             <div class="light-path"></div>
 
             <div class="light-core"></div>
@@ -43,7 +36,6 @@
             <div class="system-access">
 
                 <div class="access-frame"></div>
-
                 <div class="access-core"></div>
 
                 <div class="access-text">
@@ -55,128 +47,97 @@
         </section>
 
 
-        <!-- =====================================
-             FILE SYSTEM
-        ====================================== -->
+        <!-- ================= SYSTEM MAP ================= -->
 
         <section id="system-area">
 
             <div class="system-header">
-
-                <span>
-                    LOCAL SYSTEM
-                </span>
-
-                <span class="system-status-small">
-                    ONLINE
-                </span>
-
+                <span>LOCAL SYSTEM</span>
+                <span id="system-online">ONLINE</span>
             </div>
 
 
-            <!-- =================================
-                 DOCUMENTS
-            ================================== -->
+            <!-- Documents -->
 
             <div
                 class="system-object"
-                style="left: 170px; top: 180px;"
                 data-type="documents"
+                style="left: 180px; top: 190px;"
             >
 
                 <div class="folder-icon"></div>
 
-                <span>
-                    Documents
-                </span>
+                <span>Documents</span>
 
             </div>
 
 
-            <!-- =================================
-                 SENSORS
-            ================================== -->
+            <!-- Sensors -->
 
             <div
                 class="system-object"
-                style="left: 450px; top: 180px;"
                 data-type="sensors"
+                style="left: 430px; top: 190px;"
             >
 
                 <div class="folder-icon"></div>
 
-                <span>
-                    Sensors
-                </span>
+                <span>Sensors</span>
 
             </div>
 
 
-            <!-- =================================
-                 CONTROL
-            ================================== -->
+            <!-- Control -->
 
             <div
                 class="system-object"
-                style="left: 730px; top: 180px;"
                 data-type="control"
+                style="left: 680px; top: 190px;"
             >
 
                 <div class="folder-icon"></div>
 
-                <span>
-                    Control
-                </span>
+                <span>Control</span>
 
             </div>
 
 
-            <!-- =================================
-                 POWER
-            ================================== -->
+            <!-- Power -->
 
             <div
                 class="system-object"
-                style="left: 1010px; top: 180px;"
                 data-type="power"
+                style="left: 930px; top: 190px;"
             >
 
                 <div class="folder-icon"></div>
 
-                <span>
-                    Power
-                </span>
+                <span>Power</span>
 
             </div>
 
 
-            <!-- =================================
-                 DIAGNOSTICS
-            ================================== -->
+            <!-- Diagnostics -->
 
             <div
                 class="system-object"
-                style="left: 300px; top: 420px;"
                 data-type="diagnostics"
+                style="left: 300px; top: 440px;"
             >
 
                 <div class="folder-icon"></div>
 
-                <span>
-                    Diagnostics
-                </span>
+                <span>Diagnostics</span>
 
             </div>
 
 
-            <!-- =================================
-                 ERROR LOG
-            ================================== -->
+            <!-- ERROR LOG -->
 
             <div
                 class="system-object"
-                style="left: 610px; top: 430px;"
                 data-type="error"
+                style="left: 600px; top: 430px;"
             >
 
                 <div class="document-icon">
@@ -193,48 +154,22 @@
 
                 </div>
 
-                <span>
-                    ERROR_LOG.txt
-                </span>
+                <span>ERROR_LOG.txt</span>
 
             </div>
 
 
-            <!-- =================================
-                 EXIT
-            ================================== -->
-
-            <div
-                id="exit-door"
-                style="left: 1100px; top: 520px;"
-                data-type="exit"
-            >
-
-                <div class="exit-symbol">
-                    EXIT
-                </div>
-
-                <span>
-                    EXIT
-                </span>
-
-            </div>
-
-
-            <!-- =================================
-                 TRASH
-            ================================== -->
+            <!-- TRASH -->
 
             <div
                 class="system-object"
-                style="left: 900px; top: 470px;"
                 data-type="trash"
+                style="left: 930px; top: 470px;"
             >
 
                 <div class="trash">
 
                     <div class="trash-handle"></div>
-
                     <div class="trash-lid"></div>
 
                     <div class="trash-body">
@@ -245,51 +180,344 @@
 
                 </div>
 
-                <span>
-                    Trash
-                </span>
+                <span>Trash</span>
 
             </div>
 
 
-            <!-- =================================
-                 HIDDEN MACHINE
-            ================================== -->
+            <!-- HIDDEN EXIT -->
+            <!-- 처음에는 거의 보이지 않음 -->
 
             <div
-                id="machine"
-                style="left: 1170px; top: 250px;"
-                data-type="machine"
+                id="hidden-exit"
+                data-type="exit"
+                style="left: 1120px; top: 540px;"
             >
 
-                <div class="machine-screen">
-                    SYSTEM
+                <div class="exit-frame">
+                    <div class="exit-symbol">?</div>
                 </div>
 
-                <div class="machine-body">
-
-                    <span></span>
-                    <span></span>
-                    <span></span>
-
-                </div>
+                <span>?</span>
 
             </div>
 
 
-            <!-- =================================
-                 PLAYER
-            ================================== -->
+            <!-- ================= PLAYER ================= -->
+            <!-- 중요: system-area 밖에 존재해야 함 -->
 
-            <div id="player">
+        </section>
 
-                <div class="player-shadow"></div>
 
-                <div class="player-head"></div>
+        <!-- PLAYER -->
+        <div id="player">
 
-                <div class="player-body"></div>
+            <div class="player-shadow"></div>
+            <div class="player-head"></div>
+            <div class="player-body"></div>
+
+        </div>
+
+
+        <!-- ================= PUZZLE MAPS ================= -->
+
+        <!-- Documents Map -->
+        <section
+            id="map-documents"
+            class="puzzle-map"
+        >
+
+            <div class="map-title">
+                DOCUMENT ANALYSIS
+            </div>
+
+            <div class="map-description">
+                여러 기록 중 서로 모순되는 정보를 찾아라.
+            </div>
+
+            <div class="clue-card card-a">
+                <b>NOTE A</b>
+                <p>
+                    09:10<br>
+                    Sensor calibration completed.
+                </p>
+            </div>
+
+            <div class="clue-card card-b">
+                <b>NOTE B</b>
+                <p>
+                    09:15<br>
+                    Sensor calibration has not begun.
+                </p>
+            </div>
+
+            <div class="clue-card card-c">
+                <b>NOTE C</b>
+                <p>
+                    The system cannot continue
+                    while calibration is incomplete.
+                </p>
+            </div>
+
+            <div class="puzzle-question">
+                가장 먼저 의심해야 할 기록은?
+            </div>
+
+            <div class="answer-area">
+                <button data-answer="A">NOTE A</button>
+                <button data-answer="B">NOTE B</button>
+                <button data-answer="C">NOTE C</button>
+            </div>
+
+        </section>
+
+
+        <!-- Sensor Map -->
+        <section
+            id="map-sensors"
+            class="puzzle-map"
+        >
+
+            <div class="map-title">
+                SENSOR CALIBRATION
+            </div>
+
+            <div class="map-description">
+                측정값을 비교하여 센서의 오차를 찾아라.
+            </div>
+
+            <div class="sensor-table">
+
+                <div>REFERENCE</div>
+                <div>MEASURED</div>
+
+                <div>20 cm</div>
+                <div>28 cm</div>
+
+                <div>30 cm</div>
+                <div>38 cm</div>
+
+                <div>40 cm</div>
+                <div>48 cm</div>
 
             </div>
+
+            <input
+                id="sensor-answer"
+                type="number"
+                placeholder="OFFSET"
+            >
+
+            <button id="sensor-submit">
+                CALIBRATE
+            </button>
+
+            <div id="sensor-result"></div>
+
+        </section>
+
+
+        <!-- Control Map -->
+        <section
+            id="map-control"
+            class="puzzle-map"
+        >
+
+            <div class="map-title">
+                CONTROL SYSTEM
+            </div>
+
+            <div class="map-description">
+                목표값과 현재값의 오차를 줄여라.
+            </div>
+
+            <div class="control-readout">
+
+                TARGET<br>
+                <strong>90°</strong>
+
+                <hr>
+
+                CURRENT<br>
+                <strong id="control-current">
+                    63°
+                </strong>
+
+            </div>
+
+            <input
+                id="control-slider"
+                type="range"
+                min="0"
+                max="180"
+                value="63"
+            >
+
+            <button id="control-submit">
+                APPLY CONTROL
+            </button>
+
+            <div id="control-result"></div>
+
+        </section>
+
+
+        <!-- Power Map -->
+        <section
+            id="map-power"
+            class="puzzle-map"
+        >
+
+            <div class="map-title">
+                POWER DISTRIBUTION
+            </div>
+
+            <div class="map-description">
+                총 전력 100%를 넘지 않도록 필요한 시스템만 활성화하라.
+            </div>
+
+            <div class="power-info">
+
+                SENSOR&nbsp;&nbsp;15%<br>
+                COOLING&nbsp;30%<br>
+                MOTOR&nbsp;&nbsp;&nbsp;40%<br>
+                LIGHT&nbsp;&nbsp;&nbsp;10%
+
+            </div>
+
+            <div class="power-switches">
+
+                <label>
+                    <input
+                        type="checkbox"
+                        id="power-sensor"
+                    >
+                    SENSOR
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        id="power-motor"
+                    >
+                    MOTOR
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        id="power-light"
+                    >
+                    LIGHT
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        id="power-cooling"
+                    >
+                    COOLING
+                </label>
+
+            </div>
+
+            <button id="power-submit">
+                APPLY
+            </button>
+
+            <div id="power-result"></div>
+
+        </section>
+
+
+        <!-- Diagnostics Map -->
+        <section
+            id="map-diagnostics"
+            class="puzzle-map"
+        >
+
+            <div class="map-title">
+                SYSTEM DIAGNOSTICS
+            </div>
+
+            <div class="diagnostic-list">
+
+                <div>
+                    SENSOR
+                    <span id="diag-sensor">
+                        ERROR
+                    </span>
+                </div>
+
+                <div>
+                    POWER
+                    <span id="diag-power">
+                        ERROR
+                    </span>
+                </div>
+
+                <div>
+                    CONTROL
+                    <span id="diag-control">
+                        ERROR
+                    </span>
+                </div>
+
+            </div>
+
+            <button id="diagnostic-submit">
+                RUN DIAGNOSTICS
+            </button>
+
+            <div id="diagnostic-result"></div>
+
+        </section>
+
+
+        <!-- Final Escape Map -->
+
+        <section
+            id="map-final"
+            class="puzzle-map"
+        >
+
+            <div class="final-title">
+                SYSTEM RECOVERY COMPLETE
+            </div>
+
+            <div class="final-status">
+
+                SENSOR
+                <span>ONLINE</span>
+
+                POWER
+                <span>ONLINE</span>
+
+                CONTROL
+                <span>ONLINE</span>
+
+                EXIT
+                <span>READY</span>
+
+            </div>
+
+            <div class="final-message">
+
+                모든 시스템이 정상화되었다.
+
+                <br><br>
+
+                시스템이 원래의 경로를 복구했다.
+
+                <br><br>
+
+                탈출할 수 있다.
+
+            </div>
+
+            <button id="final-exit">
+                LEAVE SYSTEM
+            </button>
 
         </section>
 
@@ -297,7 +525,7 @@
 
 
     <!-- =========================================
-         SYSTEM STATUS
+         HUD
     ========================================== -->
 
     <section id="system-status">
@@ -307,34 +535,23 @@
         </div>
 
         <div class="status-row">
-
-            <span>
-                DIST.
-            </span>
+            <span>DIST.</span>
 
             <div class="gauge">
-                <span
-                    id="distance-gauge"
-                ></span>
+                <span id="distance-gauge"></span>
             </div>
 
             <strong id="distance-value">
                 --cm
             </strong>
-
         </div>
-
 
         <div class="status-row">
 
-            <span>
-                TEMP.
-            </span>
+            <span>TEMP.</span>
 
             <div class="gauge">
-                <span
-                    id="temperature-gauge"
-                ></span>
+                <span id="temperature-gauge"></span>
             </div>
 
             <strong id="temperature-value">
@@ -343,17 +560,12 @@
 
         </div>
 
-
         <div class="status-row">
 
-            <span>
-                HP
-            </span>
+            <span>HP</span>
 
             <div class="gauge">
-                <span
-                    id="hp-gauge"
-                ></span>
+                <span id="hp-gauge"></span>
             </div>
 
             <strong>
@@ -382,38 +594,7 @@
     </section>
 
 
-    <!-- =========================================
-         MODAL
-    ========================================== -->
-
-    <section id="modal">
-
-        <div id="modal-window">
-
-            <div id="modal-header">
-
-                <span id="modal-title">
-                    SYSTEM
-                </span>
-
-                <button id="modal-close">
-                    ×
-                </button>
-
-            </div>
-
-
-            <div id="modal-content">
-
-            </div>
-
-        </div>
-
-    </section>
-
-
 </main>
-
 
 <script src="script.js"></script>
 
