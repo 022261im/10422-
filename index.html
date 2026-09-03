@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>SYSTEM ERROR : UNKNOWN</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -13,41 +11,96 @@
 
 <main id="game">
 
-    <!-- =========================================
-         GAME WORLD
-    ========================================== -->
-    <div id="game-world">
+    <div id="world">
 
-        <!-- 화면 전체에 들어오는 빛 -->
-        <div id="light-field"></div>
+        <!-- =================================
+             INTRO WORLD
+        ================================== -->
 
-        <!-- 플레이어를 안내하는 빛의 회로 -->
-        <div id="light-road">
+        <section id="intro-area">
 
-            <div class="road-line road-main"></div>
-            <div class="road-line road-branch"></div>
+            <div class="zone-label">SECTOR 00</div>
 
-            <div class="road-node node-a"></div>
-            <div class="road-node node-b"></div>
-            <div class="road-node node-c"></div>
-            <div class="road-node node-d"></div>
+            <!-- 바닥 격자 -->
+            <div class="floor-grid"></div>
 
-        </div>
+            <!-- 데이터 포인트 -->
+            <div class="data-point p1">
+                <span>001</span>
+            </div>
+
+            <div class="data-point p2">
+                <span>014</span>
+            </div>
+
+            <div class="data-point p3">
+                <span>029</span>
+            </div>
+
+            <div class="data-point p4">
+                <span>047</span>
+            </div>
+
+            <div class="data-point p5">
+                <span>063</span>
+            </div>
+
+            <!-- 데이터 선 -->
+            <div class="data-line line1"></div>
+            <div class="data-line line2"></div>
+            <div class="data-line line3"></div>
+            <div class="data-line line4"></div>
+
+            <!-- 떠 있는 시스템 문자 -->
+            <div class="floating-code code1">SYS_014</div>
+            <div class="floating-code code2">ERR_029</div>
+            <div class="floating-code code3">---</div>
+
+            <!-- 방향 표시 -->
+            <div class="direction-marker">
+                →
+            </div>
+
+            <div class="direction-text">
+                DATA CONTINUES
+            </div>
 
 
-        <!-- =====================================
-             FILE SYSTEM AREA
-        ====================================== -->
+            <!-- 진입 장치 -->
+            <div id="access-point">
 
-        <div id="file-space">
+                <div class="access-frame"></div>
+
+                <div class="access-screen">
+                    SYSTEM
+                </div>
+
+                <div class="access-text">
+                    ACCESS
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================
+             FILE SYSTEM
+        ================================== -->
+
+        <section id="file-area">
+
+            <div class="file-zone-title">
+                LOCAL SYSTEM
+            </div>
 
             <!-- Documents -->
             <div
                 class="file-object"
-                style="left: 1200px; top: 280px;"
-                data-message="Documents 폴더다. 여러 파일이 저장되어 있다."
+                style="left: 250px; top: 260px;"
+                data-message="Documents 폴더다. 여러 문서가 저장되어 있다."
             >
-                <div class="icon folder-icon">
+                <div class="folder-icon">
                     <div class="folder-tab"></div>
                 </div>
 
@@ -58,11 +111,11 @@
             <!-- System -->
             <div
                 class="file-object"
-                style="left: 1450px; top: 210px;"
+                style="left: 550px; top: 180px;"
                 data-message="SYSTEM 폴더다. 접근 권한이 필요하다."
             >
-                <div class="icon system-icon">
-                    <div class="system-mark"></div>
+                <div class="system-icon">
+                    <div></div>
                 </div>
 
                 <span>System</span>
@@ -72,14 +125,14 @@
             <!-- ERROR LOG -->
             <div
                 class="file-object"
-                style="left: 1710px; top: 310px;"
+                style="left: 850px; top: 290px;"
                 data-message="ERROR_LOG.txt 파일이다. 최근 시스템 오류가 기록되어 있다."
             >
-                <div class="icon document-icon">
+                <div class="document-icon">
 
-                    <div class="document-fold"></div>
+                    <div class="paper-fold"></div>
 
-                    <div class="document-lines">
+                    <div class="paper-lines">
                         <i></i>
                         <i></i>
                         <i></i>
@@ -94,10 +147,10 @@
             <!-- UNKNOWN -->
             <div
                 class="file-object"
-                style="left: 1450px; top: 500px;"
+                style="left: 560px; top: 480px;"
                 data-message="파일명이 UNKNOWN으로 표시되어 있다."
             >
-                <div class="icon unknown-icon">
+                <div class="unknown-icon">
                     ?
                 </div>
 
@@ -107,64 +160,47 @@
 
             <!-- TRASH -->
             <div
-                class="file-object trash-object"
-                style="left: 1860px; top: 540px;"
-                data-message="휴지통이다. 현재 비어 있다."
+                class="file-object"
+                style="left: 1050px; top: 500px;"
+                data-message="휴지통이다. 비어 있다."
             >
+                <div class="trash">
 
-                <div class="trash-can">
-
+                    <div class="trash-handle"></div>
                     <div class="trash-lid"></div>
 
                     <div class="trash-body">
-
-                        <span></span>
-                        <span></span>
-                        <span></span>
-
+                        <i></i>
+                        <i></i>
+                        <i></i>
                     </div>
 
                 </div>
 
                 <span>Trash</span>
-
             </div>
 
-        </div>
+        </section>
 
 
-        <!-- SYSTEM ACCESS -->
-        <div id="system-gate">
-
-            <div class="gate-ring"></div>
-
-            <div class="gate-core"></div>
-
-            <div class="gate-text">
-                SYSTEM
-            </div>
-
-        </div>
-
-
-        <!-- =====================================
+        <!-- =================================
              PLAYER
-        ====================================== -->
+        ================================== -->
 
         <div id="player">
 
             <div class="player-head"></div>
-
             <div class="player-body"></div>
+            <div class="player-shadow"></div>
 
         </div>
 
     </div>
 
 
-    <!-- =========================================
-         SYSTEM STATUS
-    ========================================== -->
+    <!-- =================================
+         STATUS
+    ================================== -->
 
     <section id="system-status">
 
@@ -173,68 +209,47 @@
         </div>
 
         <div class="status-line">
-
             <span>DIST.</span>
 
             <div class="gauge">
-                <span
-                    class="filled"
-                    id="distance-gauge"
-                ></span>
+                <span id="distance-gauge"></span>
             </div>
 
-            <span id="distance-value">
-                --cm
-            </span>
-
+            <strong id="distance-value">
+                0px
+            </strong>
         </div>
 
-
         <div class="status-line">
-
             <span>TEMP.</span>
 
             <div class="gauge">
-
-                <span
-                    class="filled"
-                    id="temperature-gauge"
-                ></span>
-
+                <span id="temperature-gauge"></span>
             </div>
 
-            <span id="temperature-value">
+            <strong>
                 24°C
-            </span>
-
+            </strong>
         </div>
 
-
         <div class="status-line">
-
             <span>HP</span>
 
             <div class="gauge">
-
-                <span
-                    class="filled"
-                    id="hp-gauge"
-                ></span>
-
+                <span id="hp-gauge"></span>
             </div>
 
-            <span id="hp-value">
+            <strong>
                 100%
-            </span>
-
+            </strong>
         </div>
 
     </section>
 
 
-    <!-- =========================================
+    <!-- =================================
          DIALOGUE
-    ========================================== -->
+    ================================== -->
 
     <section id="dialogue">
 
@@ -247,7 +262,6 @@
         </div>
 
     </section>
-
 
 </main>
 

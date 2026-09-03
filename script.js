@@ -1,9 +1,9 @@
-/* ===================================
+/* =================================
    ELEMENTS
-=================================== */
+================================= */
 
 const game = document.getElementById("game");
-const world = document.getElementById("game-world");
+const world = document.getElementById("world");
 const player = document.getElementById("player");
 
 const dialogueText =
@@ -15,58 +15,48 @@ const distanceValue =
 const distanceGauge =
     document.getElementById("distance-gauge");
 
-const lightField =
-    document.getElementById("light-field");
+const accessPoint =
+    document.getElementById("access-point");
 
 const fileObjects =
     document.querySelectorAll(".file-object");
 
-const keys = {};
+
+/* =================================
+   GAME SETTINGS
+================================= */
+
+const WORLD_WIDTH = 3000;
+
+const PLAYER_SPEED = 5;
 
 
-/* ===================================
-   WORLD
-=================================== */
-
-const WORLD_WIDTH = 2400;
-
-
-/* ===================================
-   PLAYER
-=================================== */
+/* =================================
+   PLAYER POSITION
+================================= */
 
 /*
-    플레이어는 실제로 월드 안에서 움직인다.
-    화면에서는 항상 중앙에 보인다.
+    플레이어의 실제 월드 좌표
 */
 
 let playerX = 250;
-let playerY = window.innerHeight * 0.60;
+
+let playerY =
+    window.innerHeight * 0.55;
 
 
-/* ===================================
+/* =================================
    CAMERA
-=================================== */
+================================= */
 
 let cameraX = 0;
 
-const speed = 4;
 
+/* =================================
+   INPUT
+================================= */
 
-/* ===================================
-   GAME STATE
-=================================== */
-
-let gameMode = "main";
-
-let enteredFileSpace = false;
-
-let wrongMessageCooldown = 0;
-
-
-/* ===================================
-   KEYBOARD
-=================================== */
+const keys = {};
 
 document.addEventListener(
     "keydown",
@@ -74,14 +64,12 @@ document.addEventListener(
 
         keys[event.key.toLowerCase()] = true;
 
-
         if (event.code === "Space") {
 
             event.preventDefault();
 
             interact();
         }
-
     }
 );
 
@@ -91,87 +79,69 @@ document.addEventListener(
     (event) => {
 
         keys[event.key.toLowerCase()] = false;
-
     }
 );
 
 
-/* ===================================
-   PLAYER MOVEMENT
-=================================== */
+/* =================================
+   PLAYER UPDATE
+================================= */
 
 function updatePlayer() {
 
-    let moving = false;
+    let dx = 0;
+    let dy = 0;
 
-
-    /* ↑ */
-
-    if (
-        keys["w"] ||
-        keys["arrowup"]
-    ) {
-
-        playerY -= speed;
-
-        moving = true;
-    }
-
-
-    /* ↓ */
-
-    if (
-        keys["s"] ||
-        keys["arrowdown"]
-    ) {
-
-        playerY += speed;
-
-        moving = true;
-    }
-
-
-    /* ← */
-
-    if (
-        keys["a"] ||
-        keys["arrowleft"]
-    ) {
-
-        playerX -= speed;
-
-        moving = true;
-    }
-
-
-    /* → */
 
     if (
         keys["d"] ||
         keys["arrowright"]
     ) {
-
-        playerX += speed;
-
-        moving = true;
+        dx += PLAYER_SPEED;
     }
 
 
-    /* ===================================
-       WORLD LIMIT
-    =================================== */
+    if (
+        keys["a"] ||
+        keys["arrowleft"]
+    ) {
+        dx -= PLAYER_SPEED;
+    }
 
-    const halfWidth =
-        player.offsetWidth / 2;
 
-    const halfHeight =
-        player.offsetHeight / 2;
+    if (
+        keys["w"] ||
+        keys["arrowup"]
+    ) {
+        dy -= PLAYER_SPEED;
+    }
 
+
+    if (
+        keys["s"] ||
+        keys["arrowdown"]
+    ) {
+        dy += PLAYER_SPEED;
+    }
+
+
+    /*
+        실제 위치 변경
+    */
+
+    playerX += dx;
+
+    playerY += dy;
+
+
+    /*
+        월드 범위
+    */
 
     playerX = Math.max(
-        60,
+        40,
         Math.min(
-            WORLD_WIDTH - 60,
+            WORLD_WIDTH - 40,
             playerX
         )
     );
@@ -186,353 +156,184 @@ function updatePlayer() {
     );
 
 
-    /* ===================================
-       CAMERA
-    =================================== */
+    /*
+        플레이어의 월드 위치
+    */
+
+    player.style.left =
+        `${playerX}px`;
+
+    player.style.top =
+        `${playerY}px`;
+
+
+    /*
+        카메라
+    */
 
     updateCamera();
 
 
-    /* ===================================
-       SENSOR
-    =================================== */
+    /*
+        센서
+    */
 
     updateDistanceSensor();
 
 
-    /* ===================================
-       WRONG WAY
-    =================================== */
+    /*
+        파일 시스템 진입 체크
+    */
 
-    if (gameMode === "main") {
-
-        checkWrongWay();
-
-        checkSystemGate();
-    }
-
-
-    if (gameMode === "file") {
-
-        updateFileSensor();
-    }
-
-
-    if (moving) {
-
-        if (
-            wrongMessageCooldown > 0
-        ) {
-
-            wrongMessageCooldown--;
-        }
-    }
-
+    checkFileArea();
 }
 
 
-/* ===================================
+/* =================================
    CAMERA
-=================================== */
+================================= */
 
 function updateCamera() {
 
-    const screenCenter =
+    /*
+        화면 중앙을 기준으로 카메라가 따라감
+    */
+
+    const targetCamera =
+        playerX -
         window.innerWidth / 2;
 
 
     /*
-        캐릭터를 화면 중앙에 놓기 위해
-        월드를 반대로 이동한다.
-    */
-
-    cameraX =
-        playerX - screenCenter;
-
-
-    /*
-        월드가 화면 왼쪽으로
-        너무 많이 빠지지 않게 한다.
+        카메라 시작점
     */
 
     const maxCamera =
-        WORLD_WIDTH - window.innerWidth;
+        WORLD_WIDTH -
+        window.innerWidth;
 
 
-    cameraX = Math.max(
-        0,
-        Math.min(
-            maxCamera,
-            cameraX
-        )
-    );
+    cameraX =
+        Math.max(
+            0,
+            Math.min(
+                maxCamera,
+                targetCamera
+            )
+        );
 
+
+    /*
+        월드를 반대로 이동
+    */
 
     world.style.transform =
         `translateX(${-cameraX}px)`;
-
-
-    /*
-        플레이어는 화면 중앙 고정
-    */
-
-    player.style.left =
-        "50%";
-
-    player.style.top =
-        `${playerY}px`;
 }
 
 
-/* ===================================
+/* =================================
    DISTANCE SENSOR
-=================================== */
+================================= */
 
 function updateDistanceSensor() {
 
-    const gateX = 1420;
-    const gateY =
-        game.clientHeight * 0.38;
+    const gateX = 1530;
 
-
-    const distance = Math.sqrt(
-        Math.pow(
-            playerX - gateX,
-            2
-        ) +
-        Math.pow(
-            playerY - gateY,
-            2
-        )
-    );
-
-
-    const rounded =
-        Math.round(distance);
+    const distance =
+        Math.abs(
+            gateX -
+            playerX
+        );
 
 
     distanceValue.textContent =
-        rounded + "cm";
+        `${Math.round(distance)}px`;
 
 
     /*
-        가까워질수록 게이지 상승
+        가까워질수록 게이지 증가
     */
 
-    const gauge =
+    const percentage =
         Math.max(
             0,
             Math.min(
                 100,
-                100 - rounded / 12
+                100 -
+                distance / 12
             )
         );
 
 
     distanceGauge.style.width =
-        gauge + "%";
-
-
-    /*
-        오른쪽으로 갈수록
-        빛의 강도가 증가
-    */
-
-    const lightProgress =
-        Math.max(
-            0,
-            Math.min(
-                1,
-                playerX / 1450
-            )
-        );
-
-
-    lightField.style.opacity =
-        0.15 +
-        lightProgress * 0.90;
-
-
-    lightField.style.filter =
-        `blur(${10 - lightProgress * 6}px)`;
+        `${percentage}%`;
 }
 
 
-/* ===================================
-   WRONG WAY
-=================================== */
+/* =================================
+   FILE AREA
+================================= */
 
-function checkWrongWay() {
-
-    if (
-        wrongMessageCooldown > 0
-    ) {
-
-        return;
-    }
-
+function checkFileArea() {
 
     /*
-        너무 뒤로 가면
+        SYSTEM ACCESS를 지나면
+        파일 시스템 공간으로 진입
     */
-
-    if (playerX < 100) {
-
-        showMessage(
-            "여긴 아닌 것 같다."
-        );
-
-        wrongMessageCooldown = 90;
-
-        return;
-    }
-
-
-    /*
-        빛의 주 경로에서
-        지나치게 벗어났을 때
-    */
-
-    const expectedY =
-        0.60 -
-        (
-            Math.max(
-                0,
-                playerX - 100
-            ) /
-            1300
-        ) *
-        0.08;
-
-
-    const distanceFromRoad =
-        Math.abs(
-            playerY -
-            game.clientHeight * expectedY
-        );
-
 
     if (
-        distanceFromRoad > 180
+        playerX >= 1660
     ) {
 
-        showMessage(
-            "빛이 이쪽으로 이어지지 않는다."
+        document.body.classList.add(
+            "inside-file-system"
         );
 
-        wrongMessageCooldown = 100;
     }
 
+    else {
+
+        document.body.classList.remove(
+            "inside-file-system"
+        );
+    }
 }
 
 
-/* ===================================
-   SYSTEM GATE
-=================================== */
+/* =================================
+   INTERACTION
+================================= */
 
-function checkSystemGate() {
-
-    const gateX = 1420;
-    const gateY =
-        game.clientHeight * 0.38;
-
-
-    const distance = Math.sqrt(
-        Math.pow(
-            playerX - gateX,
-            2
-        ) +
-        Math.pow(
-            playerY - gateY,
-            2
-        )
-    );
-
-
-    if (
-        distance < 130
-    ) {
-
-        showMessage(
-            "빛이 강해지고 있다. 무언가에 연결되어 있는 것 같다."
-        );
-    }
-
-
-    if (
-        distance < 60 &&
-        !enteredFileSpace
-    ) {
-
-        enterFileSpace();
-    }
-
-}
-
-
-/* ===================================
-   ENTER FILE SYSTEM
-=================================== */
-
-function enterFileSpace() {
-
-    enteredFileSpace = true;
-
-    gameMode = "file";
-
+function interact() {
 
     /*
-        여기서는 화면 자체를 전환하기보다
-        월드가 계속 움직이는 방식으로
-        파일 공간에 진입한다.
+        가장 가까운 파일 찾기
     */
 
-    showMessage(
-        "SYSTEM에 접속했다."
-    );
+    let nearestObject = null;
 
-
-    /*
-        빛의 길을 숨기고
-        파일 시스템 영역을 강조
-    */
-
-    document
-        .getElementById("light-road")
-        .style.opacity = "0";
-
-
-    document
-        .getElementById("light-field")
-        .style.opacity = "0.05";
-}
-
-
-/* ===================================
-   FILE SENSOR
-=================================== */
-
-function updateFileSensor() {
-
-    let closest =
-        Infinity;
+    let nearestDistance = Infinity;
 
 
     fileObjects.forEach(
         (object) => {
 
-            const rect =
-                object.getBoundingClientRect();
-
+            /*
+                object의 월드 좌표
+                left/top은 inline style에
+                들어 있으므로 계산
+            */
 
             const objectX =
-                playerX -
-                cameraX +
-                rect.width / 2;
+                parseFloat(
+                    object.style.left
+                );
 
             const objectY =
-                rect.top +
-                rect.height / 2;
+                parseFloat(
+                    object.style.top
+                );
 
 
             const distance =
@@ -540,148 +341,13 @@ function updateFileSensor() {
                     Math.pow(
                         playerX -
                         (
-                            objectX +
-                            cameraX
+                            1700 +
+                            objectX
                         ),
                         2
                     ) +
                     Math.pow(
                         playerY -
-                        objectY,
-                        2
-                    )
-                );
-
-
-            if (
-                distance <
-                closest
-            ) {
-
-                closest =
-                    distance;
-            }
-
-        }
-    );
-
-
-    distanceValue.textContent =
-        Math.round(closest) + "cm";
-}
-
-
-/* ===================================
-   INTERACTION
-=================================== */
-
-function interact() {
-
-    /*
-        파일 시스템
-    */
-
-    if (gameMode === "file") {
-
-        interactWithFile();
-
-        return;
-    }
-
-
-    /*
-        메인 공간
-    */
-
-    const gateX = 1420;
-
-    const gateY =
-        game.clientHeight * 0.38;
-
-
-    const distance =
-        Math.sqrt(
-            Math.pow(
-                playerX - gateX,
-                2
-            ) +
-            Math.pow(
-                playerY - gateY,
-                2
-            )
-        );
-
-
-    if (
-        distance < 120
-    ) {
-
-        showMessage(
-            "SYSTEM에 접근 중이다..."
-        );
-
-        return;
-    }
-
-
-    showMessage(
-        "아무것도 없다."
-    );
-
-}
-
-
-/* ===================================
-   FILE INTERACTION
-=================================== */
-
-function interactWithFile() {
-
-    let nearest =
-        null;
-
-    let nearestDistance =
-        Infinity;
-
-
-    fileObjects.forEach(
-        (object) => {
-
-            const rect =
-                object.getBoundingClientRect();
-
-
-            /*
-                화면 기준으로 실제 플레이어와
-                오브젝트의 거리를 계산한다.
-            */
-
-            const objectX =
-                rect.left +
-                rect.width / 2;
-
-            const objectY =
-                rect.top +
-                rect.height / 2;
-
-
-            const playerScreenX =
-                window.innerWidth / 2;
-
-
-            const playerScreenY =
-                playerY;
-
-
-            const distance =
-                Math.sqrt(
-                    Math.pow(
-                        playerScreenX -
-                        objectX,
-                        2
-                    ) +
-                    Math.pow(
-                        playerScreenY -
                         objectY,
                         2
                     )
@@ -696,62 +362,103 @@ function interactWithFile() {
                 nearestDistance =
                     distance;
 
-                nearest =
+                nearestObject =
                     object;
             }
-
         }
     );
 
 
+    /*
+        조사 가능
+    */
+
     if (
-        nearest &&
+        nearestObject &&
         nearestDistance < 120
     ) {
 
-        showMessage(
-            nearest.dataset.message
-        );
+        dialogueText.textContent =
+            nearestObject.dataset.message;
 
+        return;
     }
 
-    else {
 
-        showMessage(
-            "주변에 조사할 수 있는 것이 없다."
+    /*
+        SYSTEM 진입점
+    */
+
+    const accessDistance =
+        Math.sqrt(
+            Math.pow(
+                playerX - 1530,
+                2
+            ) +
+            Math.pow(
+                playerY -
+                window.innerHeight * 0.5,
+                2
+            )
         );
+
+
+    if (
+        accessDistance < 130
+    ) {
+
+        dialogueText.textContent =
+            "SYSTEM에 접근할 수 있다.";
+
+        return;
     }
 
-}
-
-
-/* ===================================
-   MESSAGE
-=================================== */
-
-function showMessage(message) {
 
     dialogueText.textContent =
-        message;
+        "주변에 조사할 수 있는 것이 없다.";
 }
 
 
-/* ===================================
+/* =================================
+   INITIAL POSITION
+================================= */
+
+function initialize() {
+
+    player.style.left =
+        `${playerX}px`;
+
+    player.style.top =
+        `${playerY}px`;
+
+    updateCamera();
+
+    updateDistanceSensor();
+}
+
+
+/* =================================
    RESIZE
-=================================== */
+================================= */
 
 window.addEventListener(
     "resize",
     () => {
+
+        playerY =
+            Math.min(
+                playerY,
+                window.innerHeight - 60
+            );
 
         updateCamera();
     }
 );
 
 
-/* ===================================
+/* =================================
    GAME LOOP
-=================================== */
+================================= */
 
 function gameLoop() {
 
@@ -763,12 +470,10 @@ function gameLoop() {
 }
 
 
-/* ===================================
+/* =================================
    START
-=================================== */
+================================= */
 
-updateCamera();
-
-updateDistanceSensor();
+initialize();
 
 gameLoop();
