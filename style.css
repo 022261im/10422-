@@ -1,6 +1,6 @@
-/* =================================
+/* =================================================
    RESET
-================================= */
+================================================= */
 
 * {
     box-sizing: border-box;
@@ -16,20 +16,25 @@ body {
 }
 
 body {
-    background: #070c12;
+
+    background: #080d13;
+
     color: #dce6ef;
 
-    font-family: "Courier New", monospace;
+    font-family:
+        "Courier New",
+        monospace;
 
     image-rendering: pixelated;
 }
 
 
-/* =================================
+/* =================================================
    GAME
-================================= */
+================================================= */
 
 #game {
+
     position: relative;
 
     width: 100vw;
@@ -37,13 +42,13 @@ body {
 
     overflow: hidden;
 
-    background: #0b121a;
+    background: #0b1219;
 }
 
 
-/* =================================
+/* =================================================
    WORLD
-================================= */
+================================================= */
 
 #world {
 
@@ -52,7 +57,7 @@ body {
     left: 0;
     top: 0;
 
-    width: 3600px;
+    width: 3400px;
     height: 100%;
 
     will-change:
@@ -60,9 +65,9 @@ body {
 }
 
 
-/* =================================
+/* =================================================
    INTRO
-================================= */
+================================================= */
 
 #intro-area {
 
@@ -74,45 +79,43 @@ body {
     width: 1700px;
     height: 100%;
 
-    overflow: hidden;
-
     background:
+
         radial-gradient(
-            ellipse at 82% 50%,
-            #203342 0%,
-            #172630 26%,
-            #0f1821 58%,
+            ellipse at 85% 50%,
+            #263d4d 0%,
+            #192a36 28%,
+            #101a23 58%,
             #080d13 100%
         );
+
+    overflow: hidden;
 }
 
-
-/* =================================
-   INTRO TEXT
-================================= */
 
 .intro-title {
 
     position: absolute;
 
     left: 120px;
-    top: 40%;
+    top: 42%;
 
-    color: #8396a6;
+    color: #8196a7;
 
     font-size: 18px;
 
     letter-spacing: 4px;
 }
 
+
 .intro-subtitle {
 
     position: absolute;
 
     left: 120px;
-    top: calc(40% + 34px);
+    top: calc(42% + 32px);
 
-    color: #516675;
+    color: #506675;
 
     font-size: 10px;
 
@@ -120,9 +123,9 @@ body {
 }
 
 
-/* =================================
-   LIGHT
-================================= */
+/* =================================================
+   LIGHT PATH
+================================================= */
 
 .light-path {
 
@@ -131,26 +134,34 @@ body {
     left: 0;
     top: 50%;
 
-    width: 1570px;
-    height: 300px;
+    width: 1580px;
+    height: 320px;
 
     transform:
         translateY(-50%);
 
+    pointer-events: none;
+
     background:
+
         linear-gradient(
             90deg,
-            rgba(100,180,235,0),
-            rgba(111,188,238,.025) 25%,
-            rgba(132,200,240,.08) 48%,
-            rgba(159,215,248,.17) 68%,
-            rgba(193,233,255,.34) 84%,
-            rgba(220,246,255,.60)
+
+            rgba(110,190,240,0) 0%,
+
+            rgba(115,190,235,.025) 25%,
+
+            rgba(138,203,243,.08) 48%,
+
+            rgba(164,220,251,.17) 67%,
+
+            rgba(197,235,255,.34) 84%,
+
+            rgba(225,248,255,.58) 100%
         );
 
-    filter: blur(34px);
-
-    pointer-events: none;
+    filter:
+        blur(38px);
 }
 
 
@@ -158,35 +169,39 @@ body {
 
     position: absolute;
 
-    left: 100px;
+    left: 60px;
     top: 50%;
 
-    width: 1470px;
-    height: 20px;
+    width: 1510px;
+    height: 28px;
 
     transform:
         translateY(-50%);
 
     background:
+
         linear-gradient(
             90deg,
-            transparent,
-            rgba(134,199,237,.04) 30%,
-            rgba(182,224,250,.12) 60%,
-            rgba(220,245,255,.55)
+
+            rgba(121,193,234,0),
+
+            rgba(132,203,241,.04) 35%,
+
+            rgba(177,224,250,.14) 65%,
+
+            rgba(219,246,255,.58)
         );
 
-    filter: blur(12px);
-
-    pointer-events: none;
+    filter:
+        blur(14px);
 }
 
 
-/* =================================
-   ACCESS
-================================= */
+/* =================================================
+   SYSTEM ACCESS
+================================================= */
 
-.system-access {
+#system-access {
 
     position: absolute;
 
@@ -205,6 +220,7 @@ body {
     align-items: center;
 }
 
+
 .access-frame {
 
     position: absolute;
@@ -213,60 +229,76 @@ body {
     height: 82px;
 
     border:
-        1px solid #a8cae0;
+        1px solid #aacbe0;
 
     transform:
         rotate(45deg);
 
     box-shadow:
-        0 0 24px rgba(140,200,235,.2);
+        0 0 25px
+        rgba(147,213,250,.18);
 }
+
 
 .access-core {
 
     width: 18px;
     height: 18px;
 
-    background: #edf9ff;
+    background: #ecf8ff;
 
     box-shadow:
-        0 0 13px #d8f4ff,
-        0 0 34px rgba(133,210,255,.8);
+
+        0 0 14px #d6f2ff,
+
+        0 0 34px
+        rgba(134,211,255,.82);
 
     animation:
-        pulse 1.3s infinite alternate;
+        accessPulse
+        1.3s
+        infinite
+        alternate;
 }
 
-.access-text {
+
+.access-label {
 
     position: absolute;
 
-    top: 105px;
+    top: 106px;
 
-    color: #90a8bb;
+    color: #91a9ba;
 
     font-size: 9px;
 
     letter-spacing: 3px;
 }
 
-@keyframes pulse {
+
+@keyframes accessPulse {
 
     from {
-        transform: scale(.7);
+
+        transform:
+            scale(.65);
+
         opacity: .55;
     }
 
     to {
-        transform: scale(1.2);
+
+        transform:
+            scale(1.2);
+
         opacity: 1;
     }
 }
 
 
-/* =================================
+/* =================================================
    SYSTEM AREA
-================================= */
+================================================= */
 
 #system-area {
 
@@ -279,27 +311,30 @@ body {
     height: 100%;
 
     background:
+
         linear-gradient(
             rgba(255,255,255,.018) 1px,
             transparent 1px
         ),
+
         linear-gradient(
             90deg,
             rgba(255,255,255,.018) 1px,
             transparent 1px
         ),
+
         #26313c;
 
     background-size: 56px 56px;
 
     border-left:
-        1px solid #5b707f;
+        1px solid #5e7180;
 }
 
 
-/* =================================
-   HEADER
-================================= */
+/* =================================================
+   SYSTEM HEADER
+================================================= */
 
 .system-header {
 
@@ -316,23 +351,25 @@ body {
     padding-bottom: 12px;
 
     border-bottom:
-        1px solid #526572;
+        1px solid #536674;
 
-    color: #9fb1be;
+    color: #a6b6c1;
 
     font-size: 12px;
 
     letter-spacing: 2px;
 }
 
-#system-online {
-    color: #76a08a;
+
+#system-state {
+
+    color: #7ca18a;
 }
 
 
-/* =================================
+/* =================================================
    PLAYER
-================================= */
+================================================= */
 
 #player {
 
@@ -347,6 +384,7 @@ body {
     z-index: 100;
 }
 
+
 .player-shadow {
 
     position: absolute;
@@ -360,9 +398,9 @@ body {
     background:
         rgba(0,0,0,.45);
 
-    border-radius:
-        50%;
+    border-radius: 50%;
 }
+
 
 .player-head {
 
@@ -379,6 +417,7 @@ body {
     border:
         3px solid #15191d;
 }
+
 
 .player-body {
 
@@ -397,9 +436,9 @@ body {
 }
 
 
-/* =================================
+/* =================================================
    SYSTEM OBJECT
-================================= */
+================================================= */
 
 .system-object {
 
@@ -418,7 +457,7 @@ body {
 
     gap: 9px;
 
-    color: #d0dbe3;
+    color: #d2dde4;
 
     font-size: 11px;
 
@@ -426,9 +465,9 @@ body {
 }
 
 
-/* =================================
+/* =================================================
    FOLDER
-================================= */
+================================================= */
 
 .folder-icon {
 
@@ -439,12 +478,12 @@ body {
 
     background:
         linear-gradient(
-            #f2c53b,
+            #f3c63d,
             #dfa91f
         );
 
     border:
-        3px solid #55430c;
+        3px solid #55420c;
 
     border-radius:
         3px 5px 5px 5px;
@@ -452,6 +491,7 @@ body {
     box-shadow:
         0 4px 0 rgba(0,0,0,.2);
 }
+
 
 .folder-icon::before {
 
@@ -462,23 +502,26 @@ body {
     left: -3px;
     top: -11px;
 
-    width: 25px;
+    width: 26px;
     height: 11px;
 
     background:
-        #f2c53b;
+        #f3c63d;
 
     border:
-        3px solid #55430c;
+        3px solid #55420c;
 
     border-bottom:
         none;
+
+    border-radius:
+        3px 3px 0 0;
 }
 
 
-/* =================================
+/* =================================================
    DOCUMENT
-================================= */
+================================================= */
 
 .document-icon {
 
@@ -487,11 +530,16 @@ body {
     width: 46px;
     height: 56px;
 
-    background: #eef2f4;
+    background:
+        #edf1f3;
 
     border:
         3px solid #242b31;
+
+    box-shadow:
+        0 4px 0 rgba(0,0,0,.18);
 }
+
 
 .document-lines {
 
@@ -507,6 +555,7 @@ body {
     gap: 6px;
 }
 
+
 .document-lines i {
 
     width: 25px;
@@ -515,6 +564,7 @@ body {
     background:
         #75838d;
 }
+
 
 .extension {
 
@@ -528,23 +578,24 @@ body {
 
     display: flex;
 
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 
-    background: #eef2f4;
+    background:
+        #edf1f3;
 
     border:
         3px solid #242b31;
 
-    color: #273038;
+    color: #293038;
 
     font-size: 8px;
 }
 
 
-/* =================================
+/* =================================================
    TRASH
-================================= */
+================================================= */
 
 .trash {
 
@@ -553,6 +604,7 @@ body {
     width: 55px;
     height: 61px;
 }
+
 
 .trash-handle {
 
@@ -571,6 +623,7 @@ body {
         none;
 }
 
+
 .trash-lid {
 
     position: absolute;
@@ -581,13 +634,15 @@ body {
     width: 47px;
     height: 9px;
 
-    background: #8998a3;
+    background:
+        #8998a3;
 
     border:
         3px solid #c3cdd4;
 
     border-radius: 2px;
 }
+
 
 .trash-body {
 
@@ -599,7 +654,8 @@ body {
     width: 36px;
     height: 40px;
 
-    background: #6d7b85;
+    background:
+        #6d7b85;
 
     border:
         3px solid #bbc7ce;
@@ -617,6 +673,7 @@ body {
     justify-content: space-evenly;
 }
 
+
 .trash-body i {
 
     width: 3px;
@@ -624,13 +681,14 @@ body {
 
     margin-top: 5px;
 
-    background: #46525b;
+    background:
+        #46525b;
 }
 
 
-/* =================================
+/* =================================================
    HIDDEN EXIT
-================================= */
+================================================= */
 
 #hidden-exit {
 
@@ -649,549 +707,52 @@ body {
 
     gap: 8px;
 
-    color: #647582;
+    color: #768994;
 
     font-size: 10px;
 
-    opacity: .06;
+    opacity: .025;
 
     transition:
-        opacity .5s ease;
+        opacity .8s ease;
 }
 
+
 #hidden-exit.revealed {
+
     opacity: 1;
 }
 
-.exit-frame {
 
-    width: 60px;
-    height: 80px;
+.exit-door {
+
+    width: 58px;
+    height: 78px;
 
     border:
-        1px solid #708796;
+        1px solid #7d919d;
 
     display: flex;
 
     align-items: center;
     justify-content: center;
-}
-
-.exit-symbol {
-    color: #92aab9;
-    font-size: 12px;
-}
-
-
-/* =================================
-   PUZZLE MAPS
-================================= */
-
-.puzzle-map {
-
-    position: absolute;
-
-    left: 0;
-    top: 0;
-
-    width: 1400px;
-    height: 100%;
-
-    display: none;
 
     background:
-        radial-gradient(
-            circle at center,
-            #263744,
-            #17232d 62%,
-            #0d151d 100%
-        );
-
-    z-index: 200;
-}
-
-.puzzle-map.active {
-    display: block;
+        #18222b;
 }
 
 
-/* =================================
-   PUZZLE TITLES
-================================= */
+.exit-question {
 
-.map-title {
-
-    position: absolute;
-
-    left: 80px;
-    top: 70px;
-
-    color: #c9d9e4;
-
-    font-size: 20px;
-
-    letter-spacing: 3px;
-}
-
-.map-description {
-
-    position: absolute;
-
-    left: 80px;
-    top: 112px;
-
-    color: #8398a8;
-
-    font-size: 11px;
-}
-
-
-/* =================================
-   CLUE CARDS
-================================= */
-
-.clue-card {
-
-    position: absolute;
-
-    width: 220px;
-
-    min-height: 150px;
-
-    padding: 18px;
-
-    background:
-        #e7ebee;
-
-    border:
-        3px solid #29323a;
-
-    color: #263038;
-
-    box-shadow:
-        6px 6px 0 rgba(0,0,0,.2);
-}
-
-.clue-card b {
-    font-size: 13px;
-}
-
-.clue-card p {
-    margin-top: 15px;
-
-    font-size: 11px;
-
-    line-height: 1.7;
-}
-
-.card-a {
-    left: 120px;
-    top: 210px;
-}
-
-.card-b {
-    left: 420px;
-    top: 280px;
-}
-
-.card-c {
-    left: 720px;
-    top: 190px;
-}
-
-.puzzle-question {
-
-    position: absolute;
-
-    left: 120px;
-    bottom: 170px;
-
-    color: #b8c9d5;
+    color: #9db0bb;
 
     font-size: 15px;
 }
 
-.answer-area {
 
-    position: absolute;
-
-    left: 120px;
-    bottom: 100px;
-
-    display: flex;
-
-    gap: 10px;
-}
-
-
-/* =================================
-   PUZZLE CONTROLS
-================================= */
-
-button,
-input,
-label {
-
-    font-family:
-        "Courier New",
-        monospace;
-}
-
-button {
-
-    padding:
-        10px 15px;
-
-    border:
-        1px solid #8b9eab;
-
-    background:
-        #293842;
-
-    color:
-        #dbe6ed;
-
-    cursor: pointer;
-}
-
-button:hover {
-
-    background:
-        #354a56;
-}
-
-input[type="number"] {
-
-    position: absolute;
-
-    left: 120px;
-    top: 250px;
-
-    width: 180px;
-
-    padding: 12px;
-
-    border:
-        1px solid #738794;
-
-    background:
-        #141e26;
-
-    color:
-        #e0ebf2;
-}
-
-#sensor-submit {
-
-    position: absolute;
-
-    left: 120px;
-    top: 305px;
-}
-
-#sensor-result {
-
-    position: absolute;
-
-    left: 120px;
-    top: 360px;
-
-    color:
-        #a8c9b1;
-}
-
-
-/* =================================
-   SENSOR TABLE
-================================= */
-
-.sensor-table {
-
-    position: absolute;
-
-    left: 550px;
-    top: 210px;
-
-    display: grid;
-
-    grid-template-columns:
-        150px 150px;
-
-    color: #cad6de;
-}
-
-.sensor-table div {
-
-    padding: 14px;
-
-    border:
-        1px solid #506572;
-}
-
-
-/* =================================
-   CONTROL
-================================= */
-
-.control-readout {
-
-    position: absolute;
-
-    left: 150px;
-    top: 210px;
-
-    width: 220px;
-
-    padding: 20px;
-
-    background:
-        #101a22;
-
-    border:
-        1px solid #647986;
-
-    line-height: 2;
-}
-
-.control-readout strong {
-
-    font-size: 28px;
-
-    color: #cde4f0;
-}
-
-.control-readout hr {
-
-    border:
-        none;
-
-    border-top:
-        1px solid #425460;
-
-    margin:
-        8px 0;
-}
-
-#control-slider {
-
-    position: absolute;
-
-    left: 150px;
-    top: 390px;
-
-    width: 500px;
-}
-
-#control-submit {
-
-    position: absolute;
-
-    left: 150px;
-    top: 440px;
-}
-
-#control-result {
-
-    position: absolute;
-
-    left: 150px;
-    top: 500px;
-
-    color:
-        #a8c9b1;
-}
-
-
-/* =================================
-   POWER
-================================= */
-
-.power-info {
-
-    position: absolute;
-
-    left: 140px;
-    top: 200px;
-
-    padding: 20px;
-
-    background: #101a22;
-
-    border:
-        1px solid #5f7380;
-
-    line-height: 2;
-}
-
-.power-switches {
-
-    position: absolute;
-
-    left: 500px;
-    top: 200px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 20px;
-}
-
-.power-switches label {
-
-    color:
-        #c8d6df;
-
-    font-size:
-        14px;
-}
-
-#power-submit {
-
-    position: absolute;
-
-    left: 500px;
-    top: 400px;
-}
-
-#power-result {
-
-    position: absolute;
-
-    left: 500px;
-    top: 460px;
-
-    color:
-        #a8c9b1;
-}
-
-
-/* =================================
-   DIAGNOSTICS
-================================= */
-
-.diagnostic-list {
-
-    position: absolute;
-
-    left: 180px;
-    top: 210px;
-
-    width: 400px;
-}
-
-.diagnostic-list div {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    padding: 18px;
-
-    border-bottom:
-        1px solid #455965;
-
-    color:
-        #cbd8df;
-}
-
-.diagnostic-list span {
-    color:
-        #b56d6d;
-}
-
-#diagnostic-submit {
-
-    position: absolute;
-
-    left: 180px;
-    top: 390px;
-}
-
-#diagnostic-result {
-
-    position: absolute;
-
-    left: 180px;
-    top: 450px;
-
-    color:
-        #a8c9b1;
-}
-
-
-/* =================================
-   FINAL
-================================= */
-
-#map-final {
-
-    align-items: center;
-
-    flex-direction: column;
-}
-
-#map-final.active {
-    display: flex;
-}
-
-.final-title {
-
-    margin-top: 130px;
-
-    color:
-        #cbdde7;
-
-    font-size: 22px;
-
-    letter-spacing: 3px;
-}
-
-.final-status {
-
-    margin-top: 60px;
-
-    width: 400px;
-
-    padding: 20px;
-
-    background: #101a22;
-
-    border:
-        1px solid #607582;
-
-    line-height: 2;
-}
-
-.final-status span {
-
-    float: right;
-
-    color:
-        #a8c9b1;
-}
-
-.final-message {
-
-    margin-top: 40px;
-
-    text-align: center;
-
-    color:
-        #aabcc8;
-
-    line-height: 1.9;
-}
-
-#final-exit {
-
-    margin-top: 40px;
-}
-
-
-/* =================================
-   STATUS
-================================= */
+/* =================================================
+   HUD
+================================================= */
 
 #system-status {
 
@@ -1216,118 +777,97 @@ input[type="number"] {
     z-index: 300;
 }
 
+
 .status-title {
 
     margin-bottom: 7px;
 
     padding-bottom: 6px;
 
-    color:
-        #dce5eb;
+    color: #dce5eb;
 
-    font-size:
-        13px;
+    font-size: 13px;
 
-    font-weight:
-        bold;
+    font-weight: bold;
 
-    letter-spacing:
-        1px;
+    letter-spacing: 1px;
 
     border-bottom:
         1px solid #4e606f;
 }
 
+
 .status-row {
 
-    display:
-        flex;
+    display: flex;
 
-    align-items:
-        center;
+    align-items: center;
 
-    gap:
-        6px;
+    gap: 6px;
 
-    margin:
-        7px 0;
+    margin: 7px 0;
 
-    font-size:
-        10px;
+    font-size: 10px;
 }
+
 
 .status-row span:first-child {
 
-    width:
-        37px;
+    width: 37px;
 
-    color:
-        #9babb8;
+    color: #9babb8;
 }
+
 
 .status-row strong {
 
-    width:
-        42px;
+    width: 42px;
 
-    text-align:
-        right;
+    text-align: right;
 
-    font-size:
-        10px;
+    font-size: 10px;
 
-    font-weight:
-        normal;
+    font-weight: normal;
 }
+
 
 .gauge {
 
-    width:
-        65px;
-
-    height:
-        8px;
-
-    overflow:
-        hidden;
+    width: 65px;
+    height: 8px;
 
     background:
         #18222b;
 
     border:
         1px solid #344551;
+
+    overflow: hidden;
 }
+
 
 .gauge span {
 
-    display:
-        block;
+    display: block;
 
-    width:
-        50%;
-
-    height:
-        100%;
+    width: 50%;
+    height: 100%;
 
     background:
         #91b4ce;
 }
 
 
-/* =================================
+/* =================================================
    DIALOGUE
-================================= */
+================================================= */
 
 #dialogue {
 
-    position:
-        fixed;
+    position: fixed;
 
-    left:
-        50%;
-
-    bottom:
-        24px;
+    left: 50%;
+    bottom: 24px;
 
     transform:
         translateX(-50%);
@@ -1347,12 +887,11 @@ input[type="number"] {
     border:
         1px solid #7e8e9d;
 
-    border-radius:
-        2px;
+    border-radius: 2px;
 
-    z-index:
-        300;
+    z-index: 300;
 }
+
 
 #dialogue-text {
 
@@ -1366,20 +905,738 @@ input[type="number"] {
         1.5;
 }
 
+
 #dialogue-hint {
 
     position:
         absolute;
 
-    right:
-        12px;
-
-    bottom:
-        7px;
+    right: 12px;
+    bottom: 7px;
 
     color:
         #94a5b4;
 
     font-size:
         10px;
+}
+
+
+/* =================================================
+   PUZZLE MAP
+================================================= */
+
+.puzzle-map {
+
+    position: fixed;
+
+    left: 0;
+    top: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    display: none;
+
+    z-index: 250;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #263b49 0%,
+            #182832 50%,
+            #0c151d 100%
+        );
+
+    overflow: hidden;
+}
+
+
+.puzzle-map.active {
+
+    display: block;
+}
+
+
+.map-title {
+
+    position: absolute;
+
+    left: 70px;
+    top: 55px;
+
+    color:
+        #cfdee7;
+
+    font-size:
+        21px;
+
+    letter-spacing:
+        3px;
+}
+
+
+.map-subtitle {
+
+    position: absolute;
+
+    left: 70px;
+    top: 88px;
+
+    color:
+        #8096a6;
+
+    font-size:
+        10px;
+
+    letter-spacing:
+        2px;
+}
+
+
+/* =================================================
+   DOCUMENT MAP
+================================================= */
+
+.map-note {
+
+    position: absolute;
+
+    width: 220px;
+    min-height: 145px;
+
+    padding: 18px;
+
+    background:
+        #e8ecef;
+
+    border:
+        3px solid #252d33;
+
+    color:
+        #283138;
+
+    box-shadow:
+        6px 6px 0 rgba(0,0,0,.18);
+}
+
+
+.map-note b {
+
+    font-size: 13px;
+}
+
+
+.map-note p {
+
+    margin-top:
+        16px;
+
+    line-height:
+        1.7;
+
+    font-size:
+        11px;
+}
+
+
+.map-question {
+
+    position: absolute;
+
+    left: 70px;
+    bottom: 160px;
+
+    color:
+        #bdcdd7;
+
+    font-size:
+        14px;
+}
+
+
+.map-answers {
+
+    position: absolute;
+
+    left: 70px;
+    bottom: 95px;
+
+    display: flex;
+
+    gap: 10px;
+}
+
+
+/* =================================================
+   COMMON BUTTON
+================================================= */
+
+button {
+
+    padding:
+        10px 14px;
+
+    border:
+        1px solid #7b909e;
+
+    background:
+        #263842;
+
+    color:
+        #d8e4ea;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    cursor:
+        pointer;
+}
+
+
+button:hover {
+
+    background:
+        #354b58;
+}
+
+
+/* =================================================
+   RETURN BUTTON
+================================================= */
+
+.return-button {
+
+    position: absolute;
+
+    right: 30px;
+    bottom: 25px;
+
+    font-size: 10px;
+
+    color:
+        #9fb0bb;
+}
+
+
+/* =================================================
+   SENSOR MAP
+================================================= */
+
+.sensor-terminal {
+
+    position: absolute;
+
+    left: 150px;
+    top: 230px;
+
+    width: 170px;
+}
+
+
+.terminal-screen {
+
+    width: 140px;
+    height: 80px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background:
+        #101920;
+
+    border:
+        4px solid #8d9da7;
+
+    color:
+        #a8c8d9;
+
+    font-size:
+        13px;
+}
+
+
+.terminal-body {
+
+    width: 170px;
+    height: 35px;
+
+    background:
+        #53636d;
+
+    border:
+        3px solid #83949e;
+}
+
+
+.sensor-readout {
+
+    position: absolute;
+
+    left: 500px;
+    top: 190px;
+
+    width: 330px;
+
+    padding: 22px;
+
+    background:
+        #101a22;
+
+    border:
+        1px solid #607583;
+
+    color:
+        #bad0dc;
+
+    line-height:
+        1.9;
+}
+
+
+.sensor-question {
+
+    position: absolute;
+
+    left: 500px;
+    top: 380px;
+
+    color:
+        #a8bac5;
+
+    font-size:
+        12px;
+}
+
+
+#sensor-input {
+
+    position: absolute;
+
+    left: 500px;
+    top: 430px;
+
+    width: 150px;
+
+    padding: 10px;
+
+    background:
+        #101a22;
+
+    border:
+        1px solid #6b818f;
+
+    color:
+        #dce6ed;
+}
+
+
+#sensor-submit {
+
+    position: absolute;
+
+    left: 665px;
+    top: 430px;
+}
+
+
+#sensor-result {
+
+    position: absolute;
+
+    left: 500px;
+    top: 485px;
+
+    color:
+        #a6c8af;
+}
+
+
+/* =================================================
+   CONTROL MAP
+================================================= */
+
+.control-panel {
+
+    position: absolute;
+
+    left: 150px;
+    top: 180px;
+
+    width: 600px;
+
+    padding: 25px;
+
+    background:
+        #111b23;
+
+    border:
+        1px solid #657b88;
+}
+
+
+.control-screen {
+
+    width: 240px;
+
+    padding: 20px;
+
+    border:
+        1px solid #4d6371;
+
+    color:
+        #aabec9;
+
+    line-height:
+        2;
+}
+
+
+.control-screen strong {
+
+    display: block;
+
+    color:
+        #d8e9f2;
+
+    font-size:
+        26px;
+}
+
+
+#control-slider {
+
+    width: 400px;
+
+    margin-top:
+        25px;
+}
+
+
+#control-submit {
+
+    margin-top:
+        20px;
+}
+
+
+#control-result {
+
+    margin-top:
+        18px;
+
+    color:
+        #a7c8b0;
+}
+
+
+.control-hint {
+
+    position: absolute;
+
+    left: 150px;
+    top: 560px;
+
+    color:
+        #95a9b5;
+
+    font-size:
+        11px;
+}
+
+
+/* =================================================
+   POWER MAP
+================================================= */
+
+.power-grid {
+
+    position: absolute;
+
+    left: 100px;
+    top: 170px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 240px);
+
+    gap:
+        10px;
+}
+
+
+.power-grid div {
+
+    padding:
+        16px;
+
+    background:
+        #111b23;
+
+    border:
+        1px solid #536975;
+
+    color:
+        #bfced7;
+}
+
+
+.power-grid span {
+
+    float:
+        right;
+
+    color:
+        #9eb7c6;
+}
+
+
+.power-switches {
+
+    position: absolute;
+
+    left: 650px;
+    top: 180px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+}
+
+
+.power-switches label {
+
+    color:
+        #bfced7;
+
+    font-size:
+        13px;
+}
+
+
+.power-load {
+
+    position: absolute;
+
+    left: 650px;
+    top: 400px;
+
+    color:
+        #aac2ce;
+
+    font-size:
+        16px;
+}
+
+
+#power-submit {
+
+    position: absolute;
+
+    left: 650px;
+    top: 440px;
+}
+
+
+#power-result {
+
+    position: absolute;
+
+    left: 650px;
+    top: 500px;
+
+    color:
+        #a7c8b0;
+}
+
+
+/* =================================================
+   DIAGNOSTICS
+================================================= */
+
+.diagnostic-panel {
+
+    position: absolute;
+
+    left: 150px;
+    top: 180px;
+
+    width: 450px;
+
+    background:
+        #101a22;
+
+    border:
+        1px solid #637884;
+}
+
+
+.diagnostic-panel div {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    padding:
+        17px;
+
+    border-bottom:
+        1px solid #3f535f;
+
+    color:
+        #c8d6de;
+}
+
+
+.diagnostic-panel div:last-child {
+    border-bottom:
+        none;
+}
+
+
+.diagnostic-panel span {
+
+    color:
+        #ba6e6e;
+}
+
+
+#diagnostic-submit {
+
+    position: absolute;
+
+    left: 150px;
+    top: 420px;
+}
+
+
+#diagnostic-result {
+
+    position: absolute;
+
+    left: 150px;
+    top: 480px;
+
+    color:
+        #a7c8b0;
+}
+
+
+/* =================================================
+   FINAL
+================================================= */
+
+#map-final {
+
+    text-align:
+        center;
+}
+
+
+.final-title {
+
+    margin-top:
+        120px;
+
+    color:
+        #d0e0e8;
+
+    font-size:
+        23px;
+
+    letter-spacing:
+        3px;
+}
+
+
+.final-panel {
+
+    width:
+        430px;
+
+    margin:
+        60px auto 0;
+
+    padding:
+        22px;
+
+    text-align:
+        left;
+
+    line-height:
+        2;
+
+    background:
+        #101a22;
+
+    border:
+        1px solid #607783;
+}
+
+
+.final-panel span {
+
+    float:
+        right;
+
+    color:
+        #a9c9b1;
+}
+
+
+.final-text {
+
+    margin-top:
+        40px;
+
+    color:
+        #acbdc7;
+
+    line-height:
+        1.9;
+}
+
+
+#final-exit {
+
+    margin-top:
+        35px;
+}
+
+
+/* =================================================
+   MOBILE
+================================================= */
+
+@media (max-width: 700px) {
+
+    #system-status {
+
+        width: 175px;
+
+        left: 10px;
+        top: 10px;
+    }
+
+
+    #dialogue {
+
+        width:
+            calc(100vw - 20px);
+    }
+
+
+    .puzzle-map {
+
+        overflow-y: auto;
+    }
+
 }

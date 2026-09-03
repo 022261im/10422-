@@ -1,6 +1,6 @@
-/* =================================
+/* =====================================================
    ELEMENTS
-================================= */
+===================================================== */
 
 const game =
     document.getElementById("game");
@@ -23,81 +23,75 @@ const distanceGauge =
 const temperatureGauge =
     document.getElementById("temperature-gauge");
 
-const modal =
-    document.getElementById("modal");
+const systemObjects =
+    document.querySelectorAll(".system-object");
 
-const modalTitle =
-    document.getElementById("modal-title");
-
-const modalContent =
-    document.getElementById("modal-content");
-
-const modalClose =
-    document.getElementById("modal-close");
+const hiddenExit =
+    document.getElementById("hidden-exit");
 
 
-/* =================================
-   WORLD SETTINGS
-================================= */
+/* =====================================================
+   WORLD
+===================================================== */
 
 const INTRO_END = 1700;
+const WORLD_WIDTH = 3600;
 
-const SYSTEM_OFFSET = 1700;
-
-const WORLD_WIDTH = 3100;
+const PLAYER_SPEED = 5;
 
 
-/* =================================
+/* =====================================================
    PLAYER
-================================= */
+===================================================== */
 
 let playerX = 350;
 
 let playerY =
     window.innerHeight * 0.5;
 
-const PLAYER_SPEED = 5;
 
-
-/* =================================
+/* =====================================================
    CAMERA
-================================= */
+===================================================== */
 
 let cameraX = 0;
 
 
-/* =================================
+/* =====================================================
    INPUT
-================================= */
+===================================================== */
 
 const keys = {};
 
 
-/* =================================
+/* =====================================================
    GAME STATE
-================================= */
+===================================================== */
 
 const state = {
 
-    sensorCalibrated: false,
+    currentMap: "main",
 
-    temperatureFixed: false,
+    documents: false,
 
-    powerRestored: false,
+    sensors: false,
 
-    motorFixed: false,
+    power: false,
 
-    diagnosticsComplete: false,
+    control: false,
 
-    documentsRead: false,
+    diagnostics: false,
 
-    errorLogRead: false
+    errorLog: false,
+
+    hiddenExitUnlocked: false
+
 };
 
 
-/* =================================
+/* =====================================================
    KEYBOARD
-================================= */
+===================================================== */
 
 document.addEventListener(
     "keydown",
@@ -128,15 +122,28 @@ document.addEventListener(
         keys[
             event.key.toLowerCase()
         ] = false;
+
     }
 );
 
 
-/* =================================
-   PLAYER MOVEMENT
-================================= */
+/* =====================================================
+   MOVEMENT
+===================================================== */
 
 function updatePlayer() {
+
+    /*
+        Puzzle map에서는 캐릭터 이동을 막는다.
+    */
+
+    if (
+        state.currentMap !== "main"
+    ) {
+
+        return;
+    }
+
 
     let dx = 0;
     let dy = 0;
@@ -184,7 +191,7 @@ function updatePlayer() {
 
 
     /*
-        범위 제한
+        WORLD LIMIT
     */
 
     playerX =
@@ -208,7 +215,7 @@ function updatePlayer() {
 
 
     /*
-        플레이어 위치
+        플레이어 표시
     */
 
     player.style.left =
@@ -226,14 +233,14 @@ function updatePlayer() {
 
 
     /*
-        센서
+        거리 센서
     */
 
     updateDistanceSensor();
 
 
     /*
-        잘못된 방향
+        초기 공간
     */
 
     if (
@@ -242,19 +249,15 @@ function updatePlayer() {
 
         checkWrongDirection();
     }
+
 }
 
 
-/* =================================
+/* =====================================================
    CAMERA
-================================= */
+===================================================== */
 
 function updateCamera() {
-
-    /*
-        플레이어가 이동하면
-        월드가 반대 방향으로 이동
-    */
 
     const targetCamera =
         playerX -
@@ -281,56 +284,65 @@ function updateCamera() {
 }
 
 
-/* =================================
+/* =====================================================
    DISTANCE SENSOR
-================================= */
+===================================================== */
 
 function updateDistanceSensor() {
 
-    /*
-        처음에는 SYSTEM까지 거리
-    */
-
-    const systemX =
+    let targetX =
         INTRO_END;
 
 
-    let distance =
-        Math.abs(
-            systemX -
-            playerX
-        );
-
-
     /*
-        SYSTEM에 들어간 뒤에는
-        가장 가까운 주요 장치까지의 거리
+        SYSTEM 공간에서는
+        가장 가까운 조사 대상까지 거리
     */
 
     if (
         playerX >= INTRO_END
     ) {
 
-        const positions = [
+        const points = [
 
-            SYSTEM_OFFSET + 170,
-            SYSTEM_OFFSET + 450,
-            SYSTEM_OFFSET + 730,
-            SYSTEM_OFFSET + 1010,
-            SYSTEM_OFFSET + 1100
+            INTRO_END + 180,
+
+            INTRO_END + 430,
+
+            INTRO_END + 680,
+
+            INTRO_END + 930,
+
+            INTRO_END + 1120
+
         ];
 
 
-        distance =
-            Math.min(
-                ...positions.map(
-                    (x) =>
-                        Math.abs(
-                            x - playerX
-                        )
-                )
+        targetX =
+            points.reduce(
+                (closest, current) => {
+
+                    return Math.abs(
+                        current -
+                        playerX
+                    ) <
+                    Math.abs(
+                        closest -
+                        playerX
+                    )
+                        ? current
+                        : closest;
+
+                }
             );
     }
+
+
+    const distance =
+        Math.abs(
+            targetX -
+            playerX
+        );
 
 
     distanceValue.textContent =
@@ -353,104 +365,79 @@ function updateDistanceSensor() {
 }
 
 
-/* =================================
-   WRONG DIRECTION
-================================= */
+/* =====================================================
+   WRONG WAY
+===================================================== */
+
+let wrongCooldown = 0;
+
 
 function checkWrongDirection() {
+
+    if (
+        wrongCooldown > 0
+    ) {
+
+        wrongCooldown--;
+
+        return;
+    }
+
 
     const center =
         game.clientHeight / 2;
 
 
-    const verticalDistance =
-        Math.abs(
-            playerY - center
-        );
-
-
     if (
-        verticalDistance > 230
+        Math.abs(
+            playerY -
+            center
+        ) > 220
     ) {
 
         showMessage(
             "여긴 아닌 것 같다."
         );
 
+        wrongCooldown =
+            70;
+
         return;
     }
 
 
     if (
-        playerX < 150
+        playerX < 130
     ) {
 
         showMessage(
             "뒤쪽에는 아무것도 없다."
         );
+
+        wrongCooldown =
+            70;
     }
+
 }
 
 
-/* =================================
+/* =====================================================
    INTERACTION
-================================= */
+===================================================== */
 
 function interact() {
 
-    /*
-        먼저 근처의 특별한 오브젝트를 찾는다.
-    */
-
-    const nearest =
-        getNearestSystemObject();
-
-
     if (
-        !nearest
+        state.currentMap !== "main"
     ) {
-
-        /*
-            INTRO
-        */
-
-        if (
-            playerX < INTRO_END
-        ) {
-
-            showMessage(
-                "빛이 이곳으로 이어진다."
-            );
-
-            return;
-        }
-
-
-        showMessage(
-            "주변에 조사할 것이 없다."
-        );
 
         return;
     }
 
 
-    handleObject(
-        nearest.type
-    );
-}
-
-
-/* =================================
-   FIND NEAREST OBJECT
-================================= */
-
-function getNearestSystemObject() {
-
-    const objects =
-        document.querySelectorAll(
-            ".system-object, #exit-door, #machine"
-        );
-
+    /*
+        가장 가까운 SYSTEM object
+    */
 
     let nearest =
         null;
@@ -459,38 +446,19 @@ function getNearestSystemObject() {
         Infinity;
 
 
-    objects.forEach(
+    systemObjects.forEach(
         (object) => {
 
-            const type =
-                object.dataset.type;
+            const objectX =
+                INTRO_END +
+                parseFloat(
+                    object.style.left
+                );
 
-
-            let objectX;
-            let objectY;
-
-
-            /*
-                시스템 오브젝트는
-                system-area 내부에 있음
-            */
-
-            if (
-                object.parentElement.id ===
-                "system-area"
-            ) {
-
-                objectX =
-                    SYSTEM_OFFSET +
-                    parseFloat(
-                        object.style.left
-                    );
-
-                objectY =
-                    parseFloat(
-                        object.style.top
-                    );
-            }
+            const objectY =
+                parseFloat(
+                    object.style.top
+                );
 
 
             const distance =
@@ -516,726 +484,92 @@ function getNearestSystemObject() {
                 nearestDistance =
                     distance;
 
-                nearest = {
-                    element: object,
-                    type: type,
-                    distance:
-                        nearestDistance
-                };
+                nearest =
+                    object;
             }
 
         }
     );
+
+
+    /*
+        HIDDEN EXIT
+    */
+
+    const exitDistance =
+        Math.sqrt(
+            Math.pow(
+                playerX -
+                (
+                    INTRO_END +
+                    1120
+                ),
+                2
+            ) +
+            Math.pow(
+                playerY -
+                540,
+                2
+            )
+        );
+
+
+    if (
+        exitDistance <
+        110 &&
+        state.hiddenExitUnlocked
+    ) {
+
+        showMessage(
+            "출구가 나타났다."
+        );
+
+        return;
+    }
+
+
+    /*
+        SYSTEM ACCESS
+    */
+
+    if (
+        playerX < INTRO_END
+    ) {
+
+        const accessDistance =
+            Math.abs(
+                playerX -
+                1580
+            );
+
+
+        if (
+            accessDistance <
+            120
+        ) {
+
+            showMessage(
+                "SYSTEM에 접근했다."
+            );
+
+            return;
+        }
+
+        showMessage(
+            "아직 아무것도 없다."
+        );
+
+        return;
+    }
 
 
     if (
         nearest &&
-        nearest.distance < 130
+        nearestDistance < 130
     ) {
 
-        return nearest;
-    }
-
-
-    return null;
-}
-
-
-/* =================================
-   OBJECT HANDLER
-================================= */
-
-function handleObject(type) {
-
-    switch (type) {
-
-        case "documents":
-            openDocuments();
-            break;
-
-        case "sensors":
-            openSensors();
-            break;
-
-        case "control":
-            openControl();
-            break;
-
-        case "power":
-            openPower();
-            break;
-
-        case "diagnostics":
-            openDiagnostics();
-            break;
-
-        case "error":
-            openErrorLog();
-            break;
-
-        case "trash":
-            showMessage(
-                "휴지통이다. 현재 비어 있다."
-            );
-            break;
-
-        case "exit":
-            handleExit();
-            break;
-
-        case "machine":
-            openMachine();
-            break;
-
-        default:
-            showMessage(
-                "알 수 없는 장치다."
-            );
-    }
-}
-
-
-/* =================================
-   DOCUMENTS
-================================= */
-
-function openDocuments() {
-
-    state.documentsRead = true;
-
-
-    openModal(
-        "DOCUMENTS / MANUAL",
-        `
-        <div class="puzzle">
-
-            <div class="readout">
-                AUTOMATED FACILITY MANUAL
-            </div>
-
-            <p>
-                이 시설은 센서, 제어기,
-                전력 시스템, 구동기로 구성된
-                자동화 시스템이다.
-            </p>
-
-            <p>
-                시스템 오류 발생 시
-                다음 순서로 복구할 것.
-            </p>
-
-            <p>
-                01. SENSOR<br>
-                02. ENVIRONMENT<br>
-                03. POWER<br>
-                04. CONTROL<br>
-                05. DIAGNOSTICS
-            </p>
-
-        </div>
-        `
-    );
-}
-
-
-/* =================================
-   ERROR LOG
-================================= */
-
-function openErrorLog() {
-
-    state.errorLogRead = true;
-
-
-    openModal(
-        "ERROR_LOG.txt",
-        `
-        <div class="puzzle">
-
-            <div class="readout">
-                ERROR LOG #001
-            </div>
-
-            <p>
-                DISTANCE SENSOR : INVALID
-            </p>
-
-            <p>
-                TEMPERATURE SYSTEM : WARNING
-            </p>
-
-            <p>
-                POWER DISTRIBUTION : OVERLOAD
-            </p>
-
-            <p>
-                MOTOR CONTROLLER :
-                UNSTABLE RESPONSE
-            </p>
-
-            <p>
-                EXIT LOCK :
-                SYSTEM DEPENDENCY
-            </p>
-
-        </div>
-        `
-    );
-}
-
-
-/* =================================
-   SENSOR PUZZLE
-================================= */
-
-function openSensors() {
-
-    openModal(
-        "SENSOR CALIBRATION",
-        `
-        <div class="puzzle">
-
-            <div class="readout">
-                SENSOR OUTPUT<br><br>
-
-                실제 거리와 측정값의 차이를
-                찾아 보정값을 입력하십시오.
-            </div>
-
-            <div class="readout">
-                20cm → 28cm<br>
-                30cm → 38cm<br>
-                40cm → 48cm
-            </div>
-
-            <input
-                id="sensor-input"
-                type="number"
-                placeholder="OFFSET"
-            >
-
-            <button
-                id="sensor-submit"
-            >
-                CALIBRATE
-            </button>
-
-            <div id="sensor-result"></div>
-
-        </div>
-        `
-    );
-
-
-    document
-        .getElementById(
-            "sensor-submit"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                const value =
-                    Number(
-                        document
-                            .getElementById(
-                                "sensor-input"
-                            )
-                            .value
-                    );
-
-
-                const result =
-                    document
-                        .getElementById(
-                            "sensor-result"
-                        );
-
-
-                if (
-                    value === -8
-                ) {
-
-                    state.sensorCalibrated = true;
-
-                    result.textContent =
-                        "CALIBRATION COMPLETE";
-
-                    showMessage(
-                        "거리 센서가 정상화되었다."
-                    );
-
-                }
-
-                else {
-
-                    result.textContent =
-                        "잘못된 보정값이다.";
-                }
-
-            }
-        );
-}
-
-
-/* =================================
-   TEMPERATURE
-================================= */
-
-function openControl() {
-
-    openModal(
-        "ENVIRONMENT CONTROL",
-        `
-        <div class="puzzle">
-
-            <div class="readout">
-
-                TEMPERATURE : 67°C<br>
-                TARGET      : 30°C<br><br>
-
-                COOLING FAN PWM을 조절하십시오.
-
-            </div>
-
-            <input
-                id="pwm-input"
-                type="range"
-                min="0"
-                max="100"
-                value="0"
-            >
-
-            <div>
-                PWM :
-                <span id="pwm-value">
-                    0
-                </span>%
-            </div>
-
-            <div
-                class="readout"
-                id="temp-output"
-            >
-                TEMP : 67°C
-            </div>
-
-            <button
-                id="temp-submit"
-            >
-                APPLY
-            </button>
-
-        </div>
-        `
-    );
-
-
-    const slider =
-        document.getElementById(
-            "pwm-input"
-        );
-
-    const value =
-        document.getElementById(
-            "pwm-value"
-        );
-
-    const output =
-        document.getElementById(
-            "temp-output"
-        );
-
-
-    slider.addEventListener(
-        "input",
-        () => {
-
-            const pwm =
-                Number(slider.value);
-
-            value.textContent =
-                pwm;
-
-
-            const temp =
-                67 -
-                pwm * 0.47;
-
-
-            output.textContent =
-                `TEMP : ${temp.toFixed(1)}°C`;
-        }
-    );
-
-
-    document
-        .getElementById(
-            "temp-submit"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                const pwm =
-                    Number(slider.value);
-
-
-                if (
-                    pwm >= 75 &&
-                    pwm <= 80
-                ) {
-
-                    state.temperatureFixed = true;
-
-                    showMessage(
-                        "온도 제어 시스템이 정상화되었다."
-                    );
-
-                }
-
-                else {
-
-                    showMessage(
-                        "목표 온도에 도달하지 않았다."
-                    );
-                }
-
-            }
-        );
-}
-
-
-/* =================================
-   POWER
-================================= */
-
-function openPower() {
-
-    openModal(
-        "POWER DISTRIBUTION",
-        `
-        <div class="puzzle">
-
-            <div class="readout">
-
-                TOTAL POWER : 100%<br>
-                CURRENT LOAD : 118%
-
-            </div>
-
-            <p>
-                각 시스템의 전력 소비량:
-            </p>
-
-            <p>
-                SENSOR&nbsp;&nbsp;15%<br>
-                COOLING&nbsp;30%<br>
-                MOTOR&nbsp;&nbsp;&nbsp;40%<br>
-                LIGHT&nbsp;&nbsp;&nbsp;10%
-            </p>
-
-            <p>
-                EXIT를 열려면<br>
-                SENSOR + MOTOR가 필요하다.
-            </p>
-
-            <button
-                id="power-submit"
-            >
-                SENSOR + MOTOR 활성화
-            </button>
-
-            <div id="power-result"></div>
-
-        </div>
-        `
-    );
-
-
-    document
-        .getElementById(
-            "power-submit"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                if (
-                    state.sensorCalibrated
-                ) {
-
-                    state.powerRestored = true;
-
-                    document
-                        .getElementById(
-                            "power-result"
-                        )
-                        .textContent =
-                        "POWER STABLE";
-
-                    showMessage(
-                        "전력 분배가 안정화되었다."
-                    );
-
-                }
-
-                else {
-
-                    document
-                        .getElementById(
-                            "power-result"
-                        )
-                        .textContent =
-                        "SENSOR SYSTEM이 필요하다.";
-                }
-
-            }
-        );
-}
-
-
-/* =================================
-   MACHINE / MOTOR
-================================= */
-
-function openMachine() {
-
-    openModal(
-        "MOTOR CONTROLLER",
-        `
-        <div class="puzzle">
-
-            <div class="readout">
-                TARGET : 90°<br>
-                CURRENT : <span id="motor-value">63</span>°
-            </div>
-
-            <input
-                id="motor-input"
-                type="range"
-                min="0"
-                max="180"
-                value="63"
-            >
-
-            <button
-                id="motor-submit"
-            >
-                APPLY
-            </button>
-
-            <div
-                id="motor-result"
-            ></div>
-
-        </div>
-        `
-    );
-
-
-    const slider =
-        document.getElementById(
-            "motor-input"
-        );
-
-    const value =
-        document.getElementById(
-            "motor-value"
-        );
-
-
-    slider.addEventListener(
-        "input",
-        () => {
-
-            value.textContent =
-                slider.value;
-        }
-    );
-
-
-    document
-        .getElementById(
-            "motor-submit"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                const angle =
-                    Number(slider.value);
-
-
-                const result =
-                    document.getElementById(
-                        "motor-result"
-                    );
-
-
-                if (
-                    angle === 90 &&
-                    state.powerRestored
-                ) {
-
-                    state.motorFixed = true;
-
-                    result.textContent =
-                        "MOTOR CONTROL : OK";
-
-                    showMessage(
-                        "모터 제어가 정상화되었다."
-                    );
-
-                }
-
-                else if (
-                    !state.powerRestored
-                ) {
-
-                    result.textContent =
-                        "전력 시스템을 먼저 복구해야 한다.";
-
-                }
-
-                else {
-
-                    result.textContent =
-                        "TARGET : 90°";
-                }
-
-            }
-        );
-}
-
-
-/* =================================
-   DIAGNOSTICS
-================================= */
-
-function openDiagnostics() {
-
-    const sensor =
-        state.sensorCalibrated
-            ? "ONLINE"
-            : "ERROR";
-
-    const temperature =
-        state.temperatureFixed
-            ? "ONLINE"
-            : "WARNING";
-
-    const power =
-        state.powerRestored
-            ? "ONLINE"
-            : "ERROR";
-
-    const motor =
-        state.motorFixed
-            ? "ONLINE"
-            : "ERROR";
-
-
-    openModal(
-        "SYSTEM DIAGNOSTICS",
-        `
-        <div class="puzzle">
-
-            <div class="readout">
-
-                SENSOR :
-                ${sensor}<br>
-
-                TEMPERATURE :
-                ${temperature}<br>
-
-                POWER :
-                ${power}<br>
-
-                MOTOR :
-                ${motor}
-
-            </div>
-
-            <p>
-                모든 시스템이 정상화되어야
-                출구의 잠금이 해제된다.
-            </p>
-
-            <button
-                id="diagnostic-submit"
-            >
-                RUN DIAGNOSTICS
-            </button>
-
-            <div id="diagnostic-result"></div>
-
-        </div>
-        `
-    );
-
-
-    document
-        .getElementById(
-            "diagnostic-submit"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                const complete =
-                    state.sensorCalibrated &&
-                    state.temperatureFixed &&
-                    state.powerRestored &&
-                    state.motorFixed;
-
-
-                const result =
-                    document
-                        .getElementById(
-                            "diagnostic-result"
-                        );
-
-
-                if (
-                    complete
-                ) {
-
-                    state.diagnosticsComplete =
-                        true;
-
-                    result.textContent =
-                        "ALL SYSTEMS NORMAL";
-
-                    showMessage(
-                        "모든 시스템이 정상이다. 출구를 열 수 있다."
-                    );
-
-                }
-
-                else {
-
-                    result.textContent =
-                        "SYSTEM ERROR : 복구되지 않은 장치가 있다.";
-                }
-
-            }
-        );
-}
-
-
-/* =================================
-   EXIT
-================================= */
-
-function handleExit() {
-
-    if (
-        !state.diagnosticsComplete
-    ) {
-
-        showMessage(
-            "출구가 잠겨 있다. SYSTEM DIAGNOSTICS가 필요하다."
+        handleSystemObject(
+            nearest.dataset.type
         );
 
         return;
@@ -1243,54 +577,645 @@ function handleExit() {
 
 
     showMessage(
-        "EXIT UNLOCKED."
-    );
-
-
-    setTimeout(
-        () => {
-
-            openModal(
-                "SYSTEM",
-                `
-                <div class="puzzle">
-
-                    <div class="readout">
-                        POWER       : ONLINE<br>
-                        SENSOR      : ONLINE<br>
-                        TEMPERATURE : ONLINE<br>
-                        MOTOR       : ONLINE<br>
-                        CONTROL     : ONLINE<br><br>
-
-                        EXIT        : UNLOCKED
-                    </div>
-
-                    <h2>
-                        ESCAPE COMPLETE
-                    </h2>
-
-                    <p>
-                        고장 난 자동화 시스템을
-                        복구하고 시설에서 탈출했다.
-                    </p>
-
-                    <p>
-                        측정 → 분석 → 보정 → 제어 → 검증
-                    </p>
-
-                </div>
-                `
-            );
-
-        },
-        500
+        "주변에 조사할 수 있는 것이 없다."
     );
 }
 
 
-/* =================================
+/* =====================================================
+   OBJECT HANDLER
+===================================================== */
+
+function handleSystemObject(type) {
+
+    switch (type) {
+
+        case "documents":
+            openPuzzle("documents");
+            break;
+
+
+        case "sensors":
+            openPuzzle("sensors");
+            break;
+
+
+        case "control":
+            openPuzzle("control");
+            break;
+
+
+        case "power":
+            openPuzzle("power");
+            break;
+
+
+        case "diagnostics":
+            openPuzzle("diagnostics");
+            break;
+
+
+        case "error":
+
+            state.errorLog = true;
+
+            showMessage(
+                "ERROR_LOG.txt를 읽었다."
+            );
+
+            break;
+
+
+        case "trash":
+
+            showMessage(
+                "휴지통에는 아무것도 없다."
+            );
+
+            break;
+
+        default:
+
+            showMessage(
+                "알 수 없는 시스템이다."
+            );
+    }
+}
+
+
+/* =====================================================
+   PUZZLE MAP OPEN
+===================================================== */
+
+function openPuzzle(name) {
+
+    /*
+        main에서 해당 Puzzle Map으로 이동
+    */
+
+    state.currentMap =
+        name;
+
+
+    document.querySelectorAll(
+        ".puzzle-map"
+    ).forEach(
+        (map) => {
+
+            map.classList.remove(
+                "active"
+            );
+        }
+    );
+
+
+    const map =
+        document.getElementById(
+            `map-${name}`
+        );
+
+
+    if (
+        map
+    ) {
+
+        map.classList.add(
+            "active"
+        );
+    }
+}
+
+
+/* =====================================================
+   RETURN TO SYSTEM
+===================================================== */
+
+function returnToSystem() {
+
+    state.currentMap =
+        "main";
+
+
+    document.querySelectorAll(
+        ".puzzle-map"
+    ).forEach(
+        (map) => {
+
+            map.classList.remove(
+                "active"
+            );
+        }
+    );
+
+
+    updateCamera();
+
+
+    updateDistanceSensor();
+}
+
+
+/* =====================================================
+   DOCUMENT PUZZLE
+===================================================== */
+
+document
+    .querySelectorAll(
+        "#map-documents button"
+    )
+    .forEach(
+        (button) => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const answer =
+                        button.dataset.answer;
+
+
+                    if (
+                        answer === "B"
+                    ) {
+
+                        state.documents =
+                            true;
+
+
+                        showMessage(
+                            "모순된 기록을 찾아냈다."
+                        );
+
+
+                        revealReturnMessage(
+                            "DOCUMENTS COMPLETE"
+                        );
+
+
+                        setTimeout(
+                            returnToSystem,
+                            500
+                        );
+
+                    }
+
+                    else {
+
+                        alert(
+                            "이 기록만으로 오류라고 판단하기 어렵다."
+                        );
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+/* =====================================================
+   SENSOR PUZZLE
+===================================================== */
+
+document
+    .getElementById(
+        "sensor-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const value =
+                Number(
+                    document
+                        .getElementById(
+                            "sensor-answer"
+                        )
+                        .value
+                );
+
+
+            const result =
+                document
+                    .getElementById(
+                        "sensor-result"
+                    );
+
+
+            if (
+                value === -8
+            ) {
+
+                state.sensors =
+                    true;
+
+
+                result.textContent =
+                    "CALIBRATION COMPLETE";
+
+
+                showMessage(
+                    "센서의 +8cm 오차를 보정했다."
+                );
+
+
+                setTimeout(
+                    returnToSystem,
+                    700
+                );
+
+            }
+
+            else {
+
+                result.textContent =
+                    "잘못된 보정값이다.";
+            }
+
+        }
+    );
+
+
+/* =====================================================
+   CONTROL PUZZLE
+===================================================== */
+
+const controlSlider =
+    document.getElementById(
+        "control-slider"
+    );
+
+const controlCurrent =
+    document.getElementById(
+        "control-current"
+    );
+
+
+controlSlider.addEventListener(
+    "input",
+    () => {
+
+        controlCurrent.textContent =
+            `${controlSlider.value}°`;
+
+    }
+);
+
+
+document
+    .getElementById(
+        "control-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const value =
+                Number(
+                    controlSlider.value
+                );
+
+
+            const result =
+                document
+                    .getElementById(
+                        "control-result"
+                    );
+
+
+            if (
+                value === 90
+            ) {
+
+                state.control =
+                    true;
+
+
+                result.textContent =
+                    "CONTROL RESPONSE : STABLE";
+
+
+                showMessage(
+                    "모터가 목표 각도에 도달했다."
+                );
+
+
+                setTimeout(
+                    returnToSystem,
+                    700
+                );
+
+            }
+
+            else {
+
+                result.textContent =
+                    "TARGET : 90°";
+            }
+
+        }
+    );
+
+
+/* =====================================================
+   POWER PUZZLE
+===================================================== */
+
+document
+    .getElementById(
+        "power-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const sensor =
+                document
+                    .getElementById(
+                        "power-sensor"
+                    )
+                    .checked;
+
+            const motor =
+                document
+                    .getElementById(
+                        "power-motor"
+                    )
+                    .checked;
+
+            const light =
+                document
+                    .getElementById(
+                        "power-light"
+                    )
+                    .checked;
+
+            const cooling =
+                document
+                    .getElementById(
+                        "power-cooling"
+                    )
+                    .checked;
+
+
+            let load = 0;
+
+
+            if (sensor) {
+                load += 15;
+            }
+
+            if (motor) {
+                load += 40;
+            }
+
+            if (light) {
+                load += 10;
+            }
+
+            if (cooling) {
+                load += 30;
+            }
+
+
+            const result =
+                document
+                    .getElementById(
+                        "power-result"
+                    );
+
+
+            if (
+                sensor &&
+                motor &&
+                load <= 100
+            ) {
+
+                state.power =
+                    true;
+
+
+                result.textContent =
+                    "POWER STABLE : " +
+                    `${load}%`;
+
+
+                showMessage(
+                    "필요한 장치만 활성화하여 전력을 안정화했다."
+                );
+
+
+                setTimeout(
+                    returnToSystem,
+                    700
+                );
+
+            }
+
+            else {
+
+                result.textContent =
+                    `CURRENT LOAD : ${load}%`;
+
+            }
+
+        }
+    );
+
+
+/* =====================================================
+   DIAGNOSTICS
+===================================================== */
+
+document
+    .getElementById(
+        "diagnostic-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const sensorStatus =
+                document
+                    .getElementById(
+                        "diag-sensor"
+                    );
+
+            const powerStatus =
+                document
+                    .getElementById(
+                        "diag-power"
+                    );
+
+            const controlStatus =
+                document
+                    .getElementById(
+                        "diag-control"
+                    );
+
+
+            sensorStatus.textContent =
+                state.sensors
+                    ? "ONLINE"
+                    : "ERROR";
+
+            powerStatus.textContent =
+                state.power
+                    ? "ONLINE"
+                    : "ERROR";
+
+            controlStatus.textContent =
+                state.control
+                    ? "ONLINE"
+                    : "ERROR";
+
+
+            sensorStatus.style.color =
+                state.sensors
+                    ? "#9bc7a8"
+                    : "#b56d6d";
+
+            powerStatus.style.color =
+                state.power
+                    ? "#9bc7a8"
+                    : "#b56d6d";
+
+            controlStatus.style.color =
+                state.control
+                    ? "#9bc7a8"
+                    : "#b56d6d";
+
+
+            const result =
+                document
+                    .getElementById(
+                        "diagnostic-result"
+                    );
+
+
+            if (
+                state.sensors &&
+                state.power &&
+                state.control
+            ) {
+
+                state.diagnostics =
+                    true;
+
+                result.textContent =
+                    "ALL SYSTEMS NORMAL";
+
+
+                revealExit();
+
+            }
+
+            else {
+
+                result.textContent =
+                    "복구되지 않은 시스템이 있다.";
+            }
+
+        }
+    );
+
+
+/* =====================================================
+   EXIT REVEAL
+===================================================== */
+
+function revealExit() {
+
+    state.hiddenExitUnlocked =
+        true;
+
+
+    hiddenExit.classList.add(
+        "revealed"
+    );
+
+
+    showMessage(
+        "SYSTEM DIAGNOSTICS 완료. 시스템 어딘가에서 새로운 신호가 감지된다."
+    );
+
+
+    setTimeout(
+        returnToSystem,
+        900
+    );
+}
+
+
+/* =====================================================
+   FINAL EXIT
+===================================================== */
+
+hiddenExit.addEventListener(
+    "click",
+    () => {
+
+        if (
+            !state.hiddenExitUnlocked
+        ) {
+
+            return;
+        }
+
+
+        openPuzzle("final");
+
+    }
+);
+
+
+document
+    .getElementById(
+        "final-exit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            showMessage(
+                "EXIT UNLOCKED."
+            );
+
+
+            /*
+                최종 화면
+            */
+
+            setTimeout(
+                () => {
+
+                    document
+                        .getElementById(
+                            "map-final"
+                        )
+                        .innerHTML = `
+                            <div class="final-title">
+                                ESCAPE COMPLETE
+                            </div>
+
+                            <div class="final-message">
+                                시스템 복구 완료.<br><br>
+                                외부 연결이 복구되었다.<br><br>
+                                당신은 시설을 빠져나왔다.
+                            </div>
+                        `;
+
+                },
+                300
+            );
+
+        }
+    );
+
+
+/* =====================================================
    MESSAGE
-================================= */
+===================================================== */
 
 function showMessage(message) {
 
@@ -1299,58 +1224,19 @@ function showMessage(message) {
 }
 
 
-/* =================================
-   MODAL
-================================= */
+/* =====================================================
+   RETURN MESSAGE
+===================================================== */
 
-function openModal(
-    title,
-    content
-) {
+function revealReturnMessage(message) {
 
-    modalTitle.textContent =
-        title;
-
-    modalContent.innerHTML =
-        content;
-
-    modal.classList.add(
-        "active"
-    );
+    showMessage(message);
 }
 
 
-function closeModal() {
-
-    modal.classList.remove(
-        "active"
-    );
-}
-
-
-modalClose.addEventListener(
-    "click",
-    closeModal
-);
-
-
-modal.addEventListener(
-    "click",
-    (event) => {
-
-        if (
-            event.target === modal
-        ) {
-
-            closeModal();
-        }
-    }
-);
-
-
-/* =================================
+/* =====================================================
    RESIZE
-================================= */
+===================================================== */
 
 window.addEventListener(
     "resize",
@@ -1363,22 +1249,14 @@ window.addEventListener(
             );
 
         updateCamera();
+
     }
 );
 
 
-/* =================================
-   GAME LOOP
-================================= */
-
-function gameLoop() {
-
-    updatePlayer();
-
-    requestAnimationFrame(
-        gameLoop
-    );
-}
+/* =====================================================
+   START
+===================================================== */
 
 player.style.left =
     `${playerX}px`;
@@ -1389,5 +1267,20 @@ player.style.top =
 updateCamera();
 
 updateDistanceSensor();
+
+
+/* =====================================================
+   GAME LOOP
+===================================================== */
+
+function gameLoop() {
+
+    updatePlayer();
+
+    requestAnimationFrame(
+        gameLoop
+    );
+}
+
 
 gameLoop();
