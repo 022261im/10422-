@@ -1,1569 +1,1015 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+/* =================================================
+   ELEMENTS
+================================================= */
 
-html,
-body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
+const game = document.getElementById("game");
+const world = document.getElementById("world");
+const player = document.getElementById("player");
 
-body {
-    background: #070c12;
-    color: #dce6ef;
+const dialogue = document.getElementById("dialogue-text");
 
-    font-family:
-        "Courier New",
-        monospace;
+const distanceValue =
+    document.getElementById("distance-value");
 
-    image-rendering: pixelated;
-}
+const distanceGauge =
+    document.getElementById("distance-gauge");
+
+const systemObjects =
+    document.querySelectorAll(".system-object");
+
+const puzzleMaps =
+    document.querySelectorAll(".puzzle-map");
+
+const hiddenExit =
+    document.getElementById("hidden-exit");
 
 
 /* =================================================
-   GAME
+   SETTINGS
 ================================================= */
 
-#game {
-    position: relative;
+const WORLD_WIDTH = 3500;
 
-    width: 100vw;
-    height: 100vh;
+const SYSTEM_START = 1700;
 
-    overflow: hidden;
+const SYSTEM_ACCESS_X = 1580;
 
-    background: #0b1219;
-}
+const SPEED = 5;
 
 
 /* =================================================
-   WORLD
+   PLAYER WORLD POSITION
 ================================================= */
 
-#world {
-    position: absolute;
+let playerX = 300;
 
-    left: 0;
-    top: 0;
-
-    width: 3500px;
-    height: 100%;
-
-    will-change: transform;
-
-    transition:
-        transform 0.08s linear;
-}
+let playerY =
+    window.innerHeight * 0.5;
 
 
 /* =================================================
-   INTRO
+   GAME STATE
 ================================================= */
 
-#intro-area {
-    position: absolute;
+let mode = "intro";
 
-    left: 0;
-    top: 0;
+let cameraX = 0;
 
-    width: 1700px;
-    height: 100%;
-
-    overflow: hidden;
-
-    background:
-        radial-gradient(
-            ellipse at 83% 50%,
-            #253b4b 0%,
-            #172731 26%,
-            #101921 57%,
-            #080d13 100%
-        );
-}
-
-
-.intro-title {
-    position: absolute;
-
-    left: 120px;
-    top: 42%;
-
-    color: #8195a5;
-
-    font-size: 18px;
-
-    letter-spacing: 4px;
-}
-
-
-.intro-subtitle {
-    position: absolute;
-
-    left: 120px;
-    top: calc(42% + 34px);
-
-    color: #536875;
-
-    font-size: 10px;
-
-    letter-spacing: 2px;
-}
+let wrongCooldown = 0;
 
 
 /* =================================================
-   LIGHT
+   PUZZLE STATE
 ================================================= */
 
-.light-path {
-    position: absolute;
+const state = {
 
-    left: 0;
-    top: 50%;
+    documents: false,
+    sensors: false,
+    control: false,
+    power: false,
+    diagnostics: false,
+    exitRevealed: false
 
-    width: 1600px;
-    height: 320px;
-
-    transform:
-        translateY(-50%);
-
-    background:
-        linear-gradient(
-            90deg,
-            rgba(100,180,235,0),
-            rgba(112,189,238,.025) 25%,
-            rgba(137,203,242,.08) 46%,
-            rgba(166,220,250,.17) 67%,
-            rgba(199,235,255,.36) 85%,
-            rgba(224,248,255,.62)
-        );
-
-    filter:
-        blur(38px);
-
-    pointer-events:
-        none;
-}
-
-
-.light-core {
-    position: absolute;
-
-    left: 90px;
-    top: 50%;
-
-    width: 1510px;
-    height: 22px;
-
-    transform:
-        translateY(-50%);
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            rgba(137,201,238,.04) 30%,
-            rgba(181,226,249,.13) 64%,
-            rgba(220,246,255,.62)
-        );
-
-    filter:
-        blur(13px);
-
-    pointer-events:
-        none;
-}
+};
 
 
 /* =================================================
-   ACCESS
+   KEY STATE
 ================================================= */
 
-#system-access {
-    position: absolute;
+const keys = {
 
-    left: 1580px;
-    top: 50%;
+    up: false,
+    down: false,
+    left: false,
+    right: false
 
-    width: 130px;
-    height: 150px;
-
-    transform:
-        translate(-50%, -50%);
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-}
+};
 
 
-.access-frame {
-    position: absolute;
+/* =================================================
+   KEYBOARD
+================================================= */
 
-    width: 82px;
-    height: 82px;
+document.addEventListener("keydown", (event) => {
 
-    border:
-        1px solid #a7cbe0;
+    switch (event.code) {
 
-    transform:
-        rotate(45deg);
+        case "KeyW":
+        case "ArrowUp":
+            keys.up = true;
+            break;
 
-    box-shadow:
-        0 0 24px
-        rgba(135,204,242,.2);
-}
+        case "KeyS":
+        case "ArrowDown":
+            keys.down = true;
+            break;
 
+        case "KeyA":
+        case "ArrowLeft":
+            keys.left = true;
+            break;
 
-.access-core {
-    width: 18px;
-    height: 18px;
+        case "KeyD":
+        case "ArrowRight":
+            keys.right = true;
+            break;
 
-    background: #edf9ff;
+        case "Space":
 
-    box-shadow:
-        0 0 13px #d8f2ff,
-        0 0 35px rgba(132,210,255,.8);
+            event.preventDefault();
 
-    animation:
-        accessPulse 1.35s
-        infinite
-        alternate;
-}
+            interact();
 
-
-.access-label {
-    position: absolute;
-
-    top: 107px;
-
-    color: #90a9bb;
-
-    font-size: 9px;
-
-    letter-spacing: 3px;
-}
-
-
-@keyframes accessPulse {
-
-    from {
-        transform: scale(.65);
-        opacity: .55;
+            break;
     }
 
-    to {
-        transform: scale(1.2);
-        opacity: 1;
+});
+
+
+document.addEventListener("keyup", (event) => {
+
+    switch (event.code) {
+
+        case "KeyW":
+        case "ArrowUp":
+            keys.up = false;
+            break;
+
+        case "KeyS":
+        case "ArrowDown":
+            keys.down = false;
+            break;
+
+        case "KeyA":
+        case "ArrowLeft":
+            keys.left = false;
+            break;
+
+        case "KeyD":
+        case "ArrowRight":
+            keys.right = false;
+            break;
     }
+
+});
+
+
+/* =================================================
+   MAIN UPDATE
+================================================= */
+
+function update() {
+
+    if (
+        mode === "intro" ||
+        mode === "system"
+    ) {
+
+        movePlayer();
+
+    }
+
 }
 
 
 /* =================================================
-   SYSTEM AREA
+   PLAYER MOVEMENT
 ================================================= */
 
-#system-area {
-    position: absolute;
+function movePlayer() {
 
-    left: 1700px;
-    top: 0;
+    let dx = 0;
+    let dy = 0;
 
-    width: 100vw;
-    height: 100%;
 
-    overflow: hidden;
+    if (keys.up) {
+        dy -= SPEED;
+    }
 
-    background:
-        linear-gradient(
-            rgba(255,255,255,.018) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            90deg,
-            rgba(255,255,255,.018) 1px,
-            transparent 1px
-        ),
-        #26313c;
+    if (keys.down) {
+        dy += SPEED;
+    }
 
-    background-size:
-        56px 56px;
+    if (keys.left) {
+        dx -= SPEED;
+    }
 
-    border-left:
-        1px solid #617583;
-}
+    if (keys.right) {
+        dx += SPEED;
+    }
 
 
-/* =================================================
-   SYSTEM VIEW
-================================================= */
+    /*
+        실제 플레이어 좌표 변경
+    */
 
-.system-view #world {
-    transform:
-        translateX(-1700px) !important;
-}
+    playerX += dx;
+    playerY += dy;
 
-.system-view #intro-area {
-    display: none;
-}
 
+    /* =============================================
+       INTRO LIMIT
+    ============================================= */
 
-/* =================================================
-   SYSTEM HEADER
-================================================= */
+    if (mode === "intro") {
 
-.system-header {
-    position: absolute;
-
-    left: 6%;
-    right: 6%;
-    top: 45px;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    padding-bottom: 12px;
-
-    border-bottom:
-        1px solid #536673;
-
-    color: #a5b5c0;
-
-    font-size: 12px;
-
-    letter-spacing: 2px;
-}
-
-
-#system-state {
-    color: #7ca18a;
-}
-
-
-/* =================================================
-   PLAYER
-================================================= */
-
-#player {
-    position: absolute;
-
-    width: 42px;
-    height: 64px;
-
-    transform:
-        translate(-50%, -50%);
-
-    z-index: 100;
-}
-
-
-.player-shadow {
-    position: absolute;
-
-    left: 4px;
-    top: 53px;
-
-    width: 34px;
-    height: 7px;
-
-    background:
-        rgba(0,0,0,.45);
-
-    border-radius: 50%;
-}
-
-
-.player-head {
-    position: absolute;
-
-    left: 10px;
-    top: 0;
-
-    width: 22px;
-    height: 22px;
-
-    background: #9b623c;
-
-    border:
-        3px solid #15191d;
-}
-
-
-.player-body {
-    position: absolute;
-
-    left: 6px;
-    top: 23px;
-
-    width: 30px;
-    height: 30px;
-
-    background: #dbe3e7;
-
-    border:
-        3px solid #15191d;
-}
-
-
-/* =================================================
-   SYSTEM OBJECT
-================================================= */
-
-.system-object {
-    position: absolute;
-
-    width: 120px;
-
-    transform:
-        translate(-50%, -50%);
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    gap: 9px;
-
-    color: #d0dce3;
-
-    font-size: 11px;
-
-    text-align: center;
-
-    transition:
-        filter .15s;
-}
-
-.system-object:hover {
-    filter:
-        brightness(1.18);
-}
-
-
-/* =================================================
-   FOLDER
-================================================= */
-
-.folder-icon {
-    position: relative;
-
-    width: 58px;
-    height: 42px;
-
-    background:
-        linear-gradient(
-            #f3c63d,
-            #dfa91f
+        playerX = Math.max(
+            40,
+            Math.min(
+                SYSTEM_ACCESS_X + 20,
+                playerX
+            )
         );
 
-    border:
-        3px solid #55420c;
-
-    border-radius:
-        3px 5px 5px 5px;
-
-    box-shadow:
-        0 4px 0 rgba(0,0,0,.2);
-}
+    }
 
 
-.folder-icon::before {
-    content: "";
+    /* =============================================
+       SYSTEM LIMIT
+    ============================================= */
 
-    position: absolute;
+    if (mode === "system") {
 
-    left: -3px;
-    top: -11px;
+        const minX =
+            SYSTEM_START + 40;
 
-    width: 26px;
-    height: 11px;
-
-    background:
-        #f3c63d;
-
-    border:
-        3px solid #55420c;
-
-    border-bottom:
-        none;
-}
+        const maxX =
+            SYSTEM_START +
+            window.innerWidth -
+            40;
 
 
-/* =================================================
-   DOCUMENT
-================================================= */
-
-.document-icon {
-    position: relative;
-
-    width: 46px;
-    height: 56px;
-
-    background:
-        #edf1f3;
-
-    border:
-        3px solid #242b31;
-}
-
-
-.document-lines {
-    position: absolute;
-
-    left: 8px;
-    top: 23px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 6px;
-}
-
-
-.document-lines i {
-    width: 25px;
-    height: 2px;
-
-    background:
-        #75838d;
-}
-
-
-.extension {
-    position: absolute;
-
-    right: -20px;
-    bottom: 0;
-
-    min-width: 29px;
-    height: 17px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    background:
-        #edf1f3;
-
-    border:
-        3px solid #242b31;
-
-    color:
-        #293038;
-
-    font-size: 8px;
-}
-
-
-/* =================================================
-   TRASH
-================================================= */
-
-.trash {
-    position: relative;
-
-    width: 55px;
-    height: 61px;
-}
-
-
-.trash-handle {
-    position: absolute;
-
-    left: 20px;
-    top: 0;
-
-    width: 15px;
-    height: 8px;
-
-    border:
-        3px solid #bdc8d0;
-
-    border-bottom:
-        none;
-}
-
-
-.trash-lid {
-    position: absolute;
-
-    left: 4px;
-    top: 9px;
-
-    width: 47px;
-    height: 9px;
-
-    background:
-        #8998a3;
-
-    border:
-        3px solid #c3cdd4;
-
-    border-radius: 2px;
-}
-
-
-.trash-body {
-    position: absolute;
-
-    left: 10px;
-    top: 17px;
-
-    width: 36px;
-    height: 40px;
-
-    background:
-        #6d7b85;
-
-    border:
-        3px solid #bbc7ce;
-
-    clip-path:
-        polygon(
-            4% 0,
-            96% 0,
-            82% 100%,
-            18% 100%
+        playerX = Math.max(
+            minX,
+            Math.min(
+                maxX,
+                playerX
+            )
         );
 
-    display: flex;
-
-    justify-content: space-evenly;
-}
+    }
 
 
-.trash-body i {
-    width: 3px;
-    height: 27px;
+    /* =============================================
+       Y LIMIT
+    ============================================= */
 
-    margin-top: 5px;
-
-    background:
-        #46525b;
-}
-
-
-/* =================================================
-   HIDDEN EXIT
-================================================= */
-
-#hidden-exit {
-    position: absolute;
-
-    width: 80px;
-
-    transform:
-        translate(-50%, -50%);
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    gap: 8px;
-
-    color: #7a8f9b;
-
-    font-size: 10px;
-
-    opacity: .025;
-
-    transition:
-        opacity .7s ease;
-}
+    playerY = Math.max(
+        70,
+        Math.min(
+            window.innerHeight - 70,
+            playerY
+        )
+    );
 
 
-#hidden-exit.revealed {
-    opacity: 1;
-}
+    /*
+        실제 화면에 플레이어 표시
+    */
+
+    player.style.left =
+        `${playerX}px`;
+
+    player.style.top =
+        `${playerY}px`;
 
 
-.exit-door {
-    width: 56px;
-    height: 76px;
+    /* =============================================
+       CAMERA
+    ============================================= */
 
-    display: flex;
+    if (mode === "intro") {
 
-    align-items: center;
-    justify-content: center;
+        updateIntroCamera();
 
-    background:
-        #18222b;
+        updateIntroDistance();
 
-    border:
-        1px solid #7d919d;
-}
+        checkWrongWay();
+
+        checkSystemAccess();
+
+    }
 
 
-.exit-question {
-    color: #9db1bd;
-    font-size: 15px;
+    if (mode === "system") {
+
+        /*
+            SYSTEM에서는 카메라 이동 없음
+        */
+
+        world.style.transform =
+            "translateX(-1700px)";
+
+        updateSystemDistance();
+
+    }
+
+
+    if (wrongCooldown > 0) {
+
+        wrongCooldown--;
+
+    }
+
 }
 
 
 /* =================================================
-   HUD
+   INTRO CAMERA
 ================================================= */
 
-#system-status {
-    position: fixed;
+function updateIntroCamera() {
 
-    left: 16px;
-    top: 16px;
+    /*
+        플레이어가 화면 중앙 근처에 오도록
+        월드를 반대로 이동한다.
+    */
 
-    width: 205px;
-
-    padding:
-        10px 12px;
-
-    background:
-        rgba(13,20,28,.93);
-
-    border:
-        1px solid #657784;
-
-    border-radius: 3px;
-
-    z-index: 300;
-}
+    let target =
+        playerX -
+        window.innerWidth / 2;
 
 
-.status-title {
-    margin-bottom: 7px;
+    /*
+        INTRO WORLD는
+        1700px에서 끝난다.
+    */
 
-    padding-bottom: 6px;
-
-    color: #dce5eb;
-
-    font-size: 13px;
-
-    font-weight: bold;
-
-    letter-spacing: 1px;
-
-    border-bottom:
-        1px solid #4e606f;
-}
+    const maxCamera =
+        SYSTEM_ACCESS_X -
+        window.innerWidth / 2;
 
 
-.status-row {
-    display: flex;
-
-    align-items: center;
-
-    gap: 6px;
-
-    margin:
-        7px 0;
-
-    font-size: 10px;
-}
+    target = Math.max(
+        0,
+        Math.min(
+            maxCamera,
+            target
+        )
+    );
 
 
-.status-row span:first-child {
-    width: 37px;
-
-    color:
-        #9babb8;
-}
+    cameraX = target;
 
 
-.status-row strong {
-    width: 42px;
+    world.style.transform =
+        `translateX(${-cameraX}px)`;
 
-    text-align:
-        right;
-
-    font-size:
-        10px;
-
-    font-weight:
-        normal;
-}
-
-
-.gauge {
-    width: 65px;
-    height: 8px;
-
-    overflow:
-        hidden;
-
-    background:
-        #18222b;
-
-    border:
-        1px solid #344551;
-}
-
-
-.gauge span {
-    display:
-        block;
-
-    width:
-        50%;
-
-    height:
-        100%;
-
-    background:
-        #91b4ce;
-
-    transition:
-        width .2s ease;
 }
 
 
 /* =================================================
-   DIALOGUE
+   ENTER SYSTEM
 ================================================= */
 
-#dialogue {
-    position: fixed;
+function enterSystem() {
 
-    left: 50%;
-    bottom: 24px;
-
-    transform:
-        translateX(-50%);
-
-    width:
-        min(760px,82vw);
-
-    min-height:
-        76px;
-
-    padding:
-        15px 20px;
-
-    background:
-        rgba(17,25,34,.96);
-
-    border:
-        1px solid #7e8e9d;
-
-    border-radius:
-        2px;
-
-    z-index:
-        300;
-}
+    mode = "system";
 
 
-#dialogue-text {
-    min-height:
-        38px;
+    /*
+        SYSTEM 화면의 중앙에
+        플레이어 배치
+    */
 
-    font-size:
-        15px;
+    playerX =
+        SYSTEM_START +
+        window.innerWidth / 2;
 
-    line-height:
-        1.5;
-}
+    playerY =
+        window.innerHeight * 0.55;
 
 
-#dialogue-hint {
-    position:
-        absolute;
+    /*
+        월드를 SYSTEM 시작점으로 이동
+    */
 
-    right:
-        12px;
+    world.style.transform =
+        "translateX(-1700px)";
 
-    bottom:
-        7px;
 
-    color:
-        #94a5b4;
+    player.style.left =
+        `${playerX}px`;
 
-    font-size:
-        10px;
+    player.style.top =
+        `${playerY}px`;
+
+
+    /*
+        SYSTEM 화면 상태
+    */
+
+    dialogue.textContent =
+        "SYSTEM에 접속했다. 주변을 조사해 보자.";
+
 }
 
 
 /* =================================================
-   PUZZLE MAPS
+   SYSTEM ACCESS
 ================================================= */
 
-.puzzle-map {
-    position: fixed;
+function checkSystemAccess() {
 
-    left: 0;
-    top: 0;
+    const distance =
+        Math.sqrt(
 
-    width: 100vw;
-    height: 100vh;
+            Math.pow(
+                playerX -
+                SYSTEM_ACCESS_X,
+                2
+            )
 
-    display: none;
+            +
 
-    z-index: 1000;
+            Math.pow(
+                playerY -
+                window.innerHeight / 2,
+                2
+            )
 
-    overflow: hidden;
-
-    background:
-        radial-gradient(
-            circle at center,
-            #263b49 0%,
-            #182832 55%,
-            #0b141b 100%
         );
-}
 
 
-.puzzle-map.active {
-    display: block;
-}
+    if (
+        distance < 120
+    ) {
+
+        showMessage(
+            "SYSTEM에 접속할 수 있을 것 같다."
+        );
+
+    }
 
 
-/*
-    퍼즐 맵이 열리면
-    기존 HUD가 클릭을 가로막지 않도록 한다.
-*/
+    if (
+        distance < 55
+    ) {
 
-.puzzle-open #system-status,
-.puzzle-open #dialogue {
-    display: none;
-}
+        enterSystem();
 
+    }
 
-/* =================================================
-   PUZZLE TEXT
-================================================= */
-
-.map-title {
-    position: absolute;
-
-    left: 70px;
-    top: 55px;
-
-    color:
-        #cedee7;
-
-    font-size:
-        21px;
-
-    letter-spacing:
-        3px;
-}
-
-
-.map-subtitle {
-    position: absolute;
-
-    left: 70px;
-    top: 89px;
-
-    color:
-        #8298a7;
-
-    font-size:
-        10px;
-
-    letter-spacing:
-        2px;
 }
 
 
 /* =================================================
-   CLUE OBJECTS
+   INTRO DISTANCE
 ================================================= */
 
-.clue-object,
-.measurement-station {
-    position: absolute;
+function updateIntroDistance() {
 
-    transform:
-        translate(-50%,-50%);
-
-    width:
-        150px;
-
-    min-height:
-        65px;
-
-    border:
-        1px solid #748b9a;
-
-    background:
-        #17242d;
-
-    color:
-        #c9d9e2;
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size:
-        11px;
-
-    cursor:
-        pointer;
-
-    z-index:
-        20;
-}
+    const distance =
+        Math.max(
+            0,
+            SYSTEM_ACCESS_X -
+            playerX
+        );
 
 
-.clue-object:hover,
-.measurement-station:hover {
-    background:
-        #263b48;
+    distanceValue.textContent =
+        `${Math.round(distance)}cm`;
+
+
+    const gauge =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                100 -
+                distance / 12
+            )
+        );
+
+
+    distanceGauge.style.width =
+        `${gauge}%`;
+
 }
 
 
 /* =================================================
-   EVIDENCE PANEL
+   SYSTEM DISTANCE
 ================================================= */
 
-.evidence-panel {
-    position: absolute;
+function updateSystemDistance() {
 
-    right: 8%;
-    top: 20%;
+    const objects =
+        document.querySelectorAll(
+            ".system-object"
+        );
 
-    width:
-        300px;
 
-    min-height:
-        180px;
+    let closest =
+        Infinity;
 
-    padding:
-        20px;
 
-    background:
-        #101a22;
+    objects.forEach(
+        (object) => {
 
-    border:
-        1px solid #5e7380;
+            const x =
+                SYSTEM_START +
+                getPercentX(
+                    object
+                );
 
-    color:
-        #bdcdd6;
+            const y =
+                getPercentY(
+                    object
+                );
 
-    font-size:
-        11px;
 
-    line-height:
-        1.8;
+            const distance =
+                Math.sqrt(
 
-    z-index:
-        10;
+                    Math.pow(
+                        playerX - x,
+                        2
+                    )
+
+                    +
+
+                    Math.pow(
+                        playerY - y,
+                        2
+                    )
+
+                );
+
+
+            if (
+                distance < closest
+            ) {
+
+                closest = distance;
+
+            }
+
+        }
+    );
+
+
+    if (
+        closest !== Infinity
+    ) {
+
+        distanceValue.textContent =
+            `${Math.round(closest)}cm`;
+
+    }
+
 }
 
 
 /* =================================================
-   DOCUMENT DEDUCTION
+   PERCENT POSITION
 ================================================= */
 
-.deduction-question {
-    position: absolute;
+function getPercentX(object) {
 
-    left: 70px;
-    bottom: 175px;
+    const percent =
+        parseFloat(
+            object.style.left
+        );
 
-    color:
-        #bdcbd3;
 
-    font-size:
-        14px;
+    return (
+        window.innerWidth *
+        percent /
+        100
+    );
+
 }
 
 
-.answer-grid {
-    position: absolute;
+function getPercentY(object) {
 
-    left: 70px;
-    bottom: 90px;
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(2, 160px);
-
-    gap:
-        8px;
-}
+    const percent =
+        parseFloat(
+            object.style.top
+        );
 
 
-.answer-grid button {
-    padding:
-        10px;
+    return (
+        window.innerHeight *
+        percent /
+        100
+    );
 
-    border:
-        1px solid #748995;
-
-    background:
-        #263842;
-
-    color:
-        #d5e0e6;
-
-    cursor:
-        pointer;
-}
-
-
-.answer-grid button:hover {
-    background:
-        #354c58;
 }
 
 
 /* =================================================
-   SENSOR
+   WRONG WAY
 ================================================= */
 
-.sensor-question {
-    position: absolute;
+function checkWrongWay() {
 
-    left: 15%;
-    top: 60%;
+    if (
+        wrongCooldown > 0
+    ) {
 
-    width:
-        350px;
+        return;
 
-    color:
-        #aebfc9;
-
-    font-size:
-        12px;
-
-    line-height:
-        1.7;
-}
+    }
 
 
-#sensor-input {
-    position: absolute;
-
-    left: 55%;
-    top: 59%;
-
-    width:
-        140px;
-
-    padding:
-        10px;
-
-    background:
-        #111b23;
-
-    border:
-        1px solid #687d89;
-
-    color:
-        #dbe6ec;
-}
+    const center =
+        window.innerHeight / 2;
 
 
-#sensor-submit {
-    position: absolute;
+    const difference =
+        Math.abs(
+            playerY -
+            center
+        );
 
-    left: calc(55% + 150px);
-    top: 59%;
 
-    padding:
-        10px 14px;
+    if (
+        difference > 220
+    ) {
 
-    border:
-        1px solid #7a909e;
+        showMessage(
+            "여긴 아닌 것 같다."
+        );
 
-    background:
-        #263842;
+        wrongCooldown =
+            80;
 
-    color:
-        #d8e4e9;
+        return;
 
-    cursor:
-        pointer;
+    }
+
+
+    if (
+        playerX < 100
+    ) {
+
+        showMessage(
+            "뒤쪽에는 아무것도 없다."
+        );
+
+        wrongCooldown =
+            80;
+
+    }
+
 }
 
 
 /* =================================================
-   CONTROL
+   INTERACTION
 ================================================= */
 
-.control-machine {
-    position: absolute;
+function interact() {
 
-    left: 12%;
-    top: 20%;
+    if (
+        mode === "intro"
+    ) {
 
-    width:
-        470px;
+        const dx =
+            playerX -
+            SYSTEM_ACCESS_X;
 
-    padding:
-        25px;
+        const dy =
+            playerY -
+            window.innerHeight / 2;
 
-    background:
-        #101a22;
-
-    border:
-        1px solid #637986;
-}
-
-
-.control-screen {
-    padding:
-        18px;
-
-    border:
-        1px solid #4c626f;
-
-    line-height:
-        1.7;
-}
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
 
 
-.control-screen strong {
-    display:
-        block;
+        if (
+            distance < 110
+        ) {
 
-    margin-bottom:
-        10px;
+            enterSystem();
 
-    color:
-        #d9e8ef;
+        }
 
-    font-size:
-        28px;
-}
+        else {
 
+            showMessage(
+                "주변에 조사할 것이 없다."
+            );
 
-.control-machine label {
-    display:
-        block;
+        }
 
-    margin-top:
-        20px;
+        return;
 
-    margin-bottom:
-        8px;
-
-    color:
-        #a8bbc5;
-
-    font-size:
-        11px;
-}
+    }
 
 
-.control-machine input {
-    width:
-        100%;
-}
+    if (
+        mode !== "system"
+    ) {
+
+        return;
+
+    }
 
 
-#kp-value,
-#kd-value {
-    margin-top:
-        6px;
-
-    color:
-        #91a7b5;
-
-    font-size:
-        10px;
-}
+    const nearest =
+        findNearestObject();
 
 
-#control-submit {
-    margin-top:
-        25px;
+    if (
+        nearest === null
+    ) {
 
-    padding:
-        10px 14px;
+        showMessage(
+            "주변에 조사할 것이 없다."
+        );
 
-    border:
-        1px solid #7d919d;
+        return;
 
-    background:
-        #263a45;
-
-    color:
-        #dce7ed;
-
-    cursor:
-        pointer;
-}
+    }
 
 
-.control-observation {
-    position: absolute;
+    handleObject(
+        nearest.type
+    );
 
-    right: 12%;
-    top: 30%;
-
-    width:
-        300px;
-
-    padding:
-        20px;
-
-    background:
-        #101a22;
-
-    border:
-        1px solid #536975;
-
-    color:
-        #9eb2be;
-
-    font-size:
-        11px;
-
-    line-height:
-        1.8;
 }
 
 
 /* =================================================
-   POWER
+   FIND OBJECT
 ================================================= */
 
-.power-budget {
-    position: absolute;
+function findNearestObject() {
 
-    left: 10%;
-    top: 20%;
+    let result =
+        null;
 
-    width:
-        260px;
-
-    padding:
-        20px;
-
-    background:
-        #101a22;
-
-    border:
-        1px solid #566d7a;
-}
+    let closest =
+        Infinity;
 
 
-.power-budget strong {
-    display:
-        block;
+    systemObjects.forEach(
+        (object) => {
 
-    margin-top:
-        10px;
+            const x =
+                SYSTEM_START +
+                getPercentX(object);
 
-    font-size:
-        28px;
-
-    color:
-        #d7e7ee;
-}
+            const y =
+                getPercentY(object);
 
 
-.power-info {
-    position: absolute;
+            const distance =
+                Math.sqrt(
 
-    left: 10%;
-    top: 42%;
+                    Math.pow(
+                        playerX - x,
+                        2
+                    )
 
-    width:
-        320px;
+                    +
 
-    background:
-        #111b23;
+                    Math.pow(
+                        playerY - y,
+                        2
+                    )
 
-    border:
-        1px solid #506571;
-}
-
-
-.power-info div {
-    display:
-        flex;
-
-    justify-content:
-        space-between;
-
-    padding:
-        12px;
-
-    border-bottom:
-        1px solid #344852;
-
-    font-size:
-        11px;
-}
+                );
 
 
-.power-info div:last-child {
-    border-bottom:
-        none;
-}
+            if (
+                distance < closest
+            ) {
+
+                closest =
+                    distance;
+
+                result = {
+
+                    type:
+                        object.dataset.type,
+
+                    element:
+                        object,
+
+                    distance:
+                        distance
+
+                };
+
+            }
+
+        }
+    );
 
 
-.power-switches {
-    position: absolute;
+    /*
+        숨겨진 EXIT
+    */
 
-    right: 18%;
-    top: 22%;
+    const exitX =
+        SYSTEM_START +
+        window.innerWidth *
+        0.89;
 
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    gap:
-        20px;
-}
+    const exitY =
+        window.innerHeight *
+        0.73;
 
 
-.power-switches label {
-    color:
-        #c4d2da;
+    const exitDistance =
+        Math.sqrt(
 
-    font-size:
-        13px;
+            Math.pow(
+                playerX - exitX,
+                2
+            )
 
-    cursor:
-        pointer;
-}
+            +
 
+            Math.pow(
+                playerY - exitY,
+                2
+            )
 
-.power-load {
-    position: absolute;
-
-    right: 18%;
-    top: 55%;
-
-    color:
-        #a9bdc8;
-
-    font-size:
-        18px;
-}
+        );
 
 
-#power-submit {
-    position: absolute;
+    if (
+        exitDistance < closest
+    ) {
 
-    right: 18%;
-    top: 61%;
+        result = {
 
-    padding:
-        10px 15px;
+            type: "exit",
 
-    border:
-        1px solid #7c919e;
+            element: hiddenExit,
 
-    background:
-        #263842;
+            distance: exitDistance
 
-    color:
-        #dce7ed;
+        };
 
-    cursor:
-        pointer;
+    }
+
+
+    if (
+        result &&
+        result.distance < 120
+    ) {
+
+        return result;
+
+    }
+
+
+    return null;
+
 }
 
 
 /* =================================================
-   PUZZLE RESULT
+   OBJECT HANDLER
 ================================================= */
 
-.puzzle-result {
-    color:
-        #a9c8b1;
+function handleObject(type) {
 
-    font-size:
-        12px;
+    switch(type) {
+
+        case "documents":
+
+            openPuzzle(
+                "documents"
+            );
+
+            break;
+
+
+        case "sensors":
+
+            openPuzzle(
+                "sensors"
+            );
+
+            break;
+
+
+        case "control":
+
+            openPuzzle(
+                "control"
+            );
+
+            break;
+
+
+        case "power":
+
+            openPuzzle(
+                "power"
+            );
+
+            break;
+
+
+        case "diagnostics":
+
+            openPuzzle(
+                "diagnostics"
+            );
+
+            break;
+
+
+        case "error":
+
+            showMessage(
+                "ERROR_LOG.txt — 센서 → 제어 → 모터의 오류 기록이다."
+            );
+
+            break;
+
+
+        case "trash":
+
+            showMessage(
+                "휴지통은 비어 있다."
+            );
+
+            break;
+
+
+        case "exit":
+
+            if (
+                state.exitRevealed
+            ) {
+
+                openPuzzle(
+                    "final"
+                );
+
+            }
+
+            else {
+
+                showMessage(
+                    "아직 출구가 보이지 않는다."
+                );
+
+            }
+
+            break;
+
+    }
+
 }
 
 
 /* =================================================
-   DIAGNOSTICS
+   PUZZLE MAP
 ================================================= */
 
-.diagnostic-panel {
-    position: absolute;
+function openPuzzle(name) {
 
-    left: 14%;
-    top: 22%;
-
-    width:
-        420px;
-
-    background:
-        #101a22;
-
-    border:
-        1px solid #607582;
-}
+    mode =
+        name;
 
 
-.diagnostic-panel div {
-    display:
-        flex;
-
-    justify-content:
-        space-between;
-
-    padding:
-        17px;
-
-    color:
-        #c7d6dd;
-
-    border-bottom:
-        1px solid #3e525d;
-}
+    document.body.classList.add(
+        "puzzle-open"
+    );
 
 
-.diagnostic-panel div:last-child {
-    border-bottom:
-        none;
-}
+    puzzleMaps.forEach(
+        (map) => {
+
+            map.classList.remove(
+                "active"
+            );
+
+        }
+    );
 
 
-.diagnostic-panel span {
-    color:
-        #ba6e6e;
-}
+    const target =
+        document.getElementById(
+            `map-${name}`
+        );
 
 
-#diagnostic-submit {
-    position: absolute;
+    if (
+        target
+    ) {
 
-    left: 14%;
-    top: 53%;
+        target.classList.add(
+            "active"
+        );
 
-    padding:
-        10px 15px;
+    }
 
-    border:
-        1px solid #7c919e;
-
-    background:
-        #263842;
-
-    color:
-        #dce7ed;
-
-    cursor:
-        pointer;
-}
-
-
-#diagnostic-result {
-    position: absolute;
-
-    left: 14%;
-    top: 63%;
 }
 
 
@@ -1571,232 +1017,668 @@ body {
    RETURN
 ================================================= */
 
-.return-button {
-    position: absolute;
+function returnToSystem() {
 
-    right: 30px;
-    bottom: 25px;
+    mode =
+        "system";
 
-    padding:
-        9px 12px;
 
-    border:
-        1px solid #708692;
+    document.body.classList.remove(
+        "puzzle-open"
+    );
 
-    background:
-        #1c2b34;
 
-    color:
-        #aebec7;
+    puzzleMaps.forEach(
+        (map) => {
 
-    font-family:
-        "Courier New",
-        monospace;
+            map.classList.remove(
+                "active"
+            );
 
-    font-size:
-        10px;
+        }
+    );
 
-    cursor:
-        pointer;
 
-    z-index:
-        50;
+    world.style.transform =
+        "translateX(-1700px)";
+
+
+    updateSystemDistance();
+
 }
 
 
-.return-button:hover {
-    background:
-        #2b404c;
+/* =================================================
+   DOCUMENT PUZZLE
+================================================= */
+
+document
+    .querySelectorAll(
+        "#map-documents [data-answer]"
+    )
+    .forEach(
+        (button) => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const answer =
+                        button.dataset.answer;
+
+
+                    if (
+                        answer === "sensor"
+                    ) {
+
+                        state.documents =
+                            true;
+
+
+                        document
+                            .getElementById(
+                                "document-result"
+                            )
+                            .textContent =
+                            "추론 성공.";
+
+                        setTimeout(
+                            returnToSystem,
+                            700
+                        );
+
+                    }
+
+                    else {
+
+                        document
+                            .getElementById(
+                                "document-result"
+                            )
+                            .textContent =
+                            "기록을 다시 비교해 보자.";
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+/* =================================================
+   SENSOR PUZZLE
+================================================= */
+
+document
+    .querySelectorAll(
+        ".measurement-station"
+    )
+    .forEach(
+        (station) => {
+
+            station.addEventListener(
+                "click",
+                () => {
+
+                    const value =
+                        station.dataset.measurement;
+
+
+                    document
+                        .getElementById(
+                            "sensor-evidence"
+                        )
+                        .textContent =
+                        `MEASURED : ${value}`;
+
+                }
+            );
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "sensor-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const answer =
+                Number(
+                    document
+                        .getElementById(
+                            "sensor-input"
+                        )
+                        .value
+                );
+
+
+            const result =
+                document
+                    .getElementById(
+                        "sensor-result"
+                    );
+
+
+            if (
+                answer === -8
+            ) {
+
+                state.sensors =
+                    true;
+
+
+                result.textContent =
+                    "CALIBRATION COMPLETE";
+
+
+                setTimeout(
+                    returnToSystem,
+                    700
+                );
+
+            }
+
+            else {
+
+                result.textContent =
+                    "측정값의 공통 오차를 다시 확인해라.";
+
+            }
+
+        }
+    );
+
+
+/* =================================================
+   CONTROL PUZZLE
+================================================= */
+
+const kpSlider =
+    document.getElementById(
+        "kp-slider"
+    );
+
+const kdSlider =
+    document.getElementById(
+        "kd-slider"
+    );
+
+const kpValue =
+    document.getElementById(
+        "kp-value"
+    );
+
+const kdValue =
+    document.getElementById(
+        "kd-value"
+    );
+
+const controlAngle =
+    document.getElementById(
+        "control-angle"
+    );
+
+
+function updateControl() {
+
+    const kp =
+        Number(
+            kpSlider.value
+        );
+
+    const kd =
+        Number(
+            kdSlider.value
+        );
+
+
+    const response =
+        63 +
+        kp * 0.9 -
+        kd * 0.12;
+
+
+    controlAngle.textContent =
+        `${Math.round(response)}°`;
+
 }
+
+
+kpSlider.addEventListener(
+    "input",
+    () => {
+
+        kpValue.textContent =
+            `Kp = ${kpSlider.value}`;
+
+        updateControl();
+
+    }
+);
+
+
+kdSlider.addEventListener(
+    "input",
+    () => {
+
+        kdValue.textContent =
+            `Kd = ${kdSlider.value}`;
+
+        updateControl();
+
+    }
+);
+
+
+document
+    .getElementById(
+        "control-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const kp =
+                Number(
+                    kpSlider.value
+                );
+
+            const kd =
+                Number(
+                    kdSlider.value
+                );
+
+
+            const response =
+                63 +
+                kp * 0.9 -
+                kd * 0.12;
+
+
+            const result =
+                document.getElementById(
+                    "control-result"
+                );
+
+
+            if (
+                response >= 88 &&
+                response <= 92 &&
+                kd >= 35
+            ) {
+
+                state.control =
+                    true;
+
+
+                result.textContent =
+                    "CONTROL RESPONSE : STABLE";
+
+
+                setTimeout(
+                    returnToSystem,
+                    700
+                );
+
+            }
+
+            else {
+
+                result.textContent =
+                    "목표값과 감쇠 조건을 다시 확인해라.";
+
+            }
+
+        }
+    );
+
+
+/* =================================================
+   POWER PUZZLE
+================================================= */
+
+const powerSensor =
+    document.getElementById(
+        "power-sensor"
+    );
+
+const powerCooling =
+    document.getElementById(
+        "power-cooling"
+    );
+
+const powerMotor =
+    document.getElementById(
+        "power-motor"
+    );
+
+const powerLight =
+    document.getElementById(
+        "power-light"
+    );
+
+const powerLoad =
+    document.getElementById(
+        "power-load"
+    );
+
+
+function calculatePower() {
+
+    let load =
+        0;
+
+
+    if (
+        powerSensor.checked
+    ) {
+
+        load += 15;
+    }
+
+
+    if (
+        powerCooling.checked
+    ) {
+
+        load += 30;
+    }
+
+
+    if (
+        powerMotor.checked
+    ) {
+
+        load += 40;
+    }
+
+
+    if (
+        powerLight.checked
+    ) {
+
+        load += 10;
+    }
+
+
+    powerLoad.textContent =
+        `LOAD : ${load}%`;
+
+
+    return load;
+
+}
+
+
+[
+    powerSensor,
+    powerCooling,
+    powerMotor,
+    powerLight
+]
+.forEach(
+    (checkbox) => {
+
+        checkbox.addEventListener(
+            "change",
+            calculatePower
+        );
+
+    }
+);
+
+
+document
+    .getElementById(
+        "power-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const load =
+                calculatePower();
+
+
+            const result =
+                document.getElementById(
+                    "power-result"
+                );
+
+
+            if (
+                powerSensor.checked &&
+                powerCooling.checked &&
+                powerMotor.checked &&
+                !powerLight.checked &&
+                load === 85
+            ) {
+
+                state.power =
+                    true;
+
+
+                result.textContent =
+                    "POWER STABLE : 85%";
+
+
+                setTimeout(
+                    returnToSystem,
+                    700
+                );
+
+            }
+
+            else {
+
+                result.textContent =
+                    "필요한 시스템과 전력량을 다시 분석해라.";
+
+            }
+
+        }
+    );
+
+
+/* =================================================
+   DIAGNOSTICS
+================================================= */
+
+document
+    .getElementById(
+        "diagnostic-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const sensor =
+                document.getElementById(
+                    "diag-sensor"
+                );
+
+            const power =
+                document.getElementById(
+                    "diag-power"
+                );
+
+            const control =
+                document.getElementById(
+                    "diag-control"
+                );
+
+            sensor.textContent =
+                state.sensors
+                    ? "ONLINE"
+                    : "ERROR";
+
+            power.textContent =
+                state.power
+                    ? "ONLINE"
+                    : "ERROR";
+
+            control.textContent =
+                state.control
+                    ? "ONLINE"
+                    : "ERROR";
+
+
+            if (
+                state.sensors &&
+                state.power &&
+                state.control
+            ) {
+
+                state.diagnostics =
+                    true;
+
+                state.exitRevealed =
+                    true;
+
+
+                hiddenExit.classList.add(
+                    "revealed"
+                );
+
+
+                document
+                    .getElementById(
+                        "diagnostic-result"
+                    )
+                    .textContent =
+                    "ALL SYSTEMS NORMAL";
+
+
+                setTimeout(
+                    returnToSystem,
+                    900
+                );
+
+            }
+
+            else {
+
+                document
+                    .getElementById(
+                        "diagnostic-result"
+                    )
+                    .textContent =
+                    "아직 복구되지 않은 시스템이 있다.";
+
+            }
+
+        }
+    );
 
 
 /* =================================================
    FINAL
 ================================================= */
 
-#map-final {
-    text-align:
-        center;
-}
+document
+    .getElementById(
+        "final-exit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            mode =
+                "escaped";
 
 
-.final-title {
-    margin-top:
-        120px;
+            game.innerHTML = `
+                <div class="ending-screen">
 
-    color:
-        #d2e1e8;
+                    <div>
+                        SYSTEM CONNECTION
+                    </div>
 
-    font-size:
-        23px;
+                    <strong>
+                        RESTORED
+                    </strong>
 
-    letter-spacing:
-        3px;
-}
+                    <p>
+                        모든 시스템을 복구하고<br>
+                        시설을 탈출했다.
+                    </p>
 
+                    <span>
+                        END
+                    </span>
 
-.final-panel {
-    width:
-        430px;
+                </div>
+            `;
 
-    margin:
-        55px auto 0;
-
-    padding:
-        22px;
-
-    text-align:
-        left;
-
-    line-height:
-        2;
-
-    background:
-        #101a22;
-
-    border:
-        1px solid #607783;
-}
+        }
+    );
 
 
-.final-panel span {
-    float:
-        right;
+/* =================================================
+   RETURN BUTTON
+================================================= */
 
-    color:
-        #a8c9b1;
-}
+document
+    .querySelectorAll(
+        "[data-return]"
+    )
+    .forEach(
+        (button) => {
+
+            button.addEventListener(
+                "click",
+                returnToSystem
+            );
+
+        }
+    );
 
 
-.final-text {
-    margin-top:
-        40px;
+/* =================================================
+   MESSAGE
+================================================= */
 
-    color:
-        #acbdc7;
+function showMessage(message) {
 
-    line-height:
-        1.9;
-}
+    dialogue.textContent =
+        message;
 
-
-#final-exit {
-    margin-top:
-        35px;
-
-    padding:
-        12px 18px;
-
-    border:
-        1px solid #8b9fa9;
-
-    background:
-        #263842;
-
-    color:
-        #dce7ed;
-
-    cursor:
-        pointer;
 }
 
 
 /* =================================================
-   ENDING
+   INITIALIZE
 ================================================= */
 
-.ending-screen {
-    position:
-        fixed;
+player.style.left =
+    `${playerX}px`;
 
-    inset:
-        0;
+player.style.top =
+    `${playerY}px`;
 
-    display:
-        flex;
+updateIntroCamera();
 
-    flex-direction:
-        column;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    gap:
-        25px;
-
-    background:
-        #080e14;
-
-    color:
-        #cfdde5;
-
-    text-align:
-        center;
-
-    letter-spacing:
-        2px;
-}
-
-
-.ending-screen strong {
-    font-size:
-        32px;
-}
-
-
-.ending-screen p {
-    color:
-        #93a6b2;
-
-    font-size:
-        13px;
-
-    line-height:
-        1.8;
-
-    letter-spacing:
-        0;
-}
-
-
-.ending-screen span {
-    color:
-        #6c7d88;
-
-    font-size:
-        11px;
-}
+updateIntroDistance();
 
 
 /* =================================================
-   MOBILE
+   GAME LOOP
 ================================================= */
 
-@media (max-width: 700px) {
+function gameLoop() {
 
-    #system-status {
-        width:
-            175px;
+    update();
 
-        left:
-            10px;
+    requestAnimationFrame(
+        gameLoop
+    );
 
-        top:
-            10px;
-    }
-
-
-    #dialogue {
-        width:
-            calc(100vw - 20px);
-    }
-
-
-    .puzzle-map {
-        overflow-y:
-            auto;
-    }
 }
+
+gameLoop();
