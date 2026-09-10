@@ -6,10 +6,13 @@
 
 /* =========================================================
    DOM
-   ========================================================= */
+========================================================= */
 
-const game = document.getElementById("game");
-const player = document.getElementById("player");
+const game =
+  document.getElementById("game");
+
+const player =
+  document.getElementById("player");
 
 const dialogue =
   document.getElementById("dialogue");
@@ -24,13 +27,9 @@ const dialogueClose =
   document.getElementById("dialogue-close");
 
 const interactionPrompt =
-  document.getElementById("interaction-prompt");
-
-const ending =
-  document.getElementById("ending");
-
-const endingText =
-  document.getElementById("ending-text");
+  document.getElementById(
+    "interaction-prompt"
+  );
 
 const chapter =
   document.getElementById("chapter");
@@ -41,53 +40,124 @@ const objective =
 const progress =
   document.getElementById("progress");
 
+const ending =
+  document.getElementById("ending");
+
+const endingText =
+  document.getElementById("ending-text");
+
 
 /* =========================================================
    ROOMS
-   ========================================================= */
+========================================================= */
 
 const rooms = {
 
   intro:
-    document.getElementById("room-intro"),
+    document.getElementById(
+      "room-intro"
+    ),
 
   system:
-    document.getElementById("room-system"),
+    document.getElementById(
+      "room-system"
+    ),
 
   sensor:
-    document.getElementById("room-sensor"),
+    document.getElementById(
+      "room-sensor"
+    ),
 
   power:
-    document.getElementById("room-power"),
+    document.getElementById(
+      "room-power"
+    ),
 
   control:
-    document.getElementById("room-control")
+    document.getElementById(
+      "room-control"
+    )
 
 };
 
 
 /* =========================================================
-   GAME STATE
-   ========================================================= */
+   STATE
+========================================================= */
 
-let currentRoom =
-  "intro";
+const state = {
 
-let playerX =
-  120;
+  room:
+    "intro",
 
-let playerY =
-  Math.round(
-    window.innerHeight * 0.5
-  );
+  x:
+    100,
 
-const SPEED =
-  4;
+  y:
+    Math.round(
+      window.innerHeight / 2
+    ),
+
+  solved: {
+
+    sensor: false,
+
+    power: false,
+
+    control: false
+
+  },
+
+  evidence: {
+
+    sensor:
+      new Set(),
+
+    power:
+      new Set(),
+
+    control:
+      new Set()
+
+  },
+
+  /* SENSOR */
+
+  sensorAngle:
+    0,
+
+  sensorAdjusting:
+    false,
+
+  /* POWER */
+
+  selectedWire:
+    null,
+
+  wires: {
+
+    "12V":
+      null,
+
+    "24V":
+      null,
+
+    "GND":
+      null
+
+  },
+
+  /* CONTROL */
+
+  sequence:
+    []
+
+};
 
 
 /* =========================================================
-   KEYBOARD
-   ========================================================= */
+   INPUT
+========================================================= */
 
 const keys = {};
 
@@ -96,138 +166,101 @@ let spaceDown =
 
 
 /* =========================================================
-   CLEAR STATE
-   ========================================================= */
-
-const solved = {
-
-  sensor: false,
-
-  power: false,
-
-  control: false
-
-};
-
-
-/* =========================================================
-   EVIDENCE
-   ========================================================= */
-
-const evidence = {
-
-  sensor:
-    new Set(),
-
-  power:
-    new Set(),
-
-  control:
-    new Set()
-
-};
-
-
-/* =========================================================
-   MINI GAME STATE
-   ========================================================= */
-
-/* 센서 */
-let sensorRotation =
-  0;
-
-let sensorCorrect =
-  false;
-
-
-/* 전력 */
-let powerConnections =
-  {};
-
-
-/* 제어 */
-let sequence =
-  [];
-
-
-/* =========================================================
    ROOM SIZE
-   ========================================================= */
+========================================================= */
 
-const ROOM_WIDTH = {
+function getRoomSize() {
 
-  intro: 2300,
+  return {
 
-  system: window.innerWidth,
+    width:
+      window.innerWidth,
 
-  sensor: window.innerWidth,
+    height:
+      window.innerHeight
 
-  power: window.innerWidth,
+  };
 
-  control: window.innerWidth
-
-};
-
-const ROOM_HEIGHT =
-  700;
+}
 
 
 /* =========================================================
    HUD
-   ========================================================= */
+========================================================= */
 
 function updateHUD() {
 
-  const info = {
+  const data = {
 
     intro: {
-      chapter: "부팅 과정",
+
+      chapter:
+        "BOOT SEQUENCE",
+
       objective:
         "오른쪽의 SYSTEM으로 이동하세요."
+
     },
 
     system: {
-      chapter: "중앙 유지보수 기록",
+
+      chapter:
+        "MAINTENANCE ARCHIVE",
+
       objective:
-        "세 개의 손상된 기록을 복구하세요."
+        "세 개의 유지보수 기록을 복구하세요."
+
     },
 
     sensor: {
-      chapter: "FILE 01 // 센서",
+
+      chapter:
+        "SENSOR BAY",
+
       objective:
-        "이상한 거리 센서를 찾아 올바르게 조정하세요."
+        "이상한 거리 센서를 찾아 방향을 바로잡으세요."
+
     },
 
     power: {
-      chapter: "FILE 02 // 전력",
+
+      chapter:
+        "POWER BAY",
+
       objective:
-        "장치에 맞는 배선을 직접 연결하세요."
+        "각 장치에 맞는 전원선을 연결하세요."
+
     },
 
     control: {
-      chapter: "FILE 03 // 제어",
+
+      chapter:
+        "CONTROL CHAMBER",
+
       objective:
-        "단서를 조사하고 제어 순서를 완성하세요."
+        "장치의 조건을 조사하고 작동 순서를 복구하세요."
+
     }
 
   };
 
 
   const current =
-    info[currentRoom];
+    data[state.room];
 
 
   chapter.textContent =
     current.chapter;
+
 
   objective.textContent =
     current.objective;
 
 
   const count =
-    Number(solved.sensor) +
-    Number(solved.power) +
-    Number(solved.control);
+    Number(state.solved.sensor) +
+    Number(state.solved.power) +
+    Number(state.solved.control);
 
 
   progress.textContent =
@@ -238,7 +271,7 @@ function updateHUD() {
 
 /* =========================================================
    ROOM SWITCH
-   ========================================================= */
+========================================================= */
 
 function switchRoom(roomName) {
 
@@ -247,47 +280,48 @@ function switchRoom(roomName) {
   }
 
 
-  Object.values(rooms)
-    .forEach(room => {
+  Object.values(rooms).forEach(
+    room => {
 
       room.classList.remove(
         "active"
       );
 
-    });
+    }
+  );
 
 
-  rooms[roomName]
-    .classList.add(
-      "active"
-    );
+  rooms[roomName].classList.add(
+    "active"
+  );
 
 
-  currentRoom =
+  state.room =
     roomName;
 
 
-  const introWorld =
+  state.sensorAdjusting =
+    false;
+
+
+  const mini =
     document.getElementById(
-      "intro-world"
+      "power-mini"
     );
 
 
-  if (introWorld) {
-
-    introWorld.style.transform =
-      "translateX(0)";
-
+  if (mini) {
+    mini.classList.remove(
+      "visible"
+    );
   }
-
-
-  player.style.transform =
-    "translateX(0)";
 
 
   updateHUD();
 
+
   updatePlayer();
+
 
   updatePrompt();
 
@@ -296,137 +330,52 @@ function switchRoom(roomName) {
 
 /* =========================================================
    PLAYER
-   ========================================================= */
+========================================================= */
 
 function updatePlayer() {
 
   player.style.left =
-    `${Math.round(playerX)}px`;
+    `${Math.round(state.x)}px`;
 
   player.style.top =
-    `${Math.round(playerY)}px`;
-
-}
-
-
-/* =========================================================
-   INTRO CAMERA
-   ========================================================= */
-
-function updateIntroCamera() {
-
-  if (
-    currentRoom !== "intro"
-  ) {
-    return;
-  }
-
-
-  const world =
-    document.getElementById(
-      "intro-world"
-    );
-
-
-  if (!world) {
-    return;
-  }
-
-
-  const width =
-    game.clientWidth;
-
-
-  const maxCamera =
-    Math.max(
-      0,
-      ROOM_WIDTH.intro - width
-    );
-
-
-  let cameraX =
-    playerX -
-    width * 0.35;
-
-
-  cameraX =
-    Math.max(
-      0,
-      Math.min(
-        maxCamera,
-        cameraX
-      )
-    );
-
-
-  world.style.transform =
-    `translateX(${-cameraX}px)`;
-
-
-  player.style.left =
-    `${Math.round(
-      playerX - cameraX
-    )}px`;
-
-  player.style.top =
-    `${Math.round(
-      playerY
-    )}px`;
+    `${Math.round(state.y)}px`;
 
 }
 
 
 /* =========================================================
    PLAYER LIMIT
-   ========================================================= */
+========================================================= */
 
 function limitPlayer() {
 
-  let maxX;
+  const room =
+    getRoomSize();
 
 
-  if (
-    currentRoom === "intro"
-  ) {
-
-    maxX =
-      ROOM_WIDTH.intro -
-      40;
-
-  }
-
-  else {
-
-    maxX =
-      window.innerWidth -
-      45;
-
-  }
-
+  const maxX =
+    room.width - 55;
 
   const maxY =
-    Math.min(
-      window.innerHeight - 50,
-      ROOM_HEIGHT - 35
-    );
+    room.height - 65;
 
 
-  playerX =
+  state.x =
     Math.max(
       25,
       Math.min(
         maxX,
-        playerX
+        state.x
       )
     );
 
 
-  playerY =
+  state.y =
     Math.max(
-      70,
+      80,
       Math.min(
         maxY,
-        playerY
+        state.y
       )
     );
 
@@ -435,13 +384,13 @@ function limitPlayer() {
 
 /* =========================================================
    MOVEMENT
-   ========================================================= */
+========================================================= */
 
 function movePlayer() {
 
   if (
-    dialogue.classList.contains(
-      "visible"
+    !dialogue.classList.contains(
+      "hidden"
     )
   ) {
     return;
@@ -449,19 +398,17 @@ function movePlayer() {
 
 
   if (
-    ending.classList.contains(
-      "visible"
+    !ending.classList.contains(
+      "hidden"
     )
   ) {
     return;
   }
 
 
-  let dx =
-    0;
+  let dx = 0;
 
-  let dy =
-    0;
+  let dy = 0;
 
 
   if (
@@ -469,7 +416,7 @@ function movePlayer() {
     keys["arrowup"]
   ) {
 
-    dy -= SPEED;
+    dy -= 4;
 
   }
 
@@ -479,7 +426,7 @@ function movePlayer() {
     keys["arrowdown"]
   ) {
 
-    dy += SPEED;
+    dy += 4;
 
   }
 
@@ -489,7 +436,7 @@ function movePlayer() {
     keys["arrowleft"]
   ) {
 
-    dx -= SPEED;
+    dx -= 4;
 
   }
 
@@ -499,44 +446,37 @@ function movePlayer() {
     keys["arrowright"]
   ) {
 
-    dx += SPEED;
+    dx += 4;
 
   }
-
-
-  playerX += dx;
-
-  playerY += dy;
-
-
-  limitPlayer();
 
 
   if (
-    currentRoom === "intro"
+    dx !== 0 ||
+    dy !== 0
   ) {
 
-    updateIntroCamera();
+    state.x += dx;
 
-  }
+    state.y += dy;
 
-  else {
+    limitPlayer();
 
     updatePlayer();
 
+    updatePrompt();
+
   }
 
 
-  updatePrompt();
-
-
-  /* -------------------------------------
-     SYSTEM 진입
-  ------------------------------------- */
+  /* ----------------------------------------
+     INTRO → SYSTEM
+  ----------------------------------------- */
 
   if (
-    currentRoom === "intro" &&
-    playerX > 1850
+    state.room === "intro" &&
+    state.x >
+      window.innerWidth * 0.72
   ) {
 
     enterSystem();
@@ -548,20 +488,29 @@ function movePlayer() {
 
 /* =========================================================
    INTRO → SYSTEM
-   ========================================================= */
+========================================================= */
 
 function enterSystem() {
+
+  if (
+    state.room !== "intro"
+  ) {
+    return;
+  }
+
 
   switchRoom(
     "system"
   );
 
 
-  playerX =
-    130;
+  state.x =
+    120;
 
-  playerY =
-    360;
+  state.y =
+    Math.round(
+      window.innerHeight * 0.5
+    );
 
 
   updatePlayer();
@@ -569,19 +518,19 @@ function enterSystem() {
 
   showDialogue(
 
-    "SYSTEM 접속 완료",
+    "SYSTEM",
 
-    "시설의 유지보수 구역에 들어왔습니다.\n\n" +
+    "유지보수 노드 04에 접속했습니다.\n\n" +
 
-    "자동 복구 절차가 중단되어 있습니다.\n" +
+    "이 시설은 자동화 시스템의 상태를 확인하기 위한\n" +
 
-    "중앙 기록에는 세 개의 손상된 시스템이 남아 있습니다.\n\n" +
+    "유지보수 시뮬레이션 시설입니다.\n\n" +
 
-    "센서 → 전력 → 제어\n\n" +
+    "현재 자동 복구 절차가 정지되어 있습니다.\n\n" +
 
-    "세 시스템을 직접 복구하면\n" +
+    "세 개의 시스템을 직접 검증해야\n" +
 
-    "출구 잠금이 해제될 가능성이 있습니다."
+    "유지보수 잠금을 해제할 수 있습니다."
 
   );
 
@@ -590,7 +539,7 @@ function enterSystem() {
 
 /* =========================================================
    DIALOGUE
-   ========================================================= */
+========================================================= */
 
 function showDialogue(
   title,
@@ -603,8 +552,8 @@ function showDialogue(
   dialogueText.textContent =
     text;
 
-  dialogue.classList.add(
-    "visible"
+  dialogue.classList.remove(
+    "hidden"
   );
 
   interactionPrompt.classList.remove(
@@ -616,8 +565,8 @@ function showDialogue(
 
 function closeDialogue() {
 
-  dialogue.classList.remove(
-    "visible"
+  dialogue.classList.add(
+    "hidden"
   );
 
   updatePrompt();
@@ -633,22 +582,23 @@ dialogueClose.addEventListener(
 
 /* =========================================================
    INTERACTABLE
-   ========================================================= */
+========================================================= */
 
 function getInteractables() {
 
-  if (
-    !rooms[currentRoom]
-  ) {
+  const room =
+    rooms[state.room];
+
+
+  if (!room) {
     return [];
   }
 
 
   return [
-    ...rooms[currentRoom]
-      .querySelectorAll(
-        ".interactable"
-      )
+    ...room.querySelectorAll(
+      ".interactable"
+    )
   ];
 
 }
@@ -656,29 +606,24 @@ function getInteractables() {
 
 /* =========================================================
    OBJECT CENTER
-   ========================================================= */
+========================================================= */
 
-function getCenter(
+function getObjectCenter(
   element
 ) {
 
   const rect =
     element.getBoundingClientRect();
 
-  const gameRect =
-    game.getBoundingClientRect();
-
 
   return {
 
     x:
-      rect.left -
-      gameRect.left +
+      rect.left +
       rect.width / 2,
 
     y:
-      rect.top -
-      gameRect.top +
+      rect.top +
       rect.height / 2
 
   };
@@ -688,28 +633,31 @@ function getCenter(
 
 /* =========================================================
    DISTANCE
-   ========================================================= */
+========================================================= */
 
-function distanceTo(
+function getDistance(
   element
 ) {
 
   const center =
-    getCenter(
+    getObjectCenter(
       element
     );
 
 
   const px =
-    playerX + 16;
+    state.x + 16;
 
   const py =
-    playerY + 19;
+    state.y + 20;
 
 
   return Math.hypot(
+
     px - center.x,
+
     py - center.y
+
   );
 
 }
@@ -717,9 +665,9 @@ function distanceTo(
 
 /* =========================================================
    NEAREST
-   ========================================================= */
+========================================================= */
 
-function nearestInteractable() {
+function getNearestInteractable() {
 
   const objects =
     getInteractables();
@@ -732,39 +680,41 @@ function nearestInteractable() {
     Infinity;
 
 
-  for (
-    const object of objects
-  ) {
+  objects.forEach(
+    object => {
 
-    if (
-      object.classList.contains(
-        "disabled"
-      )
-    ) {
-      continue;
+      if (
+        object.classList.contains(
+          "disabled"
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      const distance =
+        getDistance(
+          object
+        );
+
+
+      if (
+        distance <
+        nearestDistance
+      ) {
+
+        nearest =
+          object;
+
+        nearestDistance =
+          distance;
+
+      }
+
     }
-
-
-    const distance =
-      distanceTo(
-        object
-      );
-
-
-    if (
-      distance <
-      nearestDistance
-    ) {
-
-      nearest =
-        object;
-
-      nearestDistance =
-        distance;
-
-    }
-
-  }
+  );
 
 
   if (
@@ -783,13 +733,13 @@ function nearestInteractable() {
 
 /* =========================================================
    PROMPT
-   ========================================================= */
+========================================================= */
 
 function updatePrompt() {
 
   if (
-    dialogue.classList.contains(
-      "visible"
+    !dialogue.classList.contains(
+      "hidden"
     )
   ) {
 
@@ -803,7 +753,7 @@ function updatePrompt() {
 
 
   const target =
-    nearestInteractable();
+    getNearestInteractable();
 
 
   if (!target) {
@@ -820,7 +770,7 @@ function updatePrompt() {
   interactionPrompt.textContent =
     `SPACE  ${
       target.dataset.label ||
-      "상호작용"
+      "조사"
     }`;
 
 
@@ -833,21 +783,23 @@ function updatePrompt() {
 
 /* =========================================================
    INTERACT
-   ========================================================= */
+========================================================= */
 
 function interact() {
 
   if (
-    dialogue.classList.contains(
-      "visible"
+    !dialogue.classList.contains(
+      "hidden"
     )
   ) {
+
     return;
+
   }
 
 
   const target =
-    nearestInteractable();
+    getNearestInteractable();
 
 
   if (!target) {
@@ -855,15 +807,15 @@ function interact() {
   }
 
 
-  const actionName =
+  const action =
     target.dataset.action;
 
 
   if (
-    actions[actionName]
+    actions[action]
   ) {
 
-    actions[actionName](
+    actions[action](
       target
     );
 
@@ -874,14 +826,14 @@ function interact() {
 
 /* =========================================================
    ACTIONS
-   ========================================================= */
+========================================================= */
 
 const actions = {
 
 
-  /* =====================================
-     FILE
-  ====================================== */
+  /* -----------------------------------------
+     ARCHIVE
+  ----------------------------------------- */
 
   openSensor: () => {
 
@@ -910,26 +862,45 @@ const actions = {
   },
 
 
-  /* =====================================
+  exit: () => {
+
+    const complete =
+      state.solved.sensor &&
+      state.solved.power &&
+      state.solved.control;
+
+
+    if (
+      complete
+    ) {
+
+      finishGame();
+
+    }
+
+  },
+
+
+  /* -----------------------------------------
      SENSOR
-  ====================================== */
+  ----------------------------------------- */
 
   sensorA: () => {
 
-    evidence.sensor.add(
+    state.evidence.sensor.add(
       "A"
     );
 
 
     showDialogue(
 
-      "센서 A",
+      "SENSOR A",
 
-      "센서 A는 기준 벽을 정확하게 바라보고 있습니다.\n\n" +
-
-      "현재 측정값 : 82 cm\n" +
+      "측정값 : 82 cm\n" +
 
       "기준 범위 : 80 ~ 84 cm\n\n" +
+
+      "센서가 기준 측정면을 정확하게 바라보고 있습니다.\n\n" +
 
       "상태 : 정상"
 
@@ -940,24 +911,24 @@ const actions = {
 
   sensorB: () => {
 
-    evidence.sensor.add(
+    state.evidence.sensor.add(
       "B"
     );
 
 
     showDialogue(
 
-      "센서 B",
+      "SENSOR B",
 
-      "센서 B의 측정값입니다.\n\n" +
-
-      "현재 측정값 : 103 cm\n" +
+      "측정값 : 103 cm\n" +
 
       "기준 범위 : 80 ~ 84 cm\n\n" +
 
-      "센서 자체에는 오류 기록이 없습니다.\n\n" +
+      "다른 센서와 비교해 큰 차이가 발생하고 있습니다.\n\n" +
 
-      "상태 : 비정상"
+      "측정면 자체에는 이상이 없다는 기록이 있습니다.\n\n" +
+
+      "센서의 방향을 확인해야 합니다."
 
     );
 
@@ -966,20 +937,20 @@ const actions = {
 
   sensorC: () => {
 
-    evidence.sensor.add(
+    state.evidence.sensor.add(
       "C"
     );
 
 
     showDialogue(
 
-      "센서 C",
+      "SENSOR C",
 
-      "센서 C는 기준 벽을 바라보고 있습니다.\n\n" +
-
-      "현재 측정값 : 81 cm\n" +
+      "측정값 : 81 cm\n" +
 
       "기준 범위 : 80 ~ 84 cm\n\n" +
+
+      "센서가 기준 측정면을 정확하게 바라보고 있습니다.\n\n" +
 
       "상태 : 정상"
 
@@ -990,22 +961,24 @@ const actions = {
 
   sensorReference: () => {
 
-    evidence.sensor.add(
-      "reference"
+    state.evidence.sensor.add(
+      "REFERENCE"
     );
 
 
     showDialogue(
 
-      "기준 표지판",
+      "기준 측정면",
 
-      "세 센서는 모두 같은 기준면을 측정해야 합니다.\n\n" +
+      "세 센서는 같은 고정된 벽을 측정해야 합니다.\n\n" +
 
-      "기준 벽은 움직이지 않았습니다.\n\n" +
+      "벽은 움직이지 않았습니다.\n" +
 
-      "따라서 하나만 값이 다르다면\n" +
+      "측정 환경도 변경되지 않았습니다.\n\n" +
 
-      "센서의 위치 또는 방향을 확인해야 합니다."
+      "따라서 B의 값이 다른 원인은\n" +
+
+      "센서의 방향 또는 시야에 있을 가능성이 높습니다."
 
     );
 
@@ -1014,20 +987,20 @@ const actions = {
 
   sensorConsole: () => {
 
-    if (
-      !(
-        evidence.sensor.has("A") &&
-        evidence.sensor.has("B") &&
-        evidence.sensor.has("C") &&
-        evidence.sensor.has("reference")
-      )
-    ) {
+    const ready =
+      state.evidence.sensor.has("A") &&
+      state.evidence.sensor.has("B") &&
+      state.evidence.sensor.has("C") &&
+      state.evidence.sensor.has("REFERENCE");
+
+
+    if (!ready) {
 
       showDialogue(
 
         "조정기 잠김",
 
-        "센서 A, B, C와 기준 표지판을\n" +
+        "센서 A, B, C와 기준 측정면을\n" +
         "모두 조사해야 합니다."
 
       );
@@ -1037,49 +1010,93 @@ const actions = {
     }
 
 
+    state.sensorAdjusting =
+      true;
+
+
     showDialogue(
 
       "센서 조정기",
 
-      "센서 B의 방향이 오른쪽으로 틀어져 있습니다.\n\n" +
+      "센서 B의 방향을 다시 맞춰야 합니다.\n\n" +
 
-      "다이얼을 돌려 기준 벽을 다시 바라보게 해야 합니다."
+      "대화창을 닫은 뒤 A / D 키로 각도를 조정하세요.\n\n" +
+
+      "기준 방향은 0°입니다.\n" +
+
+      "올바른 방향을 찾으면 센서가 정상 상태로 돌아옵니다."
 
     );
-
-
-    startSensorMiniGame();
 
   },
 
 
   sensorReturn: () => {
 
-    returnToSystem(
+    if (
+      state.sensorAngle !== 0
+    ) {
+      return;
+    }
+
+
+    state.solved.sensor =
+      true;
+
+
+    clearFile(
       "sensor"
+    );
+
+
+    switchRoom(
+      "system"
+    );
+
+
+    state.x =
+      170;
+
+    state.y =
+      360;
+
+
+    updatePlayer();
+
+
+    showDialogue(
+
+      "SENSOR RECOVERED",
+
+      "센서 B의 방향을 바로잡았습니다.\n\n" +
+
+      "세 센서의 측정값이 정상 범위로 돌아왔습니다.\n\n" +
+
+      "첫 번째 유지보수 기록이 복구되었습니다."
+
     );
 
   },
 
 
-  /* =====================================
+  /* -----------------------------------------
      POWER
-  ====================================== */
+  ----------------------------------------- */
 
   powerSensor: () => {
 
-    evidence.power.add(
-      "sensor"
+    state.evidence.power.add(
+      "SENSOR"
     );
 
 
     showDialogue(
 
-      "센서 단자",
+      "SENSOR POWER",
 
       "센서 입력 전압 : 12V\n\n" +
 
-      "12V 전원만 연결해야 합니다.\n" +
+      "12V 전원이 필요합니다.\n" +
 
       "24V를 연결하면 센서가 손상될 수 있습니다."
 
@@ -1090,18 +1107,20 @@ const actions = {
 
   powerMotor: () => {
 
-    evidence.power.add(
-      "motor"
+    state.evidence.power.add(
+      "MOTOR"
     );
 
 
     showDialogue(
 
-      "모터 단자",
+      "MOTOR POWER",
 
       "모터 입력 전압 : 24V\n\n" +
 
-      "24V 전원이 필요합니다."
+      "24V 전원이 필요합니다.\n\n" +
+
+      "출구 구동 장치이므로 충분한 전압이 필요합니다."
 
     );
 
@@ -1110,40 +1129,42 @@ const actions = {
 
   powerControl: () => {
 
-    evidence.power.add(
-      "control"
+    state.evidence.power.add(
+      "CONTROL"
     );
 
 
     showDialogue(
 
-      "제어기 단자",
+      "CONTROL POWER",
 
-      "제어기는 전원 장치의 기준점을 공유해야 합니다.\n\n" +
+      "제어기의 기준점 : GND\n\n" +
 
-      "공통 접지 : GND"
+      "전압 공급보다 먼저\n" +
+
+      "공통 접지 기준이 필요합니다."
 
     );
 
   },
 
 
-  powerStart: () => {
+  powerPanel: () => {
 
-    if (
-      !(
-        evidence.power.has("sensor") &&
-        evidence.power.has("motor") &&
-        evidence.power.has("control")
-      )
-    ) {
+    const ready =
+      state.evidence.power.has("SENSOR") &&
+      state.evidence.power.has("MOTOR") &&
+      state.evidence.power.has("CONTROL");
+
+
+    if (!ready) {
 
       showDialogue(
 
-        "전력 검사기 잠김",
+        "배선 패널",
 
-        "센서, 모터, 제어기의 단자를\n" +
-        "모두 조사해야 합니다."
+        "센서, 모터, 제어기의 전원 규격을\n" +
+        "먼저 확인해야 합니다."
 
       );
 
@@ -1152,40 +1173,92 @@ const actions = {
     }
 
 
-    checkPowerConnections();
+    document
+      .getElementById(
+        "power-mini"
+      )
+      .classList.add(
+        "visible"
+      );
+
+
+    updatePrompt();
 
   },
 
 
   powerReturn: () => {
 
-    returnToSystem(
+    if (
+      !checkPowerSolved()
+    ) {
+
+      return;
+
+    }
+
+
+    state.solved.power =
+      true;
+
+
+    clearFile(
       "power"
+    );
+
+
+    switchRoom(
+      "system"
+    );
+
+
+    state.x =
+      170;
+
+    state.y =
+      360;
+
+
+    updatePlayer();
+
+
+    showDialogue(
+
+      "POWER RECOVERED",
+
+      "12V는 SENSOR로,\n" +
+
+      "24V는 MOTOR로,\n" +
+
+      "GND는 CONTROL로 연결되었습니다.\n\n" +
+
+      "두 번째 유지보수 기록이 복구되었습니다."
+
     );
 
   },
 
 
-  /* =====================================
+  /* -----------------------------------------
      CONTROL
-  ====================================== */
+  ----------------------------------------- */
 
   controlPressure: () => {
 
-    evidence.control.add(
-      "pressure"
+    state.evidence.control.add(
+      "PRESSURE"
     );
 
 
     showDialogue(
 
-      "압력 센서",
+      "PRESSURE SENSOR",
 
-      "현재 상태 : 낮음\n\n" +
+      "현재 압력 : 낮음\n\n" +
 
-      "유지보수 기록에 따르면\n" +
+      "유지보수 기록에는\n" +
 
-      "브레이크 해제 전에 압력이 안정되어야 합니다."
+      "압력이 안정된 뒤 브레이크가 해제된다고 적혀 있습니다."
 
     );
 
@@ -1194,20 +1267,20 @@ const actions = {
 
   controlBrake: () => {
 
-    evidence.control.add(
-      "brake"
+    state.evidence.control.add(
+      "BRAKE"
     );
 
 
     showDialogue(
 
-      "브레이크",
+      "BRAKE",
 
       "현재 상태 : 잠김\n\n" +
 
-      "모터가 작동하기 전에\n" +
+      "모터를 작동하기 전에\n" +
 
-      "브레이크가 해제되어 있어야 합니다."
+      "브레이크가 먼저 해제되어야 합니다."
 
     );
 
@@ -1216,20 +1289,20 @@ const actions = {
 
   controlMotor: () => {
 
-    evidence.control.add(
-      "motor"
+    state.evidence.control.add(
+      "MOTOR"
     );
 
 
     showDialogue(
 
-      "구동 모터",
+      "MOTOR",
 
       "현재 상태 : 대기\n\n" +
 
-      "제어 순서의 마지막 단계에서\n" +
+      "모터는 제어 순서의 마지막 단계에서\n" +
 
-      "모터가 작동합니다."
+      "작동하도록 설계되어 있습니다."
 
     );
 
@@ -1238,20 +1311,26 @@ const actions = {
 
   controlNote: () => {
 
-    evidence.control.add(
-      "note"
+    state.evidence.control.add(
+      "NOTE"
     );
 
 
     showDialogue(
 
-      "유지보수 기록",
+      "MAINTENANCE LOG",
 
-      "압력이 안정된 뒤 브레이크가 해제된다.\n\n" +
+      "압력이 안정된 뒤\n" +
 
-      "브레이크가 해제된 뒤 모터를 작동한다.\n\n" +
+      "브레이크가 해제된다.\n\n" +
 
-      "순서는 장치 사이의 조건 관계로 판단할 수 있습니다."
+      "브레이크가 해제된 뒤\n" +
+
+      "모터가 작동한다.\n\n" +
+
+      "장치 사이의 조건을 연결하면\n" +
+
+      "전체 순서를 알아낼 수 있습니다."
 
     );
 
@@ -1260,24 +1339,50 @@ const actions = {
 
   controlReturn: () => {
 
-    returnToSystem(
+    if (
+      state.sequence.length !== 3
+    ) {
+
+      return;
+
+    }
+
+
+    state.solved.control =
+      true;
+
+
+    clearFile(
       "control"
     );
 
-  },
+
+    switchRoom(
+      "system"
+    );
 
 
-  exit: () => {
+    state.x =
+      170;
 
-    if (
-      solved.sensor &&
-      solved.power &&
-      solved.control
-    ) {
+    state.y =
+      360;
 
-      finishGame();
 
-    }
+    updatePlayer();
+
+
+    showDialogue(
+
+      "CONTROL RECOVERED",
+
+      "압력 안정 → 브레이크 해제 → 모터 작동\n\n" +
+
+      "세 장치의 제어 순서가 복구되었습니다.\n\n" +
+
+      "세 번째 유지보수 기록이 복구되었습니다."
+
+    );
 
   }
 
@@ -1286,14 +1391,14 @@ const actions = {
 
 /* =========================================================
    OPEN PUZZLE
-   ========================================================= */
+========================================================= */
 
 function openPuzzle(
   type
 ) {
 
   if (
-    solved[type]
+    state.solved[type]
   ) {
 
     showDialogue(
@@ -1302,7 +1407,7 @@ function openPuzzle(
 
       "이 기록은 이미 복구되었습니다.\n\n" +
 
-      "원래 파일 대신 종이 조각만 남아 있습니다."
+      "원래 기록 대신 종이 조각이 남아 있습니다."
 
     );
 
@@ -1316,199 +1421,258 @@ function openPuzzle(
   );
 
 
-  playerX =
+  state.x =
     100;
 
-  playerY =
-    560;
+  state.y =
+    window.innerHeight -
+    120;
 
 
   updatePlayer();
 
 
-  const introText = {
+  if (
+    type === "sensor"
+  ) {
 
-    sensor:
+    showDialogue(
+
+      "SENSOR BAY",
 
       "센서실입니다.\n\n" +
 
-      "세 개의 거리 센서 중 하나가 이상한 값을 내고 있습니다.\n\n" +
+      "세 개의 센서가 서로 다른 값을 기록하고 있습니다.\n\n" +
 
-      "직접 돌아다니며 세 센서와 기준 표지판을 조사하세요.\n\n" +
+      "방을 돌아다니며 모든 센서와 기준 측정면을 조사하세요.\n\n" +
 
-      "이상 센서를 찾은 뒤 조정기를 사용해야 합니다.",
+      "그 다음 이상 센서를 정상 방향으로 맞춰야 합니다."
 
+    );
 
-    power:
-
-      "전력실입니다.\n\n" +
-
-      "센서, 모터, 제어기에 전원을 공급해야 합니다.\n\n" +
-
-      "각 장치가 요구하는 전압을 확인하고\n" +
-
-      "배선 패널에서 올바르게 연결하세요.",
+  }
 
 
-    control:
+  if (
+    type === "power"
+  ) {
 
-      "제어실입니다.\n\n" +
+    showDialogue(
 
-      "압력, 브레이크, 모터 사이에는 작동 순서가 있습니다.\n\n" +
+      "POWER BAY",
 
-      "주변 장치와 유지보수 기록을 조사한 뒤\n" +
+      "전력 분배실입니다.\n\n" +
 
-      "제어 순서를 직접 입력하세요."
+      "센서, 모터, 제어기는 서로 다른 전원 조건을 사용합니다.\n\n" +
 
-  };
+      "장치를 직접 조사한 뒤 배선판에서 올바른 연결을 만들어야 합니다."
+
+    );
+
+  }
 
 
-  showDialogue(
+  if (
+    type === "control"
+  ) {
 
-    `FILE ${type.toUpperCase()}`,
+    showDialogue(
 
-    introText[type]
+      "CONTROL CHAMBER",
 
-  );
+      "제어 시스템실입니다.\n\n" +
+
+      "세 장치 사이에는 작동 조건이 연결되어 있습니다.\n\n" +
+
+      "주변 장치와 유지보수 기록을 조사하고\n" +
+
+      "가장 먼저 작동해야 하는 장치부터 순서를 만들어야 합니다."
+
+    );
+
+  }
 
 }
 
 
 /* =========================================================
-   SENSOR MINI GAME
+   SENSOR ANGLE
 ========================================================= */
 
-function startSensorMiniGame() {
-
-  const dial =
-    document.querySelector(
-      ".dial"
-    );
-
-
-  let currentAngle =
-    sensorRotation;
-
-
-  function rotateDial(
-    event
-  ) {
+document.addEventListener(
+  "keydown",
+  event => {
 
     if (
-      event.code === "ArrowLeft"
+      state.room !== "sensor"
     ) {
 
-      currentAngle -= 15;
-
-      event.preventDefault();
+      return;
 
     }
 
 
     if (
-      event.code === "ArrowRight"
+      !state.sensorAdjusting
     ) {
 
-      currentAngle += 15;
-
-      event.preventDefault();
-
-    }
-
-
-    dial.style.transform =
-      `rotate(${currentAngle}deg)`;
-
-
-    sensorRotation =
-      currentAngle;
-
-
-    /*
-       정답 범위
-       약 -45도
-    */
-
-    if (
-      currentAngle >= -55 &&
-      currentAngle <= -35
-    ) {
-
-      sensorCorrect =
-        true;
-
-    }
-
-    else {
-
-      sensorCorrect =
-        false;
-
-    }
-
-
-    const display =
-      document.getElementById(
-        "sensor-console-status"
-      );
-
-
-    if (sensorCorrect) {
-
-      display.textContent =
-        "정상 방향";
-
-    }
-
-    else {
-
-      display.textContent =
-        "방향 조정 필요";
+      return;
 
     }
 
 
     if (
-      sensorCorrect
+      !dialogue.classList.contains(
+        "hidden"
+      )
     ) {
 
-      const returnDoor =
-        document.getElementById(
-          "sensor-return"
+      return;
+
+    }
+
+
+    if (
+      event.key.toLowerCase() === "a"
+    ) {
+
+      state.sensorAngle -= 5;
+
+      state.sensorAngle =
+        Math.max(
+          -45,
+          state.sensorAngle
         );
 
+      updateSensorAngle();
 
-      returnDoor.classList.remove(
-        "disabled"
-      );
-
-
-      showDialogue(
-
-        "센서 방향 조정 완료",
-
-        "센서 B가 기준 벽을 다시 바라보고 있습니다.\n\n" +
-
-        "측정값이 정상 범위로 돌아왔습니다.\n\n" +
-
-        "센서 복구 완료."
-
-      );
+    }
 
 
-      document.removeEventListener(
-        "keydown",
-        rotateDial
-      );
+    if (
+      event.key.toLowerCase() === "d"
+    ) {
+
+      state.sensorAngle += 5;
+
+      state.sensorAngle =
+        Math.min(
+          45,
+          state.sensorAngle
+        );
+
+      updateSensorAngle();
+
+    }
+
+
+    if (
+      event.code === "Space"
+    ) {
+
+      if (
+        state.sensorAngle === 0
+      ) {
+
+        completeSensor();
+
+      }
+
+      else {
+
+        showDialogue(
+
+          "조정 실패",
+
+          "센서의 방향이 기준면과 일치하지 않습니다.\n\n" +
+
+          "현재 방향을 다시 확인하세요."
+
+        );
+
+      }
 
     }
 
   }
+);
 
 
-  document.addEventListener(
-    "keydown",
-    rotateDial
+/* =========================================================
+   UPDATE SENSOR
+========================================================= */
+
+function updateSensorAngle() {
+
+  const display =
+    document.getElementById(
+      "sensor-angle-display"
+    );
+
+  const marker =
+    document.getElementById(
+      "angle-marker"
+    );
+
+
+  display.textContent =
+    `방향 : ${state.sensorAngle}°`;
+
+
+  const position =
+    50 +
+    (
+      state.sensorAngle /
+      45
+    ) *
+    40;
+
+
+  marker.style.left =
+    `${position}%`;
+
+}
+
+
+/* =========================================================
+   COMPLETE SENSOR
+========================================================= */
+
+function completeSensor() {
+
+  state.sensorAdjusting =
+    false;
+
+
+  const returnDoor =
+    document.getElementById(
+      "sensor-return"
+    );
+
+
+  returnDoor.classList.remove(
+    "disabled"
+  );
+
+
+  document
+    .getElementById(
+      "sensor-console"
+    )
+    .dataset.label =
+    "정상 방향 확인";
+
+
+  showDialogue(
+
+    "SENSOR CALIBRATED",
+
+    "센서 B의 방향이 정상 위치인 0°로 돌아왔습니다.\n\n" +
+
+    "측정값도 정상 범위로 복구됩니다.\n\n" +
+
+    "이제 RETURN을 조사해 중앙 기록실로 돌아갈 수 있습니다."
+
   );
 
 }
@@ -1518,190 +1682,419 @@ function startSensorMiniGame() {
    POWER MINI GAME
 ========================================================= */
 
-const powerNodeRequirements = {
+const sourceNodes =
+  document.querySelectorAll(
+    ".source-node"
+  );
 
-  1: "12V",
-  2: "24V",
-  3: "GND"
-
-};
-
-
-document.addEventListener(
-  "click",
-  event => {
-
-    const node =
-      event.target.closest(
-        ".wire-node"
-      );
+const targetNodes =
+  document.querySelectorAll(
+    ".target-node"
+  );
 
 
-    if (!node) {
-      return;
-    }
+sourceNodes.forEach(
+  node => {
+
+    node.addEventListener(
+      "click",
+      () => {
+
+        state.selectedWire =
+          node.dataset.wire;
 
 
-    if (
-      currentRoom !== "power"
-    ) {
-      return;
-    }
+        sourceNodes.forEach(
+          n =>
+            n.classList.remove(
+              "selected"
+            )
+        );
 
 
-    const number =
-      node.dataset.node;
+        node.classList.add(
+          "selected"
+        );
 
 
-    powerConnections[number] =
-      powerNodeRequirements[number];
+        document.getElementById(
+          "wire-status"
+        ).textContent =
 
+          `${state.selectedWire} 전원선을 선택했습니다. 연결할 장치를 선택하세요.`;
 
-    document
-      .querySelectorAll(
-        ".wire-node"
-      )
-      .forEach(
-        element => {
-
-          element.classList.remove(
-            "selected"
-          );
-
-        }
-      );
-
-
-    node.classList.add(
-      "selected"
+      }
     );
-
-
-    const status =
-      document.getElementById(
-        "power-status"
-      );
-
-
-    status.textContent =
-      `배선 ${number} : ${powerNodeRequirements[number]} 연결`;
 
   }
 );
+
+
+targetNodes.forEach(
+  node => {
+
+    node.addEventListener(
+      "click",
+      () => {
+
+        if (
+          !state.selectedWire
+        ) {
+
+          document.getElementById(
+            "wire-status"
+          ).textContent =
+
+            "먼저 왼쪽에서 전원선을 선택하세요.";
+
+          return;
+
+        }
+
+
+        const target =
+          node.dataset.target;
+
+
+        state.wires[
+          state.selectedWire
+        ] =
+          target;
+
+
+        drawWires();
+
+
+        document.getElementById(
+          "wire-status"
+        ).textContent =
+
+          `${state.selectedWire} → ${target.toUpperCase()} 연결`;
+
+        state.selectedWire =
+          null;
+
+
+        sourceNodes.forEach(
+          n =>
+            n.classList.remove(
+              "selected"
+            )
+        );
+
+      }
+    );
+
+  }
+);
+
+
+/* =========================================================
+   DRAW WIRES
+========================================================= */
+
+function drawWires() {
+
+  const group =
+    document.getElementById(
+      "wire-lines"
+    );
+
+
+  group.innerHTML =
+    "";
+
+
+  const panel =
+    document.getElementById(
+      "power-mini"
+    );
+
+
+  const panelRect =
+    panel.getBoundingClientRect();
+
+
+  Object.entries(
+    state.wires
+  ).forEach(
+    ([source, target]) => {
+
+      if (!target) {
+        return;
+      }
+
+
+      const sourceElement =
+        document.querySelector(
+          `.source-node[data-wire="${source}"]`
+        );
+
+
+      const targetElement =
+        document.querySelector(
+          `.target-node[data-target="${target}"]`
+        );
+
+
+      if (
+        !sourceElement ||
+        !targetElement
+      ) {
+
+        return;
+
+      }
+
+
+      const s =
+        sourceElement.getBoundingClientRect();
+
+
+      const t =
+        targetElement.getBoundingClientRect();
+
+
+      const x1 =
+        s.left +
+        s.width -
+        panelRect.left;
+
+
+      const y1 =
+        s.top +
+        s.height / 2 -
+        panelRect.top;
+
+
+      const x2 =
+        t.left -
+        panelRect.left;
+
+
+      const y2 =
+        t.top +
+        t.height / 2 -
+        panelRect.top;
+
+
+      const line =
+        document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "line"
+        );
+
+
+      line.setAttribute(
+        "x1",
+        x1
+      );
+
+
+      line.setAttribute(
+        "y1",
+        y1
+      );
+
+
+      line.setAttribute(
+        "x2",
+        x2
+      );
+
+
+      line.setAttribute(
+        "y2",
+        y2
+      );
+
+
+      line.classList.add(
+        "wire-line"
+      );
+
+
+      group.appendChild(
+        line
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   CHECK POWER
+========================================================= */
+
+document
+  .getElementById(
+    "wire-check"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      const solvedPower =
+        checkPowerSolved();
+
+
+      if (
+        solvedPower
+      ) {
+
+        document
+          .getElementById(
+            "power-mini"
+          )
+          .classList.remove(
+            "visible"
+          );
+
+
+        document
+          .getElementById(
+            "power-return"
+          )
+          .classList.remove(
+            "disabled"
+          );
+
+
+        showDialogue(
+
+          "POWER ROUTE COMPLETE",
+
+          "12V → SENSOR\n" +
+
+          "24V → MOTOR\n" +
+
+          "GND → CONTROL\n\n" +
+
+          "모든 장치가 필요한 전원 규격에 맞게 연결되었습니다.\n\n" +
+
+          "RETURN이 해제되었습니다."
+
+        );
+
+      }
+
+      else {
+
+        document
+          .getElementById(
+            "wire-status"
+          )
+          .textContent =
+
+          "전원 연결이 올바르지 않습니다. 장치의 요구 전압을 다시 확인하세요.";
+
+      }
+
+    }
+  );
 
 
 /* =========================================================
    POWER CHECK
 ========================================================= */
 
-function checkPowerConnections() {
+function checkPowerSolved() {
 
-  const correct =
-    powerConnections["1"] === "12V" &&
-    powerConnections["2"] === "24V" &&
-    powerConnections["3"] === "GND";
+  return (
 
+    state.wires["12V"] ===
+    "sensor"
 
-  if (!correct) {
+    &&
 
-    showDialogue(
+    state.wires["24V"] ===
+    "motor"
 
-      "배선 오류",
+    &&
 
-      "전압 또는 접지 연결이 올바르지 않습니다.\n\n" +
-
-      "각 장치가 요구하는 전원 규격과\n" +
-
-      "배전판의 연결을 다시 확인하세요."
-
-    );
-
-    return;
-
-  }
-
-
-  showDialogue(
-
-    "배선 연결 완료",
-
-    "12V → 센서\n" +
-
-    "24V → 모터\n" +
-
-    "GND → 제어기\n\n" +
-
-    "모든 전원 연결이 정상입니다.\n\n" +
-
-    "전력 시스템 복구 완료."
+    state.wires["GND"] ===
+    "control"
 
   );
 
-
-  document
-    .getElementById(
-      "power-return"
-    )
-    .classList.remove(
-      "disabled"
-    );
-
 }
+
+
+/* =========================================================
+   POWER CLOSE
+========================================================= */
+
+document
+  .getElementById(
+    "wire-close"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      document
+        .getElementById(
+          "power-mini"
+        )
+        .classList.remove(
+          "visible"
+        );
+
+    }
+  );
 
 
 /* =========================================================
    CONTROL SEQUENCE
 ========================================================= */
 
-document.addEventListener(
-  "click",
-  event => {
-
-    const button =
-      event.target.closest(
-        ".sequence-button"
-      );
+const sequenceButtons =
+  document.querySelectorAll(
+    ".sequence-button"
+  );
 
 
-    if (!button) {
-      return;
-    }
+sequenceButtons.forEach(
+  button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        if (
+          state.sequence.length >= 3
+        ) {
+
+          return;
+
+        }
 
 
-    if (
-      currentRoom !== "control"
-    ) {
-      return;
-    }
+        const value =
+          button.dataset.sequence;
 
 
-    const value =
-      button.dataset.sequence;
+        state.sequence.push(
+          value
+        );
 
 
-    if (
-      sequence.length >= 3
-    ) {
-      return;
-    }
+        updateSequence();
 
-
-    sequence.push(
-      value
+      }
     );
-
-
-    updateSequenceDisplay();
 
   }
 );
 
 
 /* =========================================================
-   SEQUENCE DISPLAY
+   UPDATE SEQUENCE
 ========================================================= */
 
-function updateSequenceDisplay() {
+function updateSequence() {
 
   const display =
     document.getElementById(
@@ -1711,18 +2104,22 @@ function updateSequenceDisplay() {
 
   const names = {
 
-    pressure: "압력 안정",
+    pressure:
+      "압력 안정",
 
-    brake: "브레이크 해제",
+    brake:
+      "브레이크 해제",
 
-    motor: "모터 작동"
+    motor:
+      "모터 작동"
 
   };
 
 
   const result =
-    sequence.map(
-      item => names[item]
+    state.sequence.map(
+      value =>
+        names[value]
     );
 
 
@@ -1744,7 +2141,7 @@ function updateSequenceDisplay() {
 
 
 /* =========================================================
-   SEQUENCE RESET
+   RESET SEQUENCE
 ========================================================= */
 
 document
@@ -1755,17 +2152,17 @@ document
     "click",
     () => {
 
-      sequence =
+      state.sequence =
         [];
 
-      updateSequenceDisplay();
+      updateSequence();
 
     }
   );
 
 
 /* =========================================================
-   SEQUENCE CHECK
+   CHECK SEQUENCE
 ========================================================= */
 
 document
@@ -1776,21 +2173,32 @@ document
     "click",
     () => {
 
-      if (
-        !(
-          evidence.control.has("pressure") &&
-          evidence.control.has("brake") &&
-          evidence.control.has("motor") &&
-          evidence.control.has("note")
+      const investigated =
+        state.evidence.control.has(
+          "PRESSURE"
         )
-      ) {
+        &&
+        state.evidence.control.has(
+          "BRAKE"
+        )
+        &&
+        state.evidence.control.has(
+          "MOTOR"
+        )
+        &&
+        state.evidence.control.has(
+          "NOTE"
+        );
+
+
+      if (!investigated) {
 
         showDialogue(
 
           "제어 순서 잠김",
 
-          "주변 장치와 유지보수 기록을\n" +
-          "먼저 조사해야 합니다."
+          "압력, 브레이크, 모터와\n" +
+          "유지보수 기록을 모두 조사해야 합니다."
 
         );
 
@@ -1799,23 +2207,17 @@ document
       }
 
 
-      const answer = [
-
-        "pressure",
-
-        "brake",
-
-        "motor"
-
-      ];
-
-
       const correct =
-        sequence.length === 3 &&
-        sequence.every(
-          (value, index) =>
-            value === answer[index]
-        );
+        state.sequence.length === 3 &&
+
+        state.sequence[0] ===
+          "pressure" &&
+
+        state.sequence[1] ===
+          "brake" &&
+
+        state.sequence[2] ===
+          "motor";
 
 
       if (!correct) {
@@ -1824,29 +2226,17 @@ document
 
           "순서 오류",
 
-          "장치 사이의 조건 관계와\n" +
-          "맞지 않는 순서입니다.\n\n" +
+          "장치 사이의 조건과 맞지 않는 순서입니다.\n\n" +
 
-          "압력 → 브레이크 → 모터\n" +
+          "어떤 장치가 먼저 안정되어야 하는지\n" +
 
-          "각 단계가 왜 필요한지 다시 조사해 보세요."
+          "다시 생각해 보세요."
 
         );
 
         return;
 
       }
-
-
-      showDialogue(
-
-        "제어 순서 복구 완료",
-
-        "압력 안정 → 브레이크 해제 → 모터 작동\n\n" +
-
-        "제어 시스템이 정상 순서를 복구했습니다."
-
-      );
 
 
       document
@@ -1857,124 +2247,34 @@ document
           "disabled"
         );
 
+
+      showDialogue(
+
+        "CONTROL SEQUENCE COMPLETE",
+
+        "압력 안정 → 브레이크 해제 → 모터 작동\n\n" +
+
+        "모든 조건이 올바른 순서로 연결되었습니다.\n\n" +
+
+        "RETURN이 해제되었습니다."
+
+      );
+
     }
   );
 
 
 /* =========================================================
-   RETURN TO SYSTEM
+   CLEAR FILE
 ========================================================= */
 
-function returnToSystem(
-  type
-) {
-
-  const ready = {
-
-    sensor:
-      sensorCorrect,
-
-    power:
-      powerConnections["1"] === "12V" &&
-      powerConnections["2"] === "24V" &&
-      powerConnections["3"] === "GND",
-
-    control:
-      sequence.length === 3 &&
-      sequence[0] === "pressure" &&
-      sequence[1] === "brake" &&
-      sequence[2] === "motor"
-
-  };
-
-
-  if (
-    !ready[type]
-  ) {
-
-    return;
-
-  }
-
-
-  solved[type] =
-    true;
-
-
-  convertFile(
-    type
-  );
-
-
-  switchRoom(
-    "system"
-  );
-
-
-  playerX =
-    170;
-
-  playerY =
-    360;
-
-
-  updatePlayer();
-
-
-  updateHUD();
-
-  updateExit();
-
-
-  const message = {
-
-    sensor:
-
-      "센서 시스템 복구 완료.\n\n" +
-
-      "이상 센서의 방향을 찾아 정상 위치로 조정했습니다.",
-
-    power:
-
-      "전력 시스템 복구 완료.\n\n" +
-
-      "각 장치의 요구 전압에 맞춰 배선을 연결했습니다.",
-
-    control:
-
-      "제어 시스템 복구 완료.\n\n" +
-
-      "장치 사이의 조건을 분석하여 올바른 작동 순서를 복구했습니다."
-
-  };
-
-
-  showDialogue(
-
-    "복구 완료",
-
-    message[type] +
-
-    "\n\n" +
-
-    "원래 파일 대신 종이 조각이 남았습니다."
-
-  );
-
-}
-
-
-/* =========================================================
-   FILE → PAPER
-========================================================= */
-
-function convertFile(
+function clearFile(
   type
 ) {
 
   const file =
-    rooms.system.querySelector(
-      `[data-file="${type}"]`
+    document.querySelector(
+      `.record[data-file="${type}"]`
     );
 
 
@@ -1997,65 +2297,46 @@ function convertFile(
     "";
 
 
-  file.innerHTML =
+  file.dataset.label =
     "";
 
 
-  const paper =
-    document.createElement(
-      "div"
-    );
-
-
-  paper.className =
-    "paper-fragment";
-
-
-  const data = {
+  const text = {
 
     sensor:
-      [
-        "남겨진 메모",
-        "이상값보다\n센서의 방향을 확인할 것"
-      ],
+      "센서 방향\n정상화",
 
     power:
-      [
-        "남겨진 메모",
-        "전압을 맞추고\n배선 순서를 확인할 것"
-      ],
+      "전원 경로\n복구 완료",
 
     control:
-      [
-        "남겨진 메모",
-        "장치보다\n조건의 순서를 볼 것"
-      ]
+      "제어 순서\n복구 완료"
 
   };
 
 
-  paper.innerHTML =
+  file.innerHTML = `
 
-    `<div style="font-size:8px;opacity:.55;">
-      ${data[type][0]}
-     </div>` +
+    <div class="paper-fragment">
 
-    `<div style="
-      margin-top:10px;
-      font-size:10px;
-      line-height:1.5;
-    ">
-      ${data[type][1]
-        .replace(
-          "\n",
-          "<br>"
-        )}
-     </div>`;
+      <div class="paper-small">
+        남겨진 메모
+      </div>
+
+      <div class="paper-main">
+        ${text[type]
+          .replace(
+            "\n",
+            "<br>"
+          )}
+      </div>
+
+    </div>
+
+  `;
 
 
-  file.appendChild(
-    paper
-  );
+  updateExit();
 
 }
 
@@ -2072,10 +2353,14 @@ function updateExit() {
     );
 
 
+  const complete =
+    state.solved.sensor &&
+    state.solved.power &&
+    state.solved.control;
+
+
   if (
-    solved.sensor &&
-    solved.power &&
-    solved.control
+    complete
   ) {
 
     exit.classList.remove(
@@ -2089,14 +2374,7 @@ function updateExit() {
     exit.dataset.label =
       "출구 열기";
 
-    return;
-
   }
-
-
-  exit.classList.add(
-    "disabled"
-  );
 
 }
 
@@ -2109,31 +2387,47 @@ function finishGame() {
 
   endingText.innerHTML =
 
-    "세 개의 시스템이 다시 하나의 제어 흐름으로 연결되었습니다." +
+    "세 개의 유지보수 시스템이 모두 정상 상태로 돌아왔습니다." +
 
     "<br><br>" +
 
-    "센서가 환경을 측정하고," +
+    "센서는 환경을 정확하게 측정하고," +
 
     "<br>" +
 
-    "전력이 장치를 움직이며," +
+    "전력 시스템은 필요한 장치에만 전원을 공급하며," +
 
     "<br>" +
 
-    "제어 시스템이 그 순서를 조정합니다." +
+    "제어 시스템은 장치의 순서를 안정적으로 조정합니다." +
 
     "<br><br>" +
 
-    "<b>MAINTENANCE LOCK : RELEASED</b>" +
+    "<strong>" +
+
+    "그리고 이제야 이 시설의 진짜 목적이 드러납니다." +
+
+    "</strong>" +
 
     "<br><br>" +
 
-    "시설의 출구가 열렸습니다.";
+    "이 시설은 고장난 것이 아니었습니다." +
+
+    "<br>" +
+
+    "유지보수 절차가 완료되었는지 확인하기 위해" +
+
+    "<br>" +
+
+    "출구 자체가 잠겨 있었던 것입니다." +
+
+    "<br><br>" +
+
+    "검증 완료.";
 
 
-  ending.classList.add(
-    "visible"
+  ending.classList.remove(
+    "hidden"
   );
 
 
@@ -2190,8 +2484,8 @@ document.addEventListener(
       ) {
 
         if (
-          dialogue.classList.contains(
-            "visible"
+          !dialogue.classList.contains(
+            "hidden"
           )
         ) {
 
@@ -2263,42 +2557,20 @@ window.addEventListener(
   "resize",
   () => {
 
-    ROOM_WIDTH.system =
-      window.innerWidth;
-
-    ROOM_WIDTH.sensor =
-      window.innerWidth;
-
-    ROOM_WIDTH.power =
-      window.innerWidth;
-
-    ROOM_WIDTH.control =
-      window.innerWidth;
-
-
     limitPlayer();
 
+    updatePlayer();
 
-    if (
-      currentRoom === "intro"
-    ) {
+    updatePrompt();
 
-      updateIntroCamera();
-
-    }
-
-    else {
-
-      updatePlayer();
-
-    }
+    drawWires();
 
   }
 );
 
 
 /* =========================================================
-   GAME LOOP
+   LOOP
 ========================================================= */
 
 function gameLoop() {
@@ -2313,7 +2585,7 @@ function gameLoop() {
 
 
 /* =========================================================
-   INIT
+   INITIALIZE
 ========================================================= */
 
 switchRoom(
@@ -2321,10 +2593,10 @@ switchRoom(
 );
 
 
-playerX =
-  120;
+state.x =
+  100;
 
-playerY =
+state.y =
   Math.round(
     window.innerHeight * 0.5
   );
@@ -2336,8 +2608,7 @@ updateHUD();
 
 updateExit();
 
-updateIntroCamera();
-
 updatePrompt();
+
 
 gameLoop();
