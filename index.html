@@ -1,766 +1,93 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>REBOOT</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EngineOS v1.0.4 - Debugger</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 레트로 폰트 불러오기 -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
-
 <body>
 
-<div id="game">
-
-  <!-- =========================
-       HUD
-  ========================== -->
-  <header id="hud">
-    <div class="hud-left">
-      <div id="chapter">BOOT SEQUENCE</div>
-      <div id="objective">Reach the system terminal.</div>
-    </div>
-
-    <div id="status">0/3 RECOVERED</div>
-  </header>
-
-
-  <!-- =========================
-       INTRO ROOM
-  ========================== -->
-  <section id="room-intro" class="room active">
-
-    <div class="intro-space">
-
-      <div class="light-haze haze-1"></div>
-      <div class="light-haze haze-2"></div>
-      <div class="light-haze haze-3"></div>
-
-      <div class="intro-title">
-        <div class="intro-main">REBOOT</div>
-        <div class="intro-sub">MAINTENANCE SIMULATION</div>
-      </div>
-
-      <div class="system-gate">
-        <div class="gate-label">SYSTEM</div>
-        <div class="gate-sub">MAINTENANCE NODE 04</div>
-      </div>
-
-      <div class="intro-note">
-        W A S D / ARROW KEYS &nbsp; MOVE
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- =========================
-       SYSTEM ARCHIVE
-  ========================== -->
-  <section id="room-system" class="room">
-
-    <div class="archive-window">
-
-      <div class="window-bar">
-        <span>REBOOT://ARCHIVE</span>
-        <span>NODE 04</span>
-      </div>
-
-      <div class="archive-body">
-
-        <div class="archive-heading">
-          <div class="archive-title">
-            MAINTENANCE ARCHIVE
-          </div>
-
-          <div class="archive-desc">
-            Three corrupted maintenance records detected.
-          </div>
+    <div id="desktop">
+        <!-- 1. 메인 시스템 모니터 창 -->
+        <div class="window" id="win-status" style="top: 20px; left: 20px; width: 320px;">
+            <div class="title-bar">
+                <span>[SYS_MONITOR.EXE]</span>
+                <span class="win-btn">_</span>
+            </div>
+            <div class="window-body">
+                <div class="stat-group">
+                    <label>CORE INTEGRITY (HP):</label>
+                    <div class="progress-bar"><div id="hp-bar" class="fill hp" style="width: 100%;"></div></div>
+                </div>
+                <div class="stat-group">
+                    <label>SYSTEM TEMP (HEAT):</label>
+                    <div class="progress-bar"><div id="heat-bar" class="fill heat" style="width: 30%;"></div></div>
+                    <span id="temp-text" class="stat-val">30°C</span>
+                </div>
+                <div class="stat-group">
+                    <label>POWER GRID (WATT):</label>
+                    <div class="progress-bar"><div id="power-bar" class="fill power" style="width: 80%;"></div></div>
+                    <span id="power-text" class="stat-val">80W / 100W</span>
+                </div>
+                
+                <div class="btn-group">
+                    <button id="btn-cool" class="pixel-btn">🌀 COOLING FLUSH</button>
+                    <button id="btn-overclock" class="pixel-btn">⚡ OVERCLOCK (OFF)</button>
+                </div>
+            </div>
         </div>
 
-
-        <div class="file-area">
-
-          <!-- SENSOR -->
-          <div
-            class="file interactable sensor-file"
-            data-file="sensor"
-            data-action="openSensor"
-            data-label="OPEN SENSOR_01"
-          >
-
-            <div class="file-tab"></div>
-
-            <div class="file-paper">
-              <span>SENSOR_01</span>
-              <small>CALIBRATION.LOG</small>
+        <!-- 2. 회로 & 모듈 관리 창 -->
+        <div class="window" id="win-circuit" style="top: 20px; left: 360px; width: 300px;">
+            <div class="title-bar">
+                <span>[CIRCUIT_BOARD.SLOT]</span>
+                <span class="win-btn">_</span>
             </div>
-
-          </div>
-
-
-          <!-- POWER -->
-          <div
-            class="file interactable power-file"
-            data-file="power"
-            data-action="openPower"
-            data-label="OPEN POWER_02"
-          >
-
-            <div class="file-tab"></div>
-
-            <div class="file-paper">
-              <span>POWER_02</span>
-              <small>DISTRIBUTION.CFG</small>
+            <div class="window-body">
+                <p class="guide-text">장착 모듈 클릭 시 토글:</p>
+                <div class="module-grid">
+                    <div class="module active" id="mod-fan" onclick="toggleModule('fan')">
+                        <div class="mod-icon">❄️</div>
+                        <div class="mod-name">Aux Cooling</div>
+                    </div>
+                    <div class="module active" id="mod-regulator" onclick="toggleModule('regulator')">
+                        <div class="mod-icon">🔋</div>
+                        <div class="mod-name">Vol. Regulator</div>
+                    </div>
+                    <div class="module" id="mod-filter" onclick="toggleModule('filter')">
+                        <div class="mod-icon">🛡️</div>
+                        <div class="mod-name">Noise Filter</div>
+                    </div>
+                </div>
             </div>
-
-          </div>
-
-
-          <!-- CONTROL -->
-          <div
-            class="file interactable control-file"
-            data-file="control"
-            data-action="openControl"
-            data-label="OPEN CONTROL_03"
-          >
-
-            <div class="file-tab"></div>
-
-            <div class="file-paper">
-              <span>CONTROL_03</span>
-              <small>RESPONSE.LOG</small>
-            </div>
-
-          </div>
-
         </div>
 
-
-        <div class="archive-note">
-
-          <div class="archive-warning">
-            MAINTENANCE LOCK
-          </div>
-
-          <div class="archive-status">
-            SYSTEM STATUS : DEGRADED
-          </div>
-
-          <div class="archive-status">
-            EXIT : UNAVAILABLE
-          </div>
-
-        </div>
-
-
-        <!-- HIDDEN EXIT -->
-        <div
-          id="hidden-exit"
-          class="exit interactable disabled"
-          data-action="exit"
-          data-label="LOCKED"
-        >
-
-          <div class="exit-frame">
-            <div class="exit-text">
-              EXIT
+        <!-- 3. 터미널 이벤트 로그 창 -->
+        <div class="window" id="win-log" style="top: 280px; left: 20px; width: 640px; height: 180px;">
+            <div class="title-bar">
+                <span>[TERMINAL_LOG]</span>
+                <span class="win-btn">_</span>
             </div>
-          </div>
-
+            <div class="window-body">
+                <div id="log-output" class="console">
+                    > System Kernel Initialized...<br>
+                    > EngineOS Monitoring Active...<br>
+                    > Warning: Anomalies detected on Grid B!
+                </div>
+            </div>
         </div>
-
-      </div>
-
     </div>
 
-  </section>
-
-
-  <!-- =========================
-       SENSOR ROOM
-  ========================== -->
-  <section id="room-sensor" class="room puzzle-room">
-
-    <div class="room-background sensor-background"></div>
-
-    <div class="room-title">
-      FILE 01 // CALIBRATION CHAMBER
+    <!-- 하단 작업표시줄 -->
+    <div id="taskbar">
+        <button class="start-btn">🕹️ START</button>
+        <div class="task-item">EngineOS v1.0.4</div>
+        <div id="clock">00:00:00</div>
     </div>
 
-
-    <!-- LEFT PANEL -->
-    <div class="machine-panel sensor-panel-left">
-
-      <div class="panel-title">
-        RANGE SENSOR ARRAY
-      </div>
-
-      <div class="panel-line"></div>
-
-      <div class="panel-small">
-        Three fixed reference points remain online.
-      </div>
-
-    </div>
-
-
-    <!-- STATION A -->
-    <div
-      class="measurement station-a interactable"
-      data-action="sensorA"
-      data-label="INSPECT STATION A"
-      data-text="STATION A
-
-REFERENCE : 120 cm
-MEASURED  : 127 cm
-
-The reference marker is fixed.
-No physical obstruction is present."
-    >
-
-      <div class="station-number">A</div>
-      <div class="station-label">REFERENCE POINT</div>
-
-    </div>
-
-
-    <!-- STATION B -->
-    <div
-      class="measurement station-b interactable"
-      data-action="sensorB"
-      data-label="INSPECT STATION B"
-      data-text="STATION B
-
-REFERENCE : 80 cm
-MEASURED  : 87 cm
-
-The reference marker is intact.
-No object moved during the test."
-    >
-
-      <div class="station-number">B</div>
-      <div class="station-label">REFERENCE POINT</div>
-
-    </div>
-
-
-    <!-- STATION C -->
-    <div
-      class="measurement station-c interactable"
-      data-action="sensorC"
-      data-label="INSPECT STATION C"
-      data-text="STATION C
-
-REFERENCE : 50 cm
-MEASURED  : 57 cm
-
-The target distance is verified.
-The same sensor head was used."
-    >
-
-      <div class="station-number">C</div>
-      <div class="station-label">REFERENCE POINT</div>
-
-    </div>
-
-
-    <!-- NOTE -->
-    <div
-      class="sensor-note interactable"
-      data-action="sensorA"
-      data-label="READ MAINTENANCE NOTE"
-      data-text="MAINTENANCE NOTE
-
-All three reference objects were checked
-before the sensor test.
-
-No object was moved.
-
-The same sensor head was used
-for all measurements."
-    >
-
-      <div class="note-title">
-        MAINTENANCE NOTE
-      </div>
-
-      <div class="note-line"></div>
-
-      <div class="note-small">
-        calibration memo
-      </div>
-
-    </div>
-
-
-    <!-- CONSOLE -->
-    <div
-      class="sensor-console interactable"
-      data-action="sensorConsole"
-      data-label="USE CALIBRATION CONSOLE"
-    >
-
-      <div class="console-screen">
-        SENSOR CALIBRATION
-        <br>
-        INPUT OFFSET
-      </div>
-
-      <div class="console-body">
-
-        <div class="console-light"></div>
-        <div class="console-light"></div>
-        <div class="console-light"></div>
-
-      </div>
-
-    </div>
-
-
-    <!-- RETURN -->
-    <div
-      class="return-door interactable disabled"
-      data-action="sensorReturn"
-      data-label="RETURN TO ARCHIVE"
-    >
-
-      RETURN
-
-    </div>
-
-  </section>
-
-
-  <!-- =========================
-       POWER ROOM
-  ========================== -->
-  <section id="room-power" class="room puzzle-room">
-
-    <div class="room-background power-background"></div>
-
-    <div class="room-title">
-      FILE 02 // POWER DISTRIBUTION BAY
-    </div>
-
-
-    <!-- MAIN CABINET -->
-    <div class="power-cabinet">
-
-      <div class="cabinet-title">
-        MAIN POWER BUS
-      </div>
-
-      <div class="cabinet-limit">
-        LIMIT : 70%
-      </div>
-
-      <div class="power-meter">
-
-        <div class="meter-line"></div>
-        <div class="meter-line"></div>
-        <div class="meter-line"></div>
-        <div class="meter-line"></div>
-
-      </div>
-
-    </div>
-
-
-    <!-- SENSOR -->
-    <div
-      class="load-box load-sensor interactable"
-      data-action="powerSensor"
-      data-label="INSPECT SENSOR LOAD"
-      data-text="SENSOR LOAD
-
-POWER : 20%
-
-The controller requires a valid sensor signal.
-Without the sensor, closed-loop control cannot operate.
-
-STATUS : REQUIRED"
-    >
-
-      <div class="load-name">
-        SENSOR
-      </div>
-
-      <div class="load-value">
-        20%
-      </div>
-
-    </div>
-
-
-    <!-- MOTOR -->
-    <div
-      class="load-box load-motor interactable"
-      data-action="powerMotor"
-      data-label="INSPECT MOTOR LOAD"
-      data-text="MOTOR LOAD
-
-POWER : 50%
-
-The actuator physically moves the exit mechanism.
-
-It requires the sensor signal
-before activation.
-
-STATUS : REQUIRED"
-    >
-
-      <div class="load-name">
-        MOTOR
-      </div>
-
-      <div class="load-value">
-        50%
-      </div>
-
-    </div>
-
-
-    <!-- COOLING -->
-    <div
-      class="load-box load-cooling interactable"
-      data-action="powerCooling"
-      data-label="INSPECT COOLING"
-      data-text="COOLING LOAD
-
-POWER : 15%
-
-Cooling is required during
-continuous motor operation.
-
-The exit actuator uses
-a short pulse.
-
-STATUS : CONDITIONAL"
-    >
-
-      <div class="load-name">
-        COOLING
-      </div>
-
-      <div class="load-value">
-        15%
-      </div>
-
-    </div>
-
-
-    <!-- LIGHT -->
-    <div class="load-box load-light">
-
-      <div class="load-name">
-        LIGHT
-      </div>
-
-      <div class="load-value">
-        5%
-      </div>
-
-    </div>
-
-
-    <!-- SERVICE NOTE -->
-    <div class="service-note">
-
-      SERVICE NOTE
-
-      <br><br>
-
-      Main bus maximum:
-      <strong>70%</strong>
-
-      <br><br>
-
-      Exit actuator:
-      <strong>SHORT PULSE</strong>
-
-    </div>
-
-
-    <!-- POWER CONSOLE -->
-    <div
-      class="power-console interactable"
-      data-action="powerConsole"
-      data-label="CHECK POWER ROUTE"
-    >
-
-      <div class="power-console-text">
-        POWER ROUTE
-        <br>
-        ANALYZER
-      </div>
-
-    </div>
-
-
-    <!-- RETURN -->
-    <div
-      class="return-door interactable disabled"
-      data-action="powerReturn"
-      data-label="RETURN TO ARCHIVE"
-    >
-
-      RETURN
-
-    </div>
-
-  </section>
-
-
-  <!-- =========================
-       CONTROL ROOM
-  ========================== -->
-  <section id="room-control" class="room puzzle-room">
-
-    <div class="room-background control-background"></div>
-
-    <div class="room-title">
-      FILE 03 // CONTROL LAB
-    </div>
-
-
-    <!-- TRACE A -->
-    <div
-      class="trace trace-a interactable"
-      data-action="controlA"
-      data-label="INSPECT TRACE A"
-      data-text="TRACE A
-
-Fast response.
-
-However:
-- large overshoot
-- repeated oscillation
-- signal crosses the target several times
-
-Interpretation:
-The controller is aggressive
-but poorly damped."
-    >
-
-      <div class="trace-title">
-        TRACE A
-      </div>
-
-      <div class="graph-line graph-a"></div>
-
-    </div>
-
-
-    <!-- TRACE B -->
-    <div
-      class="trace trace-b interactable"
-      data-action="controlB"
-      data-label="INSPECT TRACE B"
-      data-text="TRACE B
-
-Moderate response.
-
-- small overshoot
-- smooth recovery
-- reaches stable state quickly
-
-Interpretation:
-Fast enough without
-persistent oscillation."
-    >
-
-      <div class="trace-title">
-        TRACE B
-      </div>
-
-      <div class="graph-line graph-b"></div>
-
-    </div>
-
-
-    <!-- TRACE C -->
-    <div
-      class="trace trace-c interactable"
-      data-action="controlC"
-      data-label="INSPECT TRACE C"
-      data-text="TRACE C
-
-Very slow response.
-
-- almost no overshoot
-- very long settling time
-
-Interpretation:
-Stable, but too slow
-for the required response."
-    >
-
-      <div class="trace-title">
-        TRACE C
-      </div>
-
-      <div class="graph-line graph-c"></div>
-
-    </div>
-
-
-    <!-- NOTE -->
-    <div
-      class="control-note interactable"
-      data-action="controlA"
-      data-label="READ CONTROLLER NOTE"
-      data-text="CONTROLLER NOTE
-
-Kp increases response speed.
-
-Kd helps suppress excessive change
-and damp oscillation.
-
-Required condition:
-
-FAST ENOUGH
-+
-STABLE
-+
-LOW OSCILLATION"
-    >
-
-      CONTROLLER NOTE
-
-      <br><br>
-
-      Kp ↑ = faster response
-      <br>
-      Kd ↑ = stronger damping
-
-    </div>
-
-
-    <!-- GAIN TABLE -->
-    <div class="gain-table">
-
-      RECORDED TESTS
-
-      <br><br>
-
-      A : Kp 65 / Kd 20
-
-      <br>
-
-      B : Kp 40 / Kd 60
-
-      <br>
-
-      C : Kp 20 / Kd 75
-
-    </div>
-
-
-    <!-- CONSOLE -->
-    <div
-      class="control-console interactable"
-      data-action="controlConsole"
-      data-label="SELECT STABLE GAINS"
-    >
-
-      CONTROL
-      <br>
-      CONSOLE
-
-    </div>
-
-
-    <!-- RETURN -->
-    <div
-      class="return-door interactable disabled"
-      data-action="controlReturn"
-      data-label="RETURN TO ARCHIVE"
-    >
-
-      RETURN
-
-    </div>
-
-  </section>
-
-
-  <!-- =========================
-       PLAYER
-       IMPORTANT:
-       PLAYER IS OUTSIDE ALL ROOMS
-  ========================== -->
-  <div id="player">
-
-    <div class="player-head"></div>
-    <div class="player-body"></div>
-
-  </div>
-
-
-  <!-- =========================
-       INTERACTION PROMPT
-  ========================== -->
-  <div id="interaction-prompt">
-    SPACE
-  </div>
-
-
-  <!-- =========================
-       DIALOGUE
-  ========================== -->
-  <div id="dialogue">
-
-    <div class="dialogue-card">
-
-      <div id="dialogue-title">
-        SYSTEM
-      </div>
-
-      <div id="dialogue-text">
-      </div>
-
-      <button id="dialogue-close">
-        CLOSE
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <!-- =========================
-       ENDING
-  ========================== -->
-  <div id="ending">
-
-    <div class="ending-card">
-
-      <div class="ending-small">
-        MAINTENANCE LOCK // RELEASED
-      </div>
-
-      <div class="ending-title">
-        REBOOT COMPLETE
-      </div>
-
-      <div id="ending-text">
-      </div>
-
-      <div class="ending-line"></div>
-
-      <div class="ending-small">
-        SESSION TERMINATED
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<script src="script.js"></script>
-
+    <script src="script.js"></script>
 </body>
 </html>
