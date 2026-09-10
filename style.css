@@ -1,206 +1,1500 @@
 * {
-    box-sizing: border-box;
-    font-family: 'Press Start 2P', monospace;
-    user-select: none;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+
+  overflow: hidden;
+
+  background: #070b10;
+
+  color: #d7e0e5;
+
+  font-family:
+    "Malgun Gothic",
+    "Apple SD Gothic Neo",
+    "Courier New",
+    monospace;
 }
 
 body {
-    margin: 0;
-    background-color: #080810;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
+  user-select: none;
 }
 
-#game-container {
-    width: 800px;
-    height: 520px;
-    background: #111;
-    border: 4px solid #333;
-    position: relative;
-    box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+button {
+  font-family: inherit;
 }
+
+
+/* =========================================
+   GAME
+========================================= */
+
+#game {
+  position: relative;
+
+  width: 100vw;
+  height: 100vh;
+
+  overflow: hidden;
+
+  background: #070b10;
+}
+
+
+/* =========================================
+   HUD
+========================================= */
 
 #hud {
-    height: 40px;
-    background: #1a1a2e;
-    border-bottom: 2px solid #333;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 15px;
-    font-size: 10px;
-    color: #00ffcc;
+  position: absolute;
+
+  left: 28px;
+  right: 28px;
+  top: 22px;
+
+  display: flex;
+  justify-content: space-between;
+
+  z-index: 100;
+
+  pointer-events: none;
 }
 
-#viewport {
-    width: 800px;
-    height: 480px;
-    position: relative;
-    overflow: hidden;
-    background: #0d0f18;
+#chapter {
+  font-size: 14px;
+
+  letter-spacing: 2px;
+
+  color: #d2dce1;
 }
 
-#map {
-    position: absolute;
-    top: 0; left: 0;
-    width: 2400px;
-    height: 480px;
-    transition: transform 0.3s ease-out;
+#objective {
+  margin-top: 7px;
+
+  font-size: 11px;
+
+  color: #71818b;
 }
 
-/* 방 영역 */
-.room-area {
-    position: absolute;
-    width: 800px;
-    height: 480px;
-    background-image: radial-gradient(#1a2035 10%, transparent 11%);
-    background-size: 20px 20px;
+#progress {
+  font-size: 11px;
+
+  color: #879aa5;
 }
 
-/* 플레이어 */
+
+/* =========================================
+   ROOM
+========================================= */
+
+.room {
+  position: absolute;
+
+  inset: 0;
+
+  display: none;
+
+  overflow: hidden;
+}
+
+.room.active {
+  display: block;
+}
+
+
+/* =========================================
+   INTRO
+========================================= */
+
+#room-intro {
+  background: #04080d;
+}
+
+#intro-world {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 2300px;
+  height: 100vh;
+
+  background:
+    radial-gradient(
+      ellipse at 25% 50%,
+      #1d303d 0%,
+      #0d1923 25%,
+      #061019 55%,
+      #03070b 100%
+    );
+
+  transition: transform 0.05s linear;
+}
+
+.intro-light {
+  position: absolute;
+
+  width: 750px;
+  height: 430px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(154, 201, 218, 0.20),
+      rgba(112, 164, 184, 0.07) 40%,
+      transparent 75%
+    );
+
+  filter: blur(25px);
+
+  pointer-events: none;
+}
+
+.light-1 {
+  left: 160px;
+  top: 80px;
+}
+
+.light-2 {
+  left: 750px;
+  top: 110px;
+
+  opacity: 0.55;
+}
+
+.light-3 {
+  left: 1340px;
+  top: 100px;
+
+  opacity: 0.28;
+}
+
+.intro-text {
+  position: absolute;
+
+  left: 90px;
+  top: 85px;
+}
+
+.intro-title {
+  font-size: 28px;
+
+  letter-spacing: 9px;
+
+  color: #cedae0;
+}
+
+.intro-subtitle {
+  margin-top: 10px;
+
+  font-size: 10px;
+
+  letter-spacing: 3px;
+
+  color: #637681;
+}
+
+#system-door {
+  position: absolute;
+
+  right: 120px;
+  top: 50%;
+
+  width: 310px;
+  height: 230px;
+
+  transform: translateY(-50%);
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #607580;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #162a34,
+      #071119 70%
+    );
+
+  box-shadow:
+    0 0 100px rgba(106, 170, 190, 0.10);
+}
+
+.system-door-title {
+  font-size: 33px;
+
+  letter-spacing: 9px;
+
+  color: #d1dce1;
+}
+
+.system-door-subtitle {
+  margin-top: 12px;
+
+  font-size: 10px;
+
+  letter-spacing: 2px;
+
+  color: #677984;
+}
+
+
+/* =========================================
+   SYSTEM ROOM
+========================================= */
+
+#room-system {
+  background: #080d13;
+}
+
+.system-room {
+  position: absolute;
+
+  left: 6vw;
+  right: 6vw;
+  top: 7vh;
+  bottom: 6vh;
+
+  border: 1px solid #2f424e;
+
+  background: #0a1219;
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.55);
+}
+
+.system-topbar {
+  height: 44px;
+
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 0 18px;
+
+  border-bottom: 1px solid #293b46;
+
+  color: #8497a1;
+
+  font-size: 11px;
+
+  letter-spacing: 1px;
+}
+
+.system-content {
+  position: relative;
+
+  height: calc(100% - 44px);
+
+  padding: 45px;
+}
+
+.system-heading {
+  border-bottom: 1px solid #273843;
+
+  padding-bottom: 18px;
+}
+
+.system-heading-main {
+  font-size: 21px;
+
+  color: #d3dfe5;
+
+  letter-spacing: 1px;
+}
+
+.system-heading-sub {
+  margin-top: 8px;
+
+  font-size: 11px;
+
+  color: #6b7e89;
+}
+
+.file-grid {
+  display: flex;
+
+  gap: 70px;
+
+  margin-top: 85px;
+}
+
+.file-item {
+  position: relative;
+
+  width: 190px;
+  height: 155px;
+
+  cursor: pointer;
+}
+
+.file-tab {
+  position: absolute;
+
+  left: 12px;
+  top: 0;
+
+  width: 65px;
+  height: 17px;
+
+  border-radius: 4px 4px 0 0;
+
+  background: #adbcc3;
+}
+
+.file-sheet {
+  position: absolute;
+
+  left: 0;
+  top: 11px;
+
+  width: 190px;
+  height: 130px;
+
+  padding: 33px 16px;
+
+  background: #bac6cb;
+
+  color: #1d292f;
+
+  box-shadow:
+    0 12px 25px rgba(0, 0, 0, 0.35);
+
+  transition: 0.15s;
+}
+
+.file-item:hover .file-sheet {
+  transform: translateY(-7px);
+}
+
+.file-name {
+  font-size: 14px;
+
+  font-weight: bold;
+}
+
+.file-extension {
+  margin-top: 8px;
+
+  font-size: 9px;
+
+  color: #62727a;
+}
+
+.system-status-box {
+  position: absolute;
+
+  right: 45px;
+  top: 130px;
+
+  width: 250px;
+
+  padding: 20px;
+
+  border: 1px solid #30424c;
+
+  background: #0d171e;
+
+  color: #72848e;
+
+  font-size: 10px;
+
+  line-height: 1.8;
+}
+
+.status-title {
+  margin-bottom: 9px;
+
+  color: #acbbc2;
+
+  letter-spacing: 1px;
+}
+
+.status-line {
+  border-top: 1px solid #20303a;
+
+  padding-top: 5px;
+}
+
+.exit {
+  position: absolute;
+
+  right: 55px;
+  bottom: 55px;
+
+  width: 155px;
+  height: 88px;
+
+  opacity: 0.10;
+
+  cursor: pointer;
+
+  transition: 0.25s;
+}
+
+.exit.revealed {
+  opacity: 1;
+}
+
+.exit-inner {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #637a85;
+
+  background: #0d171e;
+
+  color: #aebdc4;
+
+  letter-spacing: 5px;
+
+  box-shadow:
+    0 0 40px rgba(115, 168, 185, 0.10);
+}
+
+
+/* =========================================
+   PUZZLE ROOMS
+========================================= */
+
+.puzzle-room {
+  background: #080e14;
+}
+
+.room-bg {
+  position: absolute;
+
+  inset: 0;
+}
+
+.room-header {
+  position: absolute;
+
+  top: 27px;
+  left: 32px;
+
+  z-index: 10;
+
+  font-size: 14px;
+
+  letter-spacing: 2px;
+
+  color: #d2dce0;
+}
+
+.room-header span {
+  margin-left: 12px;
+
+  font-size: 10px;
+
+  color: #6e818c;
+
+  letter-spacing: 0;
+}
+
+
+/* =========================================
+   SENSOR ROOM
+========================================= */
+
+.sensor-bg {
+  background:
+    linear-gradient(
+      #14222d 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      #14222d 1px,
+      transparent 1px
+    );
+
+  background-size: 48px 48px;
+}
+
+.sensor-wall {
+  position: absolute;
+
+  right: 90px;
+  top: 110px;
+
+  width: 120px;
+  height: 480px;
+
+  border: 2px solid #344853;
+
+  background:
+    repeating-linear-gradient(
+      0deg,
+      #111c24 0,
+      #111c24 35px,
+      #18252e 36px,
+      #18252e 38px
+    );
+}
+
+.sensor-unit {
+  position: absolute;
+
+  width: 155px;
+  height: 130px;
+
+  border: 1px solid #4a616d;
+
+  background: #0c171f;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.sensor-unit:nth-of-type(1) {
+  left: 170px;
+  top: 150px;
+}
+
+.sensor-unit:nth-of-type(2) {
+  left: 430px;
+  top: 370px;
+}
+
+.sensor-unit:nth-of-type(3) {
+  left: 690px;
+  top: 155px;
+}
+
+.sensor-screen {
+  position: absolute;
+
+  left: 16px;
+  top: 15px;
+
+  width: 123px;
+  height: 55px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  padding-left: 10px;
+
+  border: 1px solid #314953;
+
+  background: #0b1a20;
+
+  color: #9eabb1;
+}
+
+.sensor-screen span {
+  font-size: 9px;
+}
+
+.sensor-screen b {
+  margin-top: 5px;
+
+  font-size: 11px;
+
+  color: #c0cdd2;
+}
+
+.sensor-head {
+  position: absolute;
+
+  bottom: 15px;
+  left: 63px;
+
+  width: 30px;
+  height: 25px;
+
+  border: 1px solid #536975;
+
+  background: #283943;
+}
+
+.reference-board {
+  position: absolute;
+
+  left: 160px;
+  bottom: 65px;
+
+  width: 330px;
+  height: 120px;
+
+  padding: 17px;
+
+  border: 1px solid #3d525d;
+
+  background: #101b23;
+
+  cursor: pointer;
+}
+
+.board-title {
+  font-size: 10px;
+
+  color: #b0bec5;
+}
+
+.board-text {
+  margin-top: 14px;
+
+  font-size: 9px;
+
+  line-height: 1.6;
+
+  color: #73858f;
+}
+
+.machine-console {
+  position: absolute;
+
+  right: 285px;
+  bottom: 65px;
+
+  width: 300px;
+  height: 245px;
+
+  padding: 18px;
+
+  border: 1px solid #526a76;
+
+  background: #0a131a;
+}
+
+.console-title {
+  font-size: 11px;
+
+  color: #aebcc3;
+}
+
+.console-display {
+  margin-top: 18px;
+
+  width: 100%;
+  height: 55px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #38515c;
+
+  background: #0c1b22;
+
+  color: #a1bec5;
+
+  font-size: 11px;
+}
+
+.dial {
+  position: absolute;
+
+  left: 105px;
+  top: 105px;
+
+  width: 70px;
+  height: 70px;
+
+  border-radius: 50%;
+
+  border: 6px solid #3a4f59;
+
+  background: #0c151c;
+}
+
+.dial-mark {
+  position: absolute;
+
+  left: 31px;
+  top: 6px;
+
+  width: 4px;
+  height: 25px;
+
+  background: #9aadb5;
+
+  transform-origin: 2px 29px;
+}
+
+.console-help {
+  position: absolute;
+
+  bottom: 20px;
+  left: 20px;
+
+  right: 20px;
+
+  font-size: 8px;
+
+  color: #657983;
+
+  text-align: center;
+}
+
+.sensor-target {
+  position: absolute;
+
+  border: 2px solid #526872;
+
+  background: #1b2931;
+}
+
+.target-normal {
+  left: 345px;
+  top: 120px;
+
+  width: 80px;
+  height: 130px;
+}
+
+.target-blocked {
+  left: 865px;
+  top: 230px;
+
+  width: 80px;
+  height: 130px;
+}
+
+#sensor-return {
+  position: absolute;
+
+  left: 55px;
+  bottom: 55px;
+}
+
+
+/* =========================================
+   POWER ROOM
+========================================= */
+
+.power-bg {
+  background:
+    linear-gradient(
+      90deg,
+      #0b131a,
+      #101b23 50%,
+      #080e14
+    );
+}
+
+.power-source {
+  position: absolute;
+
+  left: 70px;
+  top: 120px;
+
+  width: 260px;
+  height: 330px;
+
+  padding: 22px;
+
+  border: 1px solid #425866;
+
+  background: #0b151d;
+}
+
+.source-title {
+  font-size: 12px;
+
+  color: #adbcc3;
+}
+
+.source-port {
+  margin-top: 35px;
+
+  height: 45px;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  border: 1px solid #455d68;
+
+  color: #9caeb6;
+
+  background: #0e1921;
+}
+
+.power-terminal {
+  position: absolute;
+
+  width: 170px;
+  height: 125px;
+
+  padding: 17px;
+
+  border: 1px solid #455b66;
+
+  background: #0d171f;
+
+  cursor: pointer;
+}
+
+.sensor-terminal {
+  left: 510px;
+  top: 125px;
+}
+
+.motor-terminal {
+  left: 720px;
+  top: 315px;
+}
+
+.control-terminal {
+  left: 940px;
+  top: 130px;
+}
+
+.terminal-title {
+  font-size: 11px;
+
+  color: #aab9c0;
+}
+
+.terminal-port {
+  margin-top: 30px;
+
+  width: 70px;
+  height: 32px;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  border: 1px solid #4c626d;
+
+  color: #91a5ae;
+
+  font-size: 9px;
+}
+
+#wiring-board {
+  position: absolute;
+
+  left: 390px;
+  bottom: 55px;
+
+  width: 510px;
+  height: 160px;
+
+  padding: 18px;
+
+  border: 1px solid #3b515d;
+
+  background: #0b151d;
+}
+
+.wire-title {
+  color: #aebdc4;
+
+  font-size: 10px;
+}
+
+.wire-slot {
+  display: inline-flex;
+
+  align-items: center;
+
+  margin-top: 25px;
+
+  margin-right: 45px;
+
+  color: #728590;
+
+  font-size: 9px;
+}
+
+.wire-node {
+  width: 30px;
+  height: 30px;
+
+  margin-left: 10px;
+
+  border-radius: 50%;
+
+  border: 2px solid #526a75;
+
+  background: #091117;
+
+  cursor: pointer;
+}
+
+.wire-node.selected {
+  background: #718b97;
+
+  box-shadow:
+    0 0 15px rgba(125, 160, 173, 0.35);
+}
+
+.wire-instruction {
+  margin-top: 13px;
+
+  font-size: 8px;
+
+  line-height: 1.5;
+
+  color: #627680;
+}
+
+#power-start {
+  position: absolute;
+
+  right: 55px;
+  bottom: 55px;
+
+  width: 210px;
+  height: 120px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-direction: column;
+
+  color: #a9bac1;
+}
+
+#power-status {
+  margin-top: 15px;
+
+  color: #72858e;
+
+  font-size: 9px;
+}
+
+#power-return {
+  position: absolute;
+
+  left: 55px;
+  bottom: 55px;
+}
+
+
+/* =========================================
+   CONTROL ROOM
+========================================= */
+
+.control-bg {
+  background:
+    radial-gradient(
+      circle at center,
+      #15252f,
+      #0c151c 45%,
+      #070c11 85%
+    );
+}
+
+.control-machine {
+  position: absolute;
+
+  width: 180px;
+  height: 145px;
+
+  padding: 20px;
+
+  border: 1px solid #465d68;
+
+  background: #0b151d;
+
+  cursor: pointer;
+}
+
+.control-machine:nth-of-type(2) {
+  left: 100px;
+  top: 150px;
+}
+
+.control-machine:nth-of-type(3) {
+  left: 360px;
+  top: 355px;
+}
+
+.control-machine:nth-of-type(4) {
+  left: 620px;
+  top: 150px;
+}
+
+.machine-name {
+  font-size: 11px;
+
+  color: #aabac1;
+}
+
+.machine-value {
+  margin-top: 30px;
+
+  font-size: 13px;
+
+  color: #70848f;
+}
+
+.control-note {
+  position: absolute;
+
+  left: 100px;
+  bottom: 55px;
+
+  width: 330px;
+  height: 125px;
+
+  padding: 16px;
+
+  border: 1px solid #405660;
+
+  background: #101b23;
+
+  cursor: pointer;
+}
+
+.note-title {
+  font-size: 10px;
+
+  color: #aebdc4;
+}
+
+.note-text {
+  margin-top: 13px;
+
+  font-size: 9px;
+
+  line-height: 1.6;
+
+  color: #748792;
+}
+
+#sequence-panel {
+  position: absolute;
+
+  right: 65px;
+  top: 130px;
+
+  width: 370px;
+  height: 390px;
+
+  padding: 22px;
+
+  border: 1px solid #506773;
+
+  background: #0a141b;
+}
+
+.sequence-title {
+  font-size: 12px;
+
+  color: #b4c2c8;
+
+  letter-spacing: 1px;
+}
+
+#sequence-display {
+  margin-top: 20px;
+
+  width: 100%;
+  height: 60px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #394f59;
+
+  background: #0e1921;
+
+  color: #a5b7bf;
+
+  letter-spacing: 2px;
+}
+
+.sequence-buttons {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+
+  margin-top: 25px;
+}
+
+.sequence-button,
+#sequence-reset,
+#sequence-check {
+  border: 1px solid #465e69;
+
+  background: #0e1921;
+
+  color: #a7b7be;
+
+  padding: 10px;
+
+  cursor: pointer;
+}
+
+.sequence-button:hover,
+#sequence-reset:hover,
+#sequence-check:hover {
+  background: #152630;
+}
+
+#sequence-reset {
+  margin-top: 20px;
+
+  width: 48%;
+}
+
+#sequence-check {
+  margin-top: 20px;
+
+  width: 48%;
+
+  float: right;
+}
+
+#control-return {
+  position: absolute;
+
+  left: 55px;
+  top: 55px;
+}
+
+
+/* =========================================
+   RETURN DOOR
+========================================= */
+
+.return-door {
+  width: 125px;
+  height: 62px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #526a75;
+
+  background: #0c171e;
+
+  color: #9dafb7;
+
+  font-size: 9px;
+
+  cursor: pointer;
+}
+
+
+/* =========================================
+   PLAYER
+========================================= */
+
 #player {
-    position: absolute;
-    width: 28px;
-    height: 28px;
-    background: #00ffcc;
-    border: 2px solid #fff;
-    border-radius: 4px;
-    box-shadow: 0 0 10px #00ffcc;
-    z-index: 10;
-    left: 100px;
-    top: 220px;
+  position: absolute !important;
+
+  width: 32px;
+  height: 38px;
+
+  z-index: 150;
+
+  pointer-events: none;
+
+  filter:
+    drop-shadow(
+      0 8px 8px rgba(0, 0, 0, 0.65)
+    );
 }
 
-/* 상호작용 사물/콘솔 */
-.obj {
-    position: absolute;
-    padding: 10px;
-    background: #16213e;
-    border: 2px solid #0f3460;
-    color: #e94560;
-    font-size: 9px;
-    border-radius: 4px;
+.player-head {
+  position: absolute;
+
+  left: 7px;
+  top: 2px;
+
+  width: 18px;
+  height: 16px;
+
+  border: 1px solid #2e3c44;
+
+  background: #c7d2d6;
 }
 
-.terminal {
-    background: #0f3460;
-    border-color: #00ffcc;
-    color: #00ffcc;
-    cursor: pointer;
+.player-body {
+  position: absolute;
+
+  left: 4px;
+  top: 17px;
+
+  width: 24px;
+  height: 18px;
+
+  border: 1px solid #29404b;
+
+  background: #658493;
 }
 
-/* 문 (Door) */
-.door {
-    position: absolute;
-    width: 70px;
-    height: 100px;
-    background: #721c24;
-    border: 3px solid #f8d7da;
-    color: #fff;
-    font-size: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+#player::before {
+  content: "";
+
+  position: absolute;
+
+  left: 11px;
+  top: 7px;
+
+  width: 3px;
+  height: 3px;
+
+  background: #243139;
 }
 
-.door.unlocked {
-    background: #155724;
-    border-color: #d4edda;
-    color: #00ffcc;
-    box-shadow: 0 0 15px #00ffcc;
+
+/* =========================================
+   PROMPT
+========================================= */
+
+#interaction-prompt {
+  position: absolute;
+
+  left: 50%;
+  bottom: 35px;
+
+  transform: translateX(-50%);
+
+  padding: 10px 16px;
+
+  border: 1px solid #526a75;
+
+  background: rgba(7, 14, 20, 0.94);
+
+  color: #b1c0c6;
+
+  font-size: 10px;
+
+  letter-spacing: 1px;
+
+  z-index: 170;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition: opacity 0.15s;
 }
 
-/* 프롬프트 UI */
-#prompt-ui {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #00ffcc;
-    color: #000;
-    padding: 8px 16px;
-    font-size: 10px;
-    font-weight: bold;
+#interaction-prompt.visible {
+  opacity: 1;
+}
+
+
+/* =========================================
+   DIALOGUE
+========================================= */
+
+#dialogue {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: flex-end;
+
+  padding-bottom: 55px;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  z-index: 200;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition: opacity 0.15s;
+}
+
+#dialogue.visible {
+  opacity: 1;
+
+  pointer-events: auto;
+}
+
+.dialogue-box {
+  width: min(760px, calc(100vw - 50px));
+
+  padding: 23px;
+
+  border: 1px solid #607985;
+
+  background: #0a141c;
+
+  box-shadow:
+    0 20px 55px rgba(0, 0, 0, 0.65);
+}
+
+.dialogue-title {
+  font-size: 11px;
+
+  color: #b5c4ca;
+
+  letter-spacing: 2px;
+}
+
+.dialogue-text {
+  margin-top: 15px;
+
+  color: #d1dce1;
+
+  font-size: 12px;
+
+  line-height: 1.8;
+
+  white-space: pre-line;
+}
+
+#dialogue-close {
+  margin-top: 18px;
+
+  padding: 7px 15px;
+
+  border: 1px solid #4b636e;
+
+  background: #101e27;
+
+  color: #a7b7be;
+
+  cursor: pointer;
+}
+
+
+/* =========================================
+   ENDING
+========================================= */
+
+#ending {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  z-index: 300;
+
+  background: rgba(3, 7, 11, 0.96);
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition: opacity 0.5s;
+}
+
+#ending.visible {
+  opacity: 1;
+
+  pointer-events: auto;
+}
+
+.ending-box {
+  width: min(760px, calc(100vw - 50px));
+
+  padding: 55px;
+
+  text-align: center;
+
+  border: 1px solid #5b737e;
+
+  background: #091219;
+}
+
+.ending-small {
+  color: #70838c;
+
+  font-size: 9px;
+
+  letter-spacing: 2px;
+}
+
+.ending-title {
+  margin: 25px 0;
+
+  font-size: 40px;
+
+  color: #d0dde2;
+
+  letter-spacing: 6px;
+}
+
+.ending-text {
+  color: #acbcc4;
+
+  font-size: 12px;
+
+  line-height: 1.9;
+}
+
+.ending-line {
+  width: 130px;
+  height: 1px;
+
+  margin: 30px auto;
+
+  background: #546a75;
+}
+
+
+/* =========================================
+   DISABLED
+========================================= */
+
+.disabled {
+  opacity: 0.35 !important;
+
+  pointer-events: none !important;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1000px) {
+
+  .system-status-box {
     display: none;
-    z-index: 20;
-    border-radius: 4px;
+  }
+
+  .file-grid {
+    gap: 25px;
+  }
+
+  .machine-console {
+    right: 30px;
+  }
+
 }
-
-/* 모달 팝업 */
-#quiz-modal {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.85);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-}
-
-.modal-content {
-    background: #16213e;
-    border: 3px solid #00ffcc;
-    padding: 20px;
-    width: 500px;
-    box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
-}
-
-#quiz-title { color: #00ffcc; font-size: 12px; margin-top: 0; }
-#quiz-desc { font-size: 9px; line-height: 1.6; color: #dddddd; margin: 15px 0; }
-
-.option-btn {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    background: #0f3460;
-    border: 1px solid #00ffcc;
-    color: #fff;
-    font-size: 8px;
-    cursor: pointer;
-    text-align: left;
-}
-
-.option-btn:hover {
-    background: #00ffcc;
-    color: #000;
-}
-
-#close-quiz-btn {
-    background: transparent;
-    border: none;
-    color: #888;
-    font-size: 8px;
-    margin-top: 10px;
-    cursor: pointer;
-}
-
-/* 엔딩 화면 */
-#ending-screen {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: #0d0f18;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 200;
-    text-align: center;
-}
-
-#ending-screen h1 { color: #00ffcc; font-size: 16px; margin-bottom: 20px; }
-#ending-screen p { font-size: 10px; margin-bottom: 30px; line-height: 1.8; }
-#ending-screen button {
-    padding: 12px 24px;
-    background: #00ffcc;
-    border: none;
-    font-size: 10px;
-    cursor: pointer;
-}
-
-.hidden { display: none !important; }

@@ -1,84 +1,760 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SYSTEM ESCAPE: ENGINEERING LAB</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REBOOT</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <div id="game-container">
-        <!-- 상단 게임 정보 UI -->
-        <div id="hud">
-            <div id="room-title">ROOM 1: SENSOR CALIBRATION LAB</div>
-            <div id="progress">CORE RESTORED: <span id="cleared-count">0</span> / 3</div>
-        </div>
+<div id="game">
 
-        <!-- 게임 뷰포트 / 맵 화면 -->
-        <div id="viewport">
-            <div id="map">
-                <!-- 플레이어 캐릭터 -->
-                <div id="player"></div>
+  <!-- =========================================
+       HUD
+  ========================================== -->
+  <div id="hud">
 
-                <!-- ROOM 1: SENSOR LAB -->
-                <div id="room-1" class="room-area active">
-                    <div class="wall top"></div>
-                    <div class="wall bottom"></div>
-                    <div class="wall left"></div>
-                    <!-- 상호작용 가능한 단말기들 -->
-                    <div class="obj sensor-node" data-id="sensor1" style="left: 150px; top: 120px;">[센서 A]</div>
-                    <div class="obj sensor-node" data-id="sensor2" style="left: 400px; top: 120px;">[센서 B]</div>
-                    <div class="obj terminal" data-id="quiz-sensor" style="left: 275px; top: 320px;">🖥️ 센서 제어 콘솔</div>
-                    <!-- 다음 방으로 향하는 문 -->
-                    <div class="door locked" id="door-1" style="left: 720px; top: 200px;">GATE 1<br>(LOCKED)</div>
-                </div>
-
-                <!-- ROOM 2: POWER BAY -->
-                <div id="room-2" class="room-area" style="left: 800px;">
-                    <div class="wall top"></div>
-                    <div class="wall bottom"></div>
-                    <div class="obj power-node" data-id="power1" style="left: 150px; top: 120px;">[모터 가동부]</div>
-                    <div class="obj power-node" data-id="power2" style="left: 400px; top: 120px;">[냉각 시스템]</div>
-                    <div class="obj terminal" data-id="quiz-power" style="left: 275px; top: 320px;">⚡ 전력 배분 콘솔</div>
-                    <div class="door locked" id="door-2" style="left: 720px; top: 200px;">GATE 2<br>(LOCKED)</div>
-                </div>
-
-                <!-- ROOM 3: CONTROL LAB -->
-                <div id="room-3" class="room-area" style="left: 1600px;">
-                    <div class="wall top"></div>
-                    <div class="wall bottom"></div>
-                    <div class="wall right"></div>
-                    <div class="obj control-node" data-id="ctrl1" style="left: 150px; top: 120px;">[응답 곡선 A]</div>
-                    <div class="obj control-node" data-id="ctrl2" style="left: 400px; top: 120px;">[응답 곡선 B]</div>
-                    <div class="obj terminal" data-id="quiz-control" style="left: 275px; top: 320px;">🎛️ PID 튜닝 콘솔</div>
-                    <div class="door exit-gate locked" id="door-exit" style="left: 650px; top: 300px;">MAIN EXIT</div>
-                </div>
-            </div>
-
-            <!-- 상호작용 안내 말풍선 -->
-            <div id="prompt-ui">[SPACE] 상호작용</div>
-        </div>
-
-        <!-- 퀴즈 팝업 모달 UI -->
-        <div id="quiz-modal" class="hidden">
-            <div class="modal-content">
-                <h3 id="quiz-title">SYSTEM QUIZ</h3>
-                <p id="quiz-desc">퀴즈 내용이 여기에 표시됩니다.</p>
-                <div id="quiz-options"></div>
-                <button id="close-quiz-btn">닫기 (ESC)</button>
-            </div>
-        </div>
-
-        <!-- 엔딩 화면 -->
-        <div id="ending-screen" class="hidden">
-            <h1>SYSTEM REBOOT COMPLETE</h1>
-            <p>모든 공학 시스템을 정상 복구하고 연구소를 탈출했습니다!</p>
-            <button onclick="location.reload()">다시 시작하기</button>
-        </div>
+    <div class="hud-main">
+      <div id="chapter">부팅 과정</div>
+      <div id="objective">오른쪽의 시스템으로 이동하세요.</div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="progress">
+      복구 0 / 3
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       INTRO
+  ========================================== -->
+  <section id="room-intro" class="room active">
+
+    <div id="intro-world">
+
+      <div class="intro-light light-1"></div>
+      <div class="intro-light light-2"></div>
+      <div class="intro-light light-3"></div>
+
+      <div class="intro-text">
+        <div class="intro-title">REBOOT</div>
+        <div class="intro-subtitle">
+          유지보수 시뮬레이션
+        </div>
+      </div>
+
+      <div id="system-door">
+
+        <div class="system-door-title">
+          SYSTEM
+        </div>
+
+        <div class="system-door-subtitle">
+          중앙 유지보수 노드
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================
+       SYSTEM ARCHIVE
+  ========================================== -->
+  <section id="room-system" class="room">
+
+    <div class="system-room">
+
+      <div class="system-topbar">
+        <span>REBOOT://ARCHIVE</span>
+        <span>유지보수 노드 04</span>
+      </div>
+
+
+      <div class="system-content">
+
+        <div class="system-heading">
+
+          <div class="system-heading-main">
+            중앙 유지보수 기록
+          </div>
+
+          <div class="system-heading-sub">
+            손상된 복구 기록 3개가 발견되었습니다.
+          </div>
+
+        </div>
+
+
+        <!-- ===============================
+             FILE AREA
+        ================================ -->
+        <div class="file-grid">
+
+
+          <!-- SENSOR -->
+          <div
+            class="file-item interactable"
+            data-action="openSensor"
+            data-file="sensor"
+            data-label="센서 기록 조사"
+          >
+
+            <div class="file-tab"></div>
+
+            <div class="file-sheet">
+
+              <div class="file-name">
+                SENSOR_01
+              </div>
+
+              <div class="file-extension">
+                거리 측정 기록
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- POWER -->
+          <div
+            class="file-item interactable"
+            data-action="openPower"
+            data-file="power"
+            data-label="전력 기록 조사"
+          >
+
+            <div class="file-tab"></div>
+
+            <div class="file-sheet">
+
+              <div class="file-name">
+                POWER_02
+              </div>
+
+              <div class="file-extension">
+                전력 분배 기록
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- CONTROL -->
+          <div
+            class="file-item interactable"
+            data-action="openControl"
+            data-file="control"
+            data-label="제어 기록 조사"
+          >
+
+            <div class="file-tab"></div>
+
+            <div class="file-sheet">
+
+              <div class="file-name">
+                CONTROL_03
+              </div>
+
+              <div class="file-extension">
+                제어 순서 기록
+              </div>
+
+            </div>
+
+          </div>
+
+
+        </div>
+
+
+        <div class="system-status-box">
+
+          <div class="status-title">
+            시스템 상태
+          </div>
+
+          <div class="status-line">
+            자동 복구 : 실패
+          </div>
+
+          <div class="status-line">
+            수동 유지보수 : 필요
+          </div>
+
+          <div class="status-line">
+            출구 잠금 : 활성화
+          </div>
+
+        </div>
+
+
+        <!-- ===============================
+             HIDDEN EXIT
+        ================================ -->
+        <div
+          id="hidden-exit"
+          class="exit interactable disabled"
+          data-action="exit"
+          data-label="출구는 잠겨 있습니다."
+        >
+
+          <div class="exit-inner">
+            EXIT
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================
+       SENSOR ROOM
+  ========================================== -->
+  <section id="room-sensor" class="room puzzle-room">
+
+    <div class="room-bg sensor-bg"></div>
+
+    <div class="room-header">
+      SENSOR BAY
+      <span>거리 측정 구역</span>
+    </div>
+
+
+    <div class="sensor-wall"></div>
+
+
+    <!-- SENSOR A -->
+    <div
+      class="sensor-unit interactable"
+      data-action="sensorA"
+      data-label="센서 A 확인"
+    >
+
+      <div class="sensor-screen">
+        <span>센서 A</span>
+        <b>측정 대기</b>
+      </div>
+
+      <div class="sensor-head"></div>
+
+    </div>
+
+
+    <!-- SENSOR B -->
+    <div
+      class="sensor-unit interactable"
+      data-action="sensorB"
+      data-label="센서 B 확인"
+    >
+
+      <div class="sensor-screen">
+        <span>센서 B</span>
+        <b>측정 대기</b>
+      </div>
+
+      <div class="sensor-head"></div>
+
+    </div>
+
+
+    <!-- SENSOR C -->
+    <div
+      class="sensor-unit interactable"
+      data-action="sensorC"
+      data-label="센서 C 확인"
+    >
+
+      <div class="sensor-screen">
+        <span>센서 C</span>
+        <b>측정 대기</b>
+      </div>
+
+      <div class="sensor-head"></div>
+
+    </div>
+
+
+    <!-- REFERENCE WALL -->
+    <div
+      class="reference-board interactable"
+      data-action="sensorReference"
+      data-label="기준 표지판 확인"
+    >
+
+      <div class="board-title">
+        기준 표지판
+      </div>
+
+      <div class="board-text">
+        모든 센서는 동일한 기준면을 측정한다.
+        <br><br>
+        기준면은 움직이지 않는다.
+      </div>
+
+    </div>
+
+
+    <!-- SENSOR CONTROL -->
+    <div
+      id="sensor-console"
+      class="machine-console interactable"
+      data-action="sensorConsole"
+      data-label="센서 조정기 사용"
+    >
+
+      <div class="console-title">
+        거리 센서 조정기
+      </div>
+
+      <div class="console-display">
+        <span id="sensor-console-status">
+          조정 필요
+        </span>
+      </div>
+
+      <div class="dial">
+        <div class="dial-mark"></div>
+      </div>
+
+      <div class="console-help">
+        센서 헤드 방향을 조정하세요.
+      </div>
+
+    </div>
+
+
+    <!-- SENSOR TARGETS -->
+    <div class="sensor-target target-normal"></div>
+    <div class="sensor-target target-blocked"></div>
+
+
+    <!-- RETURN -->
+    <div
+      id="sensor-return"
+      class="return-door interactable disabled"
+      data-action="sensorReturn"
+      data-label="중앙 방으로 돌아가기"
+    >
+      돌아가기
+    </div>
+
+  </section>
+
+
+  <!-- =========================================
+       POWER ROOM
+  ========================================== -->
+  <section id="room-power" class="room puzzle-room">
+
+    <div class="room-bg power-bg"></div>
+
+    <div class="room-header">
+      POWER BAY
+      <span>전력 분배 구역</span>
+    </div>
+
+
+    <!-- POWER SOURCE -->
+    <div class="power-source">
+
+      <div class="source-title">
+        주 전원
+      </div>
+
+      <div class="source-port">
+        24V
+      </div>
+
+      <div class="source-port">
+        12V
+      </div>
+
+      <div class="source-port">
+        GND
+      </div>
+
+    </div>
+
+
+    <!-- SENSOR TERMINAL -->
+    <div
+      class="power-terminal sensor-terminal interactable"
+      data-action="powerSensor"
+      data-label="센서 단자 확인"
+    >
+
+      <div class="terminal-title">
+        센서
+      </div>
+
+      <div class="terminal-port">
+        12V
+      </div>
+
+    </div>
+
+
+    <!-- MOTOR TERMINAL -->
+    <div
+      class="power-terminal motor-terminal interactable"
+      data-action="powerMotor"
+      data-label="모터 단자 확인"
+    >
+
+      <div class="terminal-title">
+        모터
+      </div>
+
+      <div class="terminal-port">
+        24V
+      </div>
+
+    </div>
+
+
+    <!-- CONTROL TERMINAL -->
+    <div
+      class="power-terminal control-terminal interactable"
+      data-action="powerControl"
+      data-label="제어기 단자 확인"
+    >
+
+      <div class="terminal-title">
+        제어기
+      </div>
+
+      <div class="terminal-port">
+        GND
+      </div>
+
+    </div>
+
+
+    <!-- WIRING BOARD -->
+    <div id="wiring-board">
+
+      <div class="wire-title">
+        배선 패널
+      </div>
+
+      <div class="wire-slot">
+        <span>1</span>
+        <div
+          class="wire-node"
+          data-node="1"
+        ></div>
+      </div>
+
+      <div class="wire-slot">
+        <span>2</span>
+        <div
+          class="wire-node"
+          data-node="2"
+        ></div>
+      </div>
+
+      <div class="wire-slot">
+        <span>3</span>
+        <div
+          class="wire-node"
+          data-node="3"
+        ></div>
+      </div>
+
+      <div class="wire-instruction">
+        같은 색이 아닌 것이 아니라,
+        <br>
+        같은 전압을 연결해야 합니다.
+      </div>
+
+    </div>
+
+
+    <!-- POWER START -->
+    <div
+      id="power-start"
+      class="machine-console interactable"
+      data-action="powerStart"
+      data-label="배선 연결 상태 확인"
+    >
+
+      <div class="console-title">
+        전력 검사기
+      </div>
+
+      <div id="power-status">
+        연결되지 않음
+      </div>
+
+    </div>
+
+
+    <!-- RETURN -->
+    <div
+      id="power-return"
+      class="return-door interactable disabled"
+      data-action="powerReturn"
+      data-label="중앙 방으로 돌아가기"
+    >
+      돌아가기
+    </div>
+
+  </section>
+
+
+  <!-- =========================================
+       CONTROL ROOM
+  ========================================== -->
+  <section id="room-control" class="room puzzle-room">
+
+    <div class="room-bg control-bg"></div>
+
+    <div class="room-header">
+      CONTROL LAB
+      <span>제어 시스템 구역</span>
+    </div>
+
+
+    <!-- PRESSURE -->
+    <div
+      class="control-machine interactable"
+      data-action="controlPressure"
+      data-label="압력 장치 확인"
+    >
+
+      <div class="machine-name">
+        압력 센서
+      </div>
+
+      <div class="machine-value">
+        낮음
+      </div>
+
+    </div>
+
+
+    <!-- BRAKE -->
+    <div
+      class="control-machine interactable"
+      data-action="controlBrake"
+      data-label="브레이크 장치 확인"
+    >
+
+      <div class="machine-name">
+        브레이크
+      </div>
+
+      <div class="machine-value">
+        잠김
+      </div>
+
+    </div>
+
+
+    <!-- MOTOR -->
+    <div
+      class="control-machine interactable"
+      data-action="controlMotor"
+      data-label="모터 장치 확인"
+    >
+
+      <div class="machine-name">
+        구동 모터
+      </div>
+
+      <div class="machine-value">
+        대기
+      </div>
+
+    </div>
+
+
+    <!-- NOTE -->
+    <div
+      class="control-note interactable"
+      data-action="controlNote"
+      data-label="제어 순서 기록 확인"
+    >
+
+      <div class="note-title">
+        유지보수 기록
+      </div>
+
+      <div class="note-text">
+        압력이 안정된 뒤
+        <br>
+        브레이크가 해제된다.
+        <br><br>
+        브레이크가 해제된 뒤
+        <br>
+        모터를 작동한다.
+      </div>
+
+    </div>
+
+
+    <!-- SEQUENCE PANEL -->
+    <div id="sequence-panel">
+
+      <div class="sequence-title">
+        제어 순서 입력
+      </div>
+
+      <div id="sequence-display">
+        _ → _ → _
+      </div>
+
+
+      <div class="sequence-buttons">
+
+        <button
+          class="sequence-button"
+          data-sequence="pressure"
+        >
+          압력 안정
+        </button>
+
+        <button
+          class="sequence-button"
+          data-sequence="brake"
+        >
+          브레이크 해제
+        </button>
+
+        <button
+          class="sequence-button"
+          data-sequence="motor"
+        >
+          모터 작동
+        </button>
+
+      </div>
+
+      <button
+        id="sequence-reset"
+      >
+        초기화
+      </button>
+
+      <button
+        id="sequence-check"
+      >
+        순서 확인
+      </button>
+
+    </div>
+
+
+    <!-- RETURN -->
+    <div
+      id="control-return"
+      class="return-door interactable disabled"
+      data-action="controlReturn"
+      data-label="중앙 방으로 돌아가기"
+    >
+      돌아가기
+    </div>
+
+  </section>
+
+
+  <!-- =========================================
+       PLAYER
+  ========================================== -->
+  <div id="player">
+
+    <div class="player-head"></div>
+
+    <div class="player-body"></div>
+
+  </div>
+
+
+  <!-- =========================================
+       INTERACTION PROMPT
+  ========================================== -->
+  <div id="interaction-prompt">
+    SPACE  상호작용
+  </div>
+
+
+  <!-- =========================================
+       DIALOGUE
+  ========================================== -->
+  <div id="dialogue">
+
+    <div class="dialogue-box">
+
+      <div
+        id="dialogue-title"
+        class="dialogue-title"
+      >
+        시스템
+      </div>
+
+      <div
+        id="dialogue-text"
+        class="dialogue-text"
+      >
+      </div>
+
+      <button
+        id="dialogue-close"
+      >
+        닫기
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       ENDING
+  ========================================== -->
+  <div id="ending">
+
+    <div class="ending-box">
+
+      <div class="ending-small">
+        유지보수 잠금 해제
+      </div>
+
+      <div class="ending-title">
+        REBOOT COMPLETE
+      </div>
+
+      <div
+        id="ending-text"
+        class="ending-text"
+      >
+      </div>
+
+      <div class="ending-line"></div>
+
+      <div class="ending-small">
+        시스템 종료
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+
 </body>
 </html>
