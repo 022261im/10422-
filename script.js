@@ -1,1684 +1,798 @@
-/* =================================================
-   ELEMENTS
-================================================= */
+/* =========================================
+   REBOOT - GAME SCRIPT
+   ========================================= */
 
-const game = document.getElementById("game");
-const world = document.getElementById("world");
 const player = document.getElementById("player");
+const introArea = document.getElementById("intro-area");
+const systemArea = document.getElementById("system-area");
 
-const dialogue = document.getElementById("dialogue-text");
+const sensorRoom = document.getElementById("puzzle-sensor");
+const powerRoom = document.getElementById("puzzle-power");
+const controlRoom = document.getElementById("puzzle-control");
+const finalRoom = document.getElementById("puzzle-final");
 
-const distanceValue =
-    document.getElementById("distance-value");
+const messageBox = document.getElementById("message-box");
+const messageText = document.getElementById("message-text");
+const messageClose = document.getElementById("message-close");
 
-const distanceGauge =
-    document.getElementById("distance-gauge");
+const hiddenExit = document.getElementById("hidden-exit");
 
-const systemObjects =
-    document.querySelectorAll(".system-object");
+let currentRoom = "intro";
 
-const puzzleMaps =
-    document.querySelectorAll(".puzzle-map");
+let playerX = 120;
+let playerY = 300;
 
-const hiddenExit =
-    document.getElementById("hidden-exit");
+let keys = {};
 
-
-/* =================================================
-   SETTINGS
-================================================= */
-
-const WORLD_WIDTH = 3500;
-
-const SYSTEM_START = 1700;
-
-const SYSTEM_ACCESS_X = 1580;
-
-const SPEED = 5;
-
-
-/* =================================================
-   PLAYER WORLD POSITION
-================================================= */
-
-let playerX = 300;
-
-let playerY =
-    window.innerHeight * 0.5;
-
-
-/* =================================================
-   GAME STATE
-================================================= */
-
-let mode = "intro";
-
-let cameraX = 0;
-
-let wrongCooldown = 0;
-
-
-/* =================================================
-   PUZZLE STATE
-================================================= */
-
-const state = {
-
-    documents: false,
-    sensors: false,
-    control: false,
+let cleared = {
+    sensor: false,
     power: false,
-    diagnostics: false,
-    exitRevealed: false
-
+    control: false
 };
 
 
-/* =================================================
-   KEY STATE
-================================================= */
+/* =========================================
+   플레이어 기본 설정
+   ========================================= */
 
-const keys = {
+const PLAYER_SPEED = 4;
 
-    up: false,
-    down: false,
-    left: false,
-    right: false
+function updatePlayer() {
+    if (!player) return;
 
-};
-
-
-/* =================================================
-   KEYBOARD
-================================================= */
-
-document.addEventListener("keydown", (event) => {
-
-    switch (event.code) {
-
-        case "KeyW":
-        case "ArrowUp":
-            keys.up = true;
-            break;
-
-        case "KeyS":
-        case "ArrowDown":
-            keys.down = true;
-            break;
-
-        case "KeyA":
-        case "ArrowLeft":
-            keys.left = true;
-            break;
-
-        case "KeyD":
-        case "ArrowRight":
-            keys.right = true;
-            break;
-
-        case "Space":
-
-            event.preventDefault();
-
-            interact();
-
-            break;
-    }
-
-});
-
-
-document.addEventListener("keyup", (event) => {
-
-    switch (event.code) {
-
-        case "KeyW":
-        case "ArrowUp":
-            keys.up = false;
-            break;
-
-        case "KeyS":
-        case "ArrowDown":
-            keys.down = false;
-            break;
-
-        case "KeyA":
-        case "ArrowLeft":
-            keys.left = false;
-            break;
-
-        case "KeyD":
-        case "ArrowRight":
-            keys.right = false;
-            break;
-    }
-
-});
-
-
-/* =================================================
-   MAIN UPDATE
-================================================= */
-
-function update() {
-
-    if (
-        mode === "intro" ||
-        mode === "system"
-    ) {
-
-        movePlayer();
-
-    }
-
+    player.style.left = playerX + "px";
+    player.style.top = playerY + "px";
 }
 
 
-/* =================================================
-   PLAYER MOVEMENT
-================================================= */
+/* =========================================
+   키보드 입력
+   ========================================= */
+
+document.addEventListener("keydown", function (event) {
+
+    keys[event.key.toLowerCase()] = true;
+
+    // SPACE
+    if (event.code === "Space" && !event.repeat) {
+        event.preventDefault();
+        interact();
+    }
+});
+
+
+document.addEventListener("keyup", function (event) {
+    keys[event.key.toLowerCase()] = false;
+});
+
+
+/* =========================================
+   게임 루프
+   ========================================= */
+
+function gameLoop() {
+
+    if (
+        currentRoom === "intro" ||
+        currentRoom === "system"
+    ) {
+        movePlayer();
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+
+
+/* =========================================
+   플레이어 이동
+   ========================================= */
 
 function movePlayer() {
+
+    if (!player) return;
 
     let dx = 0;
     let dy = 0;
 
-
-    if (keys.up) {
-        dy -= SPEED;
+    if (keys["w"] || keys["arrowup"]) {
+        dy -= PLAYER_SPEED;
     }
 
-    if (keys.down) {
-        dy += SPEED;
+    if (keys["s"] || keys["arrowdown"]) {
+        dy += PLAYER_SPEED;
     }
 
-    if (keys.left) {
-        dx -= SPEED;
+    if (keys["a"] || keys["arrowleft"]) {
+        dx -= PLAYER_SPEED;
     }
 
-    if (keys.right) {
-        dx += SPEED;
+    if (keys["d"] || keys["arrowright"]) {
+        dx += PLAYER_SPEED;
     }
-
-
-    /*
-        실제 플레이어 좌표 변경
-    */
 
     playerX += dx;
     playerY += dy;
 
+    /* -------------------------------------
+       INTRO 범위
+       ------------------------------------- */
 
-    /* =============================================
-       INTRO LIMIT
-    ============================================= */
+    if (currentRoom === "intro") {
 
-    if (mode === "intro") {
+        playerX = Math.max(30, Math.min(window.innerWidth - 70, playerX));
+        playerY = Math.max(50, Math.min(window.innerHeight - 100, playerY));
 
-        playerX = Math.max(
-            40,
-            Math.min(
-                SYSTEM_ACCESS_X + 20,
-                playerX
-            )
-        );
+        updatePlayer();
 
+        checkSystemEntrance();
     }
 
 
-    /* =============================================
-       SYSTEM LIMIT
-    ============================================= */
+    /* -------------------------------------
+       SYSTEM 방 범위
+       ------------------------------------- */
 
-    if (mode === "system") {
+    if (currentRoom === "system") {
 
-        const minX =
-            SYSTEM_START + 40;
+        playerX = Math.max(30, Math.min(window.innerWidth - 70, playerX));
+        playerY = Math.max(100, Math.min(window.innerHeight - 100, playerY));
 
-        const maxX =
-            SYSTEM_START +
-            window.innerWidth -
-            40;
-
-
-        playerX = Math.max(
-            minX,
-            Math.min(
-                maxX,
-                playerX
-            )
-        );
-
+        updatePlayer();
     }
-
-
-    /* =============================================
-       Y LIMIT
-    ============================================= */
-
-    playerY = Math.max(
-        70,
-        Math.min(
-            window.innerHeight - 70,
-            playerY
-        )
-    );
-
-
-    /*
-        실제 화면에 플레이어 표시
-    */
-
-    player.style.left =
-        `${playerX}px`;
-
-    player.style.top =
-        `${playerY}px`;
-
-
-    /* =============================================
-       CAMERA
-    ============================================= */
-
-    if (mode === "intro") {
-
-        updateIntroCamera();
-
-        updateIntroDistance();
-
-        checkWrongWay();
-
-        checkSystemAccess();
-
-    }
-
-
-    if (mode === "system") {
-
-        /*
-            SYSTEM에서는 카메라 이동 없음
-        */
-
-        world.style.transform =
-            "translateX(-1700px)";
-
-        updateSystemDistance();
-
-    }
-
-
-    if (wrongCooldown > 0) {
-
-        wrongCooldown--;
-
-    }
-
 }
 
 
-/* =================================================
-   INTRO CAMERA
-================================================= */
+/* =========================================
+   SYSTEM 진입
+   ========================================= */
 
-function updateIntroCamera() {
+function checkSystemEntrance() {
 
-    /*
-        플레이어가 화면 중앙 근처에 오도록
-        월드를 반대로 이동한다.
-    */
-
-    let target =
-        playerX -
-        window.innerWidth / 2;
-
-
-    /*
-        INTRO WORLD는
-        1700px에서 끝난다.
-    */
-
-    const maxCamera =
-        SYSTEM_ACCESS_X -
-        window.innerWidth / 2;
-
-
-    target = Math.max(
-        0,
-        Math.min(
-            maxCamera,
-            target
-        )
-    );
-
-
-    cameraX = target;
-
-
-    world.style.transform =
-        `translateX(${-cameraX}px)`;
-
+    // 화면 오른쪽에 도착하면 SYSTEM으로 이동
+    if (playerX > window.innerWidth - 140) {
+        enterSystem();
+    }
 }
 
 
-/* =================================================
-   ENTER SYSTEM
-================================================= */
+/* =========================================
+   INTRO → SYSTEM
+   ========================================= */
 
 function enterSystem() {
 
-    mode = "system";
+    currentRoom = "system";
 
-
-    /*
-        SYSTEM 화면의 중앙에
-        플레이어 배치
-    */
-
-    playerX =
-        SYSTEM_START +
-        window.innerWidth / 2;
-
-    playerY =
-        window.innerHeight * 0.55;
-
-
-    /*
-        월드를 SYSTEM 시작점으로 이동
-    */
-
-    world.style.transform =
-        "translateX(-1700px)";
-
-
-    player.style.left =
-        `${playerX}px`;
-
-    player.style.top =
-        `${playerY}px`;
-
-
-    /*
-        SYSTEM 화면 상태
-    */
-
-    dialogue.textContent =
-        "SYSTEM에 접속했다. 주변을 조사해 보자.";
-
-}
-
-
-/* =================================================
-   SYSTEM ACCESS
-================================================= */
-
-function checkSystemAccess() {
-
-    const distance =
-        Math.sqrt(
-
-            Math.pow(
-                playerX -
-                SYSTEM_ACCESS_X,
-                2
-            )
-
-            +
-
-            Math.pow(
-                playerY -
-                window.innerHeight / 2,
-                2
-            )
-
-        );
-
-
-    if (
-        distance < 120
-    ) {
-
-        showMessage(
-            "SYSTEM에 접속할 수 있을 것 같다."
-        );
-
+    if (introArea) {
+        introArea.style.display = "none";
     }
 
-
-    if (
-        distance < 55
-    ) {
-
-        enterSystem();
-
+    if (systemArea) {
+        systemArea.style.display = "block";
     }
 
+    playerX = 100;
+    playerY = window.innerHeight / 2;
+
+    updatePlayer();
+
+    updateExit();
+
+    showMessage("SYSTEM", "오래된 시스템 파일이 남아 있다.");
 }
 
 
-/* =================================================
-   INTRO DISTANCE
-================================================= */
+/* =========================================
+   오브젝트 찾기
+   ========================================= */
 
-function updateIntroDistance() {
+function getObjects() {
 
-    const distance =
-        Math.max(
-            0,
-            SYSTEM_ACCESS_X -
-            playerX
-        );
+    if (currentRoom !== "system") {
+        return [];
+    }
 
-
-    distanceValue.textContent =
-        `${Math.round(distance)}cm`;
-
-
-    const gauge =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                100 -
-                distance / 12
-            )
-        );
-
-
-    distanceGauge.style.width =
-        `${gauge}%`;
-
+    return [
+        document.getElementById("file-sensor"),
+        document.getElementById("file-power"),
+        document.getElementById("file-control"),
+        hiddenExit
+    ].filter(Boolean);
 }
 
 
-/* =================================================
-   SYSTEM DISTANCE
-================================================= */
+/* =========================================
+   가장 가까운 오브젝트
+   ========================================= */
 
-function updateSystemDistance() {
+function getNearestObject() {
 
-    const objects =
-        document.querySelectorAll(
-            ".system-object"
+    const objects = getObjects();
+
+    let nearest = null;
+    let nearestDistance = Infinity;
+
+    objects.forEach(function (object) {
+
+        const rect = object.getBoundingClientRect();
+
+        const objectX = rect.left + rect.width / 2;
+        const objectY = rect.top + rect.height / 2;
+
+        const dx = playerX + 25 - objectX;
+        const dy = playerY + 25 - objectY;
+
+        const distance = Math.sqrt(
+            dx * dx + dy * dy
         );
 
-
-    let closest =
-        Infinity;
-
-
-    objects.forEach(
-        (object) => {
-
-            const x =
-                SYSTEM_START +
-                getPercentX(
-                    object
-                );
-
-            const y =
-                getPercentY(
-                    object
-                );
-
-
-            const distance =
-                Math.sqrt(
-
-                    Math.pow(
-                        playerX - x,
-                        2
-                    )
-
-                    +
-
-                    Math.pow(
-                        playerY - y,
-                        2
-                    )
-
-                );
-
-
-            if (
-                distance < closest
-            ) {
-
-                closest = distance;
-
-            }
-
+        if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearest = object;
         }
-    );
+    });
 
-
-    if (
-        closest !== Infinity
-    ) {
-
-        distanceValue.textContent =
-            `${Math.round(closest)}cm`;
-
+    if (nearestDistance < 100) {
+        return nearest;
     }
 
+    return null;
 }
 
 
-/* =================================================
-   PERCENT POSITION
-================================================= */
-
-function getPercentX(object) {
-
-    const percent =
-        parseFloat(
-            object.style.left
-        );
-
-
-    return (
-        window.innerWidth *
-        percent /
-        100
-    );
-
-}
-
-
-function getPercentY(object) {
-
-    const percent =
-        parseFloat(
-            object.style.top
-        );
-
-
-    return (
-        window.innerHeight *
-        percent /
-        100
-    );
-
-}
-
-
-/* =================================================
-   WRONG WAY
-================================================= */
-
-function checkWrongWay() {
-
-    if (
-        wrongCooldown > 0
-    ) {
-
-        return;
-
-    }
-
-
-    const center =
-        window.innerHeight / 2;
-
-
-    const difference =
-        Math.abs(
-            playerY -
-            center
-        );
-
-
-    if (
-        difference > 220
-    ) {
-
-        showMessage(
-            "여긴 아닌 것 같다."
-        );
-
-        wrongCooldown =
-            80;
-
-        return;
-
-    }
-
-
-    if (
-        playerX < 100
-    ) {
-
-        showMessage(
-            "뒤쪽에는 아무것도 없다."
-        );
-
-        wrongCooldown =
-            80;
-
-    }
-
-}
-
-
-/* =================================================
-   INTERACTION
-================================================= */
+/* =========================================
+   SPACE 상호작용
+   ========================================= */
 
 function interact() {
 
-    if (
-        mode === "intro"
-    ) {
+    /* -------------------------------------
+       SYSTEM
+       ------------------------------------- */
 
-        const dx =
-            playerX -
-            SYSTEM_ACCESS_X;
+    if (currentRoom === "system") {
 
-        const dy =
-            playerY -
-            window.innerHeight / 2;
+        const object = getNearestObject();
 
-        const distance =
-            Math.sqrt(
-                dx * dx +
-                dy * dy
-            );
+        if (!object) return;
 
+        const fileType = object.dataset.file;
+
+        if (fileType === "sensor") {
+            enterPuzzle("sensor");
+            return;
+        }
+
+        if (fileType === "power") {
+            enterPuzzle("power");
+            return;
+        }
+
+        if (fileType === "control") {
+            enterPuzzle("control");
+            return;
+        }
 
         if (
-            distance < 110
+            object === hiddenExit &&
+            cleared.sensor &&
+            cleared.power &&
+            cleared.control
         ) {
-
-            enterSystem();
-
+            enterFinal();
+            return;
         }
+    }
+}
 
-        else {
 
-            showMessage(
-                "주변에 조사할 것이 없다."
-            );
+/* =========================================
+   퍼즐 방 진입
+   ========================================= */
 
-        }
+function enterPuzzle(type) {
 
-        return;
+    currentRoom = type;
 
+    hideAllRooms();
+
+    if (type === "sensor" && sensorRoom) {
+        sensorRoom.style.display = "block";
     }
 
-
-    if (
-        mode !== "system"
-    ) {
-
-        return;
-
+    if (type === "power" && powerRoom) {
+        powerRoom.style.display = "block";
     }
 
+    if (type === "control" && controlRoom) {
+        controlRoom.style.display = "block";
+    }
 
-    const nearest =
-        findNearestObject();
+    resetPuzzle(type);
+}
 
+
+/* =========================================
+   모든 방 숨기기
+   ========================================= */
+
+function hideAllRooms() {
+
+    if (introArea) introArea.style.display = "none";
+    if (systemArea) systemArea.style.display = "none";
+
+    if (sensorRoom) sensorRoom.style.display = "none";
+    if (powerRoom) powerRoom.style.display = "none";
+    if (controlRoom) controlRoom.style.display = "none";
+    if (finalRoom) finalRoom.style.display = "none";
+}
+
+
+/* =========================================
+   퍼즐 상태
+   ========================================= */
+
+let puzzleState = {
+
+    sensor: {
+        inspected: [],
+        solved: false
+    },
+
+    power: {
+        inspected: [],
+        solved: false
+    },
+
+    control: {
+        inspected: [],
+        solved: false
+    }
+};
+
+
+/* =========================================
+   퍼즐 초기화
+   ========================================= */
+
+function resetPuzzle(type) {
+
+    if (!puzzleState[type]) return;
+
+    puzzleState[type].inspected = [];
+
+    showMessage(
+        "SYSTEM",
+        "주변을 조사해서 단서를 찾아라."
+    );
+}
+
+
+/* =========================================
+   퍼즐 오브젝트 조사
+   ========================================= */
+
+document.addEventListener("click", function (event) {
+
+    const target = event.target.closest("[data-clue]");
+
+    if (!target) return;
+
+    const clue = target.dataset.clue;
+
+    const parentRoom = target.closest(
+        "#puzzle-sensor, #puzzle-power, #puzzle-control"
+    );
+
+    if (!parentRoom) return;
+
+    inspectClue(
+        target,
+        clue
+    );
+});
+
+
+/* =========================================
+   단서 조사
+   ========================================= */
+
+function inspectClue(object, clue) {
+
+    let type = null;
+
+    if (object.closest("#puzzle-sensor")) {
+        type = "sensor";
+    }
+
+    if (object.closest("#puzzle-power")) {
+        type = "power";
+    }
+
+    if (object.closest("#puzzle-control")) {
+        type = "control";
+    }
+
+    if (!type) return;
+
+    const index = clue;
+
+    if (!puzzleState[type].inspected.includes(index)) {
+
+        puzzleState[type].inspected.push(index);
+    }
+
+    const text =
+        object.dataset.text ||
+        "특별한 정보는 없는 것 같다.";
+
+    showMessage(
+        "조사",
+        text
+    );
+}
+
+
+/* =========================================
+   메시지 창
+   ========================================= */
+
+function showMessage(title, text) {
+
+    if (!messageBox || !messageText) return;
+
+    messageBox.style.display = "block";
+
+    messageText.innerHTML =
+        "<strong>" +
+        title +
+        "</strong><br><br>" +
+        text;
+}
+
+
+function closeMessage() {
+
+    if (!messageBox) return;
+
+    messageBox.style.display = "none";
+}
+
+
+if (messageClose) {
+    messageClose.addEventListener(
+        "click",
+        closeMessage
+    );
+}
+
+
+/* =========================================
+   SENSOR 퍼즐
+   ========================================= */
+
+function solveSensor() {
 
     if (
-        nearest === null
+        !puzzleState.sensor.inspected.includes("A") ||
+        !puzzleState.sensor.inspected.includes("B") ||
+        !puzzleState.sensor.inspected.includes("C")
     ) {
 
         showMessage(
-            "주변에 조사할 것이 없다."
+            "SYSTEM",
+            "아직 조사하지 않은 측정값이 있다."
         );
 
         return;
-
     }
 
-
-    handleObject(
-        nearest.type
+    const answer = prompt(
+        "세 측정값에 공통으로 존재하는 오차를 입력하세요."
     );
 
-}
+    if (answer === null) return;
 
+    if (Number(answer) === -7) {
 
-/* =================================================
-   FIND OBJECT
-================================================= */
+        cleared.sensor = true;
 
-function findNearestObject() {
+        puzzleState.sensor.solved = true;
 
-    let result =
-        null;
-
-    let closest =
-        Infinity;
-
-
-    systemObjects.forEach(
-        (object) => {
-
-            const x =
-                SYSTEM_START +
-                getPercentX(object);
-
-            const y =
-                getPercentY(object);
-
-
-            const distance =
-                Math.sqrt(
-
-                    Math.pow(
-                        playerX - x,
-                        2
-                    )
-
-                    +
-
-                    Math.pow(
-                        playerY - y,
-                        2
-                    )
-
-                );
-
-
-            if (
-                distance < closest
-            ) {
-
-                closest =
-                    distance;
-
-                result = {
-
-                    type:
-                        object.dataset.type,
-
-                    element:
-                        object,
-
-                    distance:
-                        distance
-
-                };
-
-            }
-
-        }
-    );
-
-
-    /*
-        숨겨진 EXIT
-    */
-
-    const exitX =
-        SYSTEM_START +
-        window.innerWidth *
-        0.89;
-
-    const exitY =
-        window.innerHeight *
-        0.73;
-
-
-    const exitDistance =
-        Math.sqrt(
-
-            Math.pow(
-                playerX - exitX,
-                2
-            )
-
-            +
-
-            Math.pow(
-                playerY - exitY,
-                2
-            )
-
+        showMessage(
+            "CALIBRATION COMPLETE",
+            "센서 오차가 보정되었다."
         );
 
+        setTimeout(returnToSystem, 1000);
 
-    if (
-        exitDistance < closest
-    ) {
+    } else {
 
-        result = {
-
-            type: "exit",
-
-            element: hiddenExit,
-
-            distance: exitDistance
-
-        };
-
+        showMessage(
+            "ERROR",
+            "보정값이 맞지 않는다."
+        );
     }
-
-
-    if (
-        result &&
-        result.distance < 120
-    ) {
-
-        return result;
-
-    }
-
-
-    return null;
-
 }
 
 
-/* =================================================
-   OBJECT HANDLER
-================================================= */
+/* =========================================
+   POWER 퍼즐
+   ========================================= */
 
-function handleObject(type) {
+function solvePower() {
 
-    switch(type) {
+    if (
+        !puzzleState.power.inspected.includes("sensor") ||
+        !puzzleState.power.inspected.includes("motor") ||
+        !puzzleState.power.inspected.includes("cooling")
+    ) {
 
-        case "documents":
-
-            openPuzzle(
-                "documents"
-            );
-
-            break;
-
-
-        case "sensors":
-
-            openPuzzle(
-                "sensors"
-            );
-
-            break;
-
-
-        case "control":
-
-            openPuzzle(
-                "control"
-            );
-
-            break;
-
-
-        case "power":
-
-            openPuzzle(
-                "power"
-            );
-
-            break;
-
-
-        case "diagnostics":
-
-            openPuzzle(
-                "diagnostics"
-            );
-
-            break;
-
-
-        case "error":
-
-            showMessage(
-                "ERROR_LOG.txt — 센서 → 제어 → 모터의 오류 기록이다."
-            );
-
-            break;
-
-
-        case "trash":
-
-            showMessage(
-                "휴지통은 비어 있다."
-            );
-
-            break;
-
-
-        case "exit":
-
-            if (
-                state.exitRevealed
-            ) {
-
-                openPuzzle(
-                    "final"
-                );
-
-            }
-
-            else {
-
-                showMessage(
-                    "아직 출구가 보이지 않는다."
-                );
-
-            }
-
-            break;
-
-    }
-
-}
-
-
-/* =================================================
-   PUZZLE MAP
-================================================= */
-
-function openPuzzle(name) {
-
-    mode =
-        name;
-
-
-    document.body.classList.add(
-        "puzzle-open"
-    );
-
-
-    puzzleMaps.forEach(
-        (map) => {
-
-            map.classList.remove(
-                "active"
-            );
-
-        }
-    );
-
-
-    const target =
-        document.getElementById(
-            `map-${name}`
+        showMessage(
+            "SYSTEM",
+            "전력 시스템의 구성 요소를 모두 조사해야 한다."
         );
 
-
-    if (
-        target
-    ) {
-
-        target.classList.add(
-            "active"
-        );
-
+        return;
     }
 
+    const answer = prompt(
+        "작동에 반드시 필요한 장치를 순서 없이 입력하세요.\n예: sensor,motor"
+    );
+
+    if (answer === null) return;
+
+    const cleaned =
+        answer
+            .toLowerCase()
+            .replace(/\s/g, "");
+
+    if (
+        cleaned === "sensor,motor" ||
+        cleaned === "motor,sensor"
+    ) {
+
+        cleared.power = true;
+
+        puzzleState.power.solved = true;
+
+        showMessage(
+            "POWER RESTORED",
+            "필수 전력 라인이 복구되었다."
+        );
+
+        setTimeout(returnToSystem, 1000);
+
+    } else {
+
+        showMessage(
+            "ERROR",
+            "전력 분배 조건이 맞지 않는다."
+        );
+    }
 }
 
 
-/* =================================================
-   RETURN
-================================================= */
+/* =========================================
+   CONTROL 퍼즐
+   ========================================= */
+
+function solveControl() {
+
+    if (
+        !puzzleState.control.inspected.includes("low") ||
+        !puzzleState.control.inspected.includes("medium") ||
+        !puzzleState.control.inspected.includes("high")
+    ) {
+
+        showMessage(
+            "SYSTEM",
+            "제어 응답 데이터를 모두 확인해야 한다."
+        );
+
+        return;
+    }
+
+    const answer = prompt(
+        "안정적인 제어 설정값을 입력하세요.\nKp 값만 입력."
+    );
+
+    if (answer === null) return;
+
+    if (Number(answer) === 40) {
+
+        cleared.control = true;
+
+        puzzleState.control.solved = true;
+
+        showMessage(
+            "CONTROL RESTORED",
+            "제어 시스템의 안정성이 회복되었다."
+        );
+
+        setTimeout(returnToSystem, 1000);
+
+    } else {
+
+        showMessage(
+            "ERROR",
+            "제어 계수가 불안정하다."
+        );
+    }
+}
+
+
+/* =========================================
+   퍼즐 방 버튼 연결
+   ========================================= */
+
+const sensorSolveButton =
+    document.getElementById("sensor-solve");
+
+const powerSolveButton =
+    document.getElementById("power-solve");
+
+const controlSolveButton =
+    document.getElementById("control-solve");
+
+
+if (sensorSolveButton) {
+    sensorSolveButton.addEventListener(
+        "click",
+        solveSensor
+    );
+}
+
+if (powerSolveButton) {
+    powerSolveButton.addEventListener(
+        "click",
+        solvePower
+    );
+}
+
+if (controlSolveButton) {
+    controlSolveButton.addEventListener(
+        "click",
+        solveControl
+    );
+}
+
+
+/* =========================================
+   SYSTEM으로 돌아오기
+   ========================================= */
 
 function returnToSystem() {
 
-    mode =
-        "system";
+    hideAllRooms();
 
+    currentRoom = "system";
 
-    document.body.classList.remove(
-        "puzzle-open"
-    );
+    if (systemArea) {
+        systemArea.style.display = "block";
+    }
 
+    playerX = 150;
+    playerY = window.innerHeight / 2;
 
-    puzzleMaps.forEach(
-        (map) => {
+    updatePlayer();
 
-            map.classList.remove(
-                "active"
-            );
+    convertClearedFiles();
 
-        }
-    );
-
-
-    world.style.transform =
-        "translateX(-1700px)";
-
-
-    updateSystemDistance();
-
+    updateExit();
 }
 
 
-/* =================================================
-   DOCUMENT PUZZLE
-================================================= */
+/* =========================================
+   클리어한 파일 → 종이 조각
+   ========================================= */
 
-document
-    .querySelectorAll(
-        "#map-documents [data-answer]"
-    )
-    .forEach(
-        (button) => {
+function convertClearedFiles() {
 
-            button.addEventListener(
-                "click",
-                () => {
+    const files = [
 
-                    const answer =
-                        button.dataset.answer;
+        {
+            id: "file-sensor",
+            solved: cleared.sensor,
+            text: "+7 cm OFFSET\nCALIBRATED"
+        },
 
+        {
+            id: "file-power",
+            solved: cleared.power,
+            text: "SENSOR + MOTOR\nPOWER RESTORED"
+        },
 
-                    if (
-                        answer === "sensor"
-                    ) {
-
-                        state.documents =
-                            true;
-
-
-                        document
-                            .getElementById(
-                                "document-result"
-                            )
-                            .textContent =
-                            "추론 성공.";
-
-                        setTimeout(
-                            returnToSystem,
-                            700
-                        );
-
-                    }
-
-                    else {
-
-                        document
-                            .getElementById(
-                                "document-result"
-                            )
-                            .textContent =
-                            "기록을 다시 비교해 보자.";
-
-                    }
-
-                }
-            );
-
+        {
+            id: "file-control",
+            solved: cleared.control,
+            text: "STABLE RESPONSE\nKp = 40"
         }
-    );
+
+    ];
 
 
-/* =================================================
-   SENSOR PUZZLE
-================================================= */
+    files.forEach(function (file) {
 
-document
-    .querySelectorAll(
-        ".measurement-station"
-    )
-    .forEach(
-        (station) => {
+        const element =
+            document.getElementById(file.id);
 
-            station.addEventListener(
-                "click",
-                () => {
+        if (!element) return;
 
-                    const value =
-                        station.dataset.measurement;
+        if (file.solved) {
 
+            element.classList.add("cleared");
 
-                    document
-                        .getElementById(
-                            "sensor-evidence"
-                        )
-                        .textContent =
-                        `MEASURED : ${value}`;
+            element.innerHTML =
+                "<div class='paper'>" +
+                file.text.replace("\n", "<br>") +
+                "</div>";
 
-                }
-            );
-
+            element.removeAttribute("data-file");
         }
-    );
-
-
-document
-    .getElementById(
-        "sensor-submit"
-    )
-    .addEventListener(
-        "click",
-        () => {
-
-            const answer =
-                Number(
-                    document
-                        .getElementById(
-                            "sensor-input"
-                        )
-                        .value
-                );
-
-
-            const result =
-                document
-                    .getElementById(
-                        "sensor-result"
-                    );
-
-
-            if (
-                answer === -8
-            ) {
-
-                state.sensors =
-                    true;
-
-
-                result.textContent =
-                    "CALIBRATION COMPLETE";
-
-
-                setTimeout(
-                    returnToSystem,
-                    700
-                );
-
-            }
-
-            else {
-
-                result.textContent =
-                    "측정값의 공통 오차를 다시 확인해라.";
-
-            }
-
-        }
-    );
-
-
-/* =================================================
-   CONTROL PUZZLE
-================================================= */
-
-const kpSlider =
-    document.getElementById(
-        "kp-slider"
-    );
-
-const kdSlider =
-    document.getElementById(
-        "kd-slider"
-    );
-
-const kpValue =
-    document.getElementById(
-        "kp-value"
-    );
-
-const kdValue =
-    document.getElementById(
-        "kd-value"
-    );
-
-const controlAngle =
-    document.getElementById(
-        "control-angle"
-    );
-
-
-function updateControl() {
-
-    const kp =
-        Number(
-            kpSlider.value
-        );
-
-    const kd =
-        Number(
-            kdSlider.value
-        );
-
-
-    const response =
-        63 +
-        kp * 0.9 -
-        kd * 0.12;
-
-
-    controlAngle.textContent =
-        `${Math.round(response)}°`;
-
+    });
 }
 
 
-kpSlider.addEventListener(
-    "input",
-    () => {
+/* =========================================
+   EXIT 등장
+   ========================================= */
 
-        kpValue.textContent =
-            `Kp = ${kpSlider.value}`;
+function updateExit() {
 
-        updateControl();
-
-    }
-);
-
-
-kdSlider.addEventListener(
-    "input",
-    () => {
-
-        kdValue.textContent =
-            `Kd = ${kdSlider.value}`;
-
-        updateControl();
-
-    }
-);
-
-
-document
-    .getElementById(
-        "control-submit"
-    )
-    .addEventListener(
-        "click",
-        () => {
-
-            const kp =
-                Number(
-                    kpSlider.value
-                );
-
-            const kd =
-                Number(
-                    kdSlider.value
-                );
-
-
-            const response =
-                63 +
-                kp * 0.9 -
-                kd * 0.12;
-
-
-            const result =
-                document.getElementById(
-                    "control-result"
-                );
-
-
-            if (
-                response >= 88 &&
-                response <= 92 &&
-                kd >= 35
-            ) {
-
-                state.control =
-                    true;
-
-
-                result.textContent =
-                    "CONTROL RESPONSE : STABLE";
-
-
-                setTimeout(
-                    returnToSystem,
-                    700
-                );
-
-            }
-
-            else {
-
-                result.textContent =
-                    "목표값과 감쇠 조건을 다시 확인해라.";
-
-            }
-
-        }
-    );
-
-
-/* =================================================
-   POWER PUZZLE
-================================================= */
-
-const powerSensor =
-    document.getElementById(
-        "power-sensor"
-    );
-
-const powerCooling =
-    document.getElementById(
-        "power-cooling"
-    );
-
-const powerMotor =
-    document.getElementById(
-        "power-motor"
-    );
-
-const powerLight =
-    document.getElementById(
-        "power-light"
-    );
-
-const powerLoad =
-    document.getElementById(
-        "power-load"
-    );
-
-
-function calculatePower() {
-
-    let load =
-        0;
-
+    if (!hiddenExit) return;
 
     if (
-        powerSensor.checked
+        cleared.sensor &&
+        cleared.power &&
+        cleared.control
     ) {
 
-        load += 15;
+        hiddenExit.style.display = "block";
+
+    } else {
+
+        hiddenExit.style.display = "none";
     }
-
-
-    if (
-        powerCooling.checked
-    ) {
-
-        load += 30;
-    }
-
-
-    if (
-        powerMotor.checked
-    ) {
-
-        load += 40;
-    }
-
-
-    if (
-        powerLight.checked
-    ) {
-
-        load += 10;
-    }
-
-
-    powerLoad.textContent =
-        `LOAD : ${load}%`;
-
-
-    return load;
-
 }
 
 
-[
-    powerSensor,
-    powerCooling,
-    powerMotor,
-    powerLight
-]
-.forEach(
-    (checkbox) => {
-
-        checkbox.addEventListener(
-            "change",
-            calculatePower
-        );
-
-    }
-);
-
-
-document
-    .getElementById(
-        "power-submit"
-    )
-    .addEventListener(
-        "click",
-        () => {
-
-            const load =
-                calculatePower();
-
-
-            const result =
-                document.getElementById(
-                    "power-result"
-                );
-
-
-            if (
-                powerSensor.checked &&
-                powerCooling.checked &&
-                powerMotor.checked &&
-                !powerLight.checked &&
-                load === 85
-            ) {
-
-                state.power =
-                    true;
-
-
-                result.textContent =
-                    "POWER STABLE : 85%";
-
-
-                setTimeout(
-                    returnToSystem,
-                    700
-                );
-
-            }
-
-            else {
-
-                result.textContent =
-                    "필요한 시스템과 전력량을 다시 분석해라.";
-
-            }
-
-        }
-    );
-
-
-/* =================================================
-   DIAGNOSTICS
-================================================= */
-
-document
-    .getElementById(
-        "diagnostic-submit"
-    )
-    .addEventListener(
-        "click",
-        () => {
-
-            const sensor =
-                document.getElementById(
-                    "diag-sensor"
-                );
-
-            const power =
-                document.getElementById(
-                    "diag-power"
-                );
-
-            const control =
-                document.getElementById(
-                    "diag-control"
-                );
-
-            sensor.textContent =
-                state.sensors
-                    ? "ONLINE"
-                    : "ERROR";
-
-            power.textContent =
-                state.power
-                    ? "ONLINE"
-                    : "ERROR";
-
-            control.textContent =
-                state.control
-                    ? "ONLINE"
-                    : "ERROR";
-
-
-            if (
-                state.sensors &&
-                state.power &&
-                state.control
-            ) {
-
-                state.diagnostics =
-                    true;
-
-                state.exitRevealed =
-                    true;
-
-
-                hiddenExit.classList.add(
-                    "revealed"
-                );
-
-
-                document
-                    .getElementById(
-                        "diagnostic-result"
-                    )
-                    .textContent =
-                    "ALL SYSTEMS NORMAL";
-
-
-                setTimeout(
-                    returnToSystem,
-                    900
-                );
-
-            }
-
-            else {
-
-                document
-                    .getElementById(
-                        "diagnostic-result"
-                    )
-                    .textContent =
-                    "아직 복구되지 않은 시스템이 있다.";
-
-            }
-
-        }
-    );
-
-
-/* =================================================
+/* =========================================
    FINAL
-================================================= */
+   ========================================= */
 
-document
-    .getElementById(
-        "final-exit"
-    )
-    .addEventListener(
-        "click",
-        () => {
+function enterFinal() {
 
-            mode =
-                "escaped";
+    currentRoom = "final";
 
+    hideAllRooms();
 
-            game.innerHTML = `
-                <div class="ending-screen">
+    if (finalRoom) {
+        finalRoom.style.display = "block";
+    }
 
-                    <div>
-                        SYSTEM CONNECTION
-                    </div>
-
-                    <strong>
-                        RESTORED
-                    </strong>
-
-                    <p>
-                        모든 시스템을 복구하고<br>
-                        시설을 탈출했다.
-                    </p>
-
-                    <span>
-                        END
-                    </span>
-
-                </div>
-            `;
-
-        }
+    showMessage(
+        "SYSTEM",
+        "모든 복구 작업이 완료되었다."
     );
-
-
-/* =================================================
-   RETURN BUTTON
-================================================= */
-
-document
-    .querySelectorAll(
-        "[data-return]"
-    )
-    .forEach(
-        (button) => {
-
-            button.addEventListener(
-                "click",
-                returnToSystem
-            );
-
-        }
-    );
-
-
-/* =================================================
-   MESSAGE
-================================================= */
-
-function showMessage(message) {
-
-    dialogue.textContent =
-        message;
-
 }
 
 
-/* =================================================
-   INITIALIZE
-================================================= */
+/* =========================================
+   초기 상태
+   ========================================= */
 
-player.style.left =
-    `${playerX}px`;
+hideAllRooms();
 
-player.style.top =
-    `${playerY}px`;
-
-updateIntroCamera();
-
-updateIntroDistance();
-
-
-/* =================================================
-   GAME LOOP
-================================================= */
-
-function gameLoop() {
-
-    update();
-
-    requestAnimationFrame(
-        gameLoop
-    );
-
+if (introArea) {
+    introArea.style.display = "block";
 }
 
-gameLoop();
+currentRoom = "intro";
+
+playerX = 100;
+playerY = window.innerHeight / 2;
+
+updatePlayer();
