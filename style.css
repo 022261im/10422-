@@ -1,143 +1,206 @@
 * {
     box-sizing: border-box;
     font-family: 'Press Start 2P', monospace;
-    font-size: 11px;
-    image-rendering: pixelated;
     user-select: none;
 }
 
 body {
     margin: 0;
-    padding: 0;
-    background-color: #0d0f12;
+    background-color: #080810;
+    color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    overflow: hidden;
 }
 
 #game-container {
+    width: 800px;
+    height: 520px;
+    background: #111;
+    border: 4px solid #333;
     position: relative;
-    width: 640px;
-    background: #1a1c23;
-    border: 4px solid #3b4252;
-    box-shadow: 0 0 20px rgba(0,255,200,0.15);
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
 }
 
-#status-bar {
-    background: #2e3440;
-    color: #88c0d0;
-    padding: 10px;
+#hud {
+    height: 40px;
+    background: #1a1a2e;
+    border-bottom: 2px solid #333;
     display: flex;
     justify-content: space-between;
-    border-bottom: 3px solid #3b4252;
-    font-size: 9px;
+    align-items: center;
+    padding: 0 15px;
+    font-size: 10px;
+    color: #00ffcc;
 }
 
-canvas {
-    display: block;
-    background: #0f1115;
+#viewport {
+    width: 800px;
+    height: 480px;
+    position: relative;
+    overflow: hidden;
+    background: #0d0f18;
 }
 
-#controls-hint {
-    background: #2e3440;
-    color: #d8dee9;
-    padding: 8px;
-    text-align: center;
-    font-size: 8px;
-    border-top: 3px solid #3b4252;
-}
-
-/* 모달 및 퍼즐 UI */
-#modal-overlay {
+#map {
     position: absolute;
     top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.75);
+    width: 2400px;
+    height: 480px;
+    transition: transform 0.3s ease-out;
+}
+
+/* 방 영역 */
+.room-area {
+    position: absolute;
+    width: 800px;
+    height: 480px;
+    background-image: radial-gradient(#1a2035 10%, transparent 11%);
+    background-size: 20px 20px;
+}
+
+/* 플레이어 */
+#player {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    background: #00ffcc;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    box-shadow: 0 0 10px #00ffcc;
+    z-index: 10;
+    left: 100px;
+    top: 220px;
+}
+
+/* 상호작용 사물/콘솔 */
+.obj {
+    position: absolute;
+    padding: 10px;
+    background: #16213e;
+    border: 2px solid #0f3460;
+    color: #e94560;
+    font-size: 9px;
+    border-radius: 4px;
+}
+
+.terminal {
+    background: #0f3460;
+    border-color: #00ffcc;
+    color: #00ffcc;
+    cursor: pointer;
+}
+
+/* 문 (Door) */
+.door {
+    position: absolute;
+    width: 70px;
+    height: 100px;
+    background: #721c24;
+    border: 3px solid #f8d7da;
+    color: #fff;
+    font-size: 8px;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 10;
+    text-align: center;
+}
+
+.door.unlocked {
+    background: #155724;
+    border-color: #d4edda;
+    color: #00ffcc;
+    box-shadow: 0 0 15px #00ffcc;
+}
+
+/* 프롬프트 UI */
+#prompt-ui {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #00ffcc;
+    color: #000;
+    padding: 8px 16px;
+    font-size: 10px;
+    font-weight: bold;
+    display: none;
+    z-index: 20;
+    border-radius: 4px;
+}
+
+/* 모달 팝업 */
+#quiz-modal {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal-content {
+    background: #16213e;
+    border: 3px solid #00ffcc;
+    padding: 20px;
+    width: 500px;
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+}
+
+#quiz-title { color: #00ffcc; font-size: 12px; margin-top: 0; }
+#quiz-desc { font-size: 9px; line-height: 1.6; color: #dddddd; margin: 15px 0; }
+
+.option-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    background: #0f3460;
+    border: 1px solid #00ffcc;
+    color: #fff;
+    font-size: 8px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.option-btn:hover {
+    background: #00ffcc;
+    color: #000;
+}
+
+#close-quiz-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+/* 엔딩 화면 */
+#ending-screen {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #0d0f18;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    text-align: center;
+}
+
+#ending-screen h1 { color: #00ffcc; font-size: 16px; margin-bottom: 20px; }
+#ending-screen p { font-size: 10px; margin-bottom: 30px; line-height: 1.8; }
+#ending-screen button {
+    padding: 12px 24px;
+    background: #00ffcc;
+    border: none;
+    font-size: 10px;
+    cursor: pointer;
 }
 
 .hidden { display: none !important; }
-
-.pixel-modal {
-    width: 480px;
-    background: #232731;
-    border: 4px solid #a3be8c;
-    box-shadow: 6px 6px 0px #000;
-    color: #eceff4;
-}
-
-.modal-header {
-    background: #a3be8c;
-    color: #2e3440;
-    padding: 6px 10px;
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
-}
-
-#btn-close {
-    background: none;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.modal-body {
-    padding: 16px;
-}
-
-#dialogue-box {
-    background: #191c21;
-    border: 2px solid #4c566a;
-    padding: 10px;
-    line-height: 1.5;
-    font-size: 9px;
-    color: #ebcb8b;
-    margin-bottom: 12px;
-}
-
-.pixel-hr {
-    border: 0;
-    border-top: 2px dashed #4c566a;
-    margin: 12px 0;
-}
-
-.puzzle-desc {
-    font-size: 9px;
-    margin: 6px 0;
-}
-
-.control-group {
-    margin: 12px 0;
-}
-
-.control-group label {
-    display: block;
-    font-size: 8px;
-    margin-bottom: 4px;
-}
-
-input[type=range] {
-    width: 100%;
-    accent-color: #a3be8c;
-}
-
-.pixel-btn {
-    width: 100%;
-    background: #a3be8c;
-    color: #2e3440;
-    border: 2px solid #000;
-    padding: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-top: 8px;
-}
-
-.pixel-btn:hover {
-    background: #b48ead;
-    color: #fff;
-}

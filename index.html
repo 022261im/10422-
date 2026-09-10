@@ -3,61 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Explorer - Sensor Repair</title>
+    <title>SYSTEM ESCAPE: ENGINEERING LAB</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <div id="game-container">
-        <!-- 상단 헤더 UI -->
-        <div id="status-bar">
-            <span>[SECTOR 01: LOGIC BUS]</span>
-            <span id="quest-text">Mission: 조사 가능한 센서 노드를 찾으세요.</span>
+        <!-- 상단 게임 정보 UI -->
+        <div id="hud">
+            <div id="room-title">ROOM 1: SENSOR CALIBRATION LAB</div>
+            <div id="progress">CORE RESTORED: <span id="cleared-count">0</span> / 3</div>
         </div>
 
-        <!-- 메인 탐험 캔버스 -->
-        <canvas id="gameCanvas" width="640" height="480"></canvas>
+        <!-- 게임 뷰포트 / 맵 화면 -->
+        <div id="viewport">
+            <div id="map">
+                <!-- 플레이어 캐릭터 -->
+                <div id="player"></div>
 
-        <!-- 사물 조사 / 모달 UI (E 키 누를 때 팝업) -->
-        <div id="modal-overlay" class="hidden">
-            <div id="terminal-modal" class="pixel-modal">
-                <div class="modal-header">
-                    <span id="modal-title">[SENS_NODE_01 INTERFACE]</span>
-                    <button id="btn-close" onclick="closeModal()">X</button>
+                <!-- ROOM 1: SENSOR LAB -->
+                <div id="room-1" class="room-area active">
+                    <div class="wall top"></div>
+                    <div class="wall bottom"></div>
+                    <div class="wall left"></div>
+                    <!-- 상호작용 가능한 단말기들 -->
+                    <div class="obj sensor-node" data-id="sensor1" style="left: 150px; top: 120px;">[센서 A]</div>
+                    <div class="obj sensor-node" data-id="sensor2" style="left: 400px; top: 120px;">[센서 B]</div>
+                    <div class="obj terminal" data-id="quiz-sensor" style="left: 275px; top: 320px;">🖥️ 센서 제어 콘솔</div>
+                    <!-- 다음 방으로 향하는 문 -->
+                    <div class="door locked" id="door-1" style="left: 720px; top: 200px;">GATE 1<br>(LOCKED)</div>
                 </div>
-                <div class="modal-body">
-                    <!-- 스토리 / 단서 텍스트 -->
-                    <div id="dialogue-box">
-                        <p id="dialogue-text">센서 노드 S-01에 접속 중... 온도가 비정상 측정되고 있습니다.</p>
-                    </div>
 
-                    <!-- 공학적 센서 보정 퍼즐 패널 -->
-                    <div id="puzzle-panel">
-                        <hr class="pixel-hr">
-                        <h4>🔧 SENSOR CALIBRATION (신호 보정)</h4>
-                        <p class="puzzle-desc">목표 출력값(Target): <strong id="target-val" style="color:#00ff00;">50.0 °C</strong></p>
-                        <p class="puzzle-desc">현재 측정값(Current): <strong id="current-val" style="color:#ff3333;">0.0 °C</strong></p>
-
-                        <div class="control-group">
-                            <label>GAIN (증폭도): <span id="gain-val">1.0</span></label>
-                            <input type="range" id="slider-gain" min="0.1" max="3.0" step="0.1" value="1.0">
-                        </div>
-
-                        <div class="control-group">
-                            <label>OFFSET (영점 보정): <span id="offset-val">0</span></label>
-                            <input type="range" id="slider-offset" min="-30" max="30" step="1" value="0">
-                        </div>
-
-                        <button id="btn-calibrate" class="pixel-btn" onclick="checkCalibration()">⚡ 교정 신호 전송</button>
-                    </div>
+                <!-- ROOM 2: POWER BAY -->
+                <div id="room-2" class="room-area" style="left: 800px;">
+                    <div class="wall top"></div>
+                    <div class="wall bottom"></div>
+                    <div class="obj power-node" data-id="power1" style="left: 150px; top: 120px;">[모터 가동부]</div>
+                    <div class="obj power-node" data-id="power2" style="left: 400px; top: 120px;">[냉각 시스템]</div>
+                    <div class="obj terminal" data-id="quiz-power" style="left: 275px; top: 320px;">⚡ 전력 배분 콘솔</div>
+                    <div class="door locked" id="door-2" style="left: 720px; top: 200px;">GATE 2<br>(LOCKED)</div>
                 </div>
+
+                <!-- ROOM 3: CONTROL LAB -->
+                <div id="room-3" class="room-area" style="left: 1600px;">
+                    <div class="wall top"></div>
+                    <div class="wall bottom"></div>
+                    <div class="wall right"></div>
+                    <div class="obj control-node" data-id="ctrl1" style="left: 150px; top: 120px;">[응답 곡선 A]</div>
+                    <div class="obj control-node" data-id="ctrl2" style="left: 400px; top: 120px;">[응답 곡선 B]</div>
+                    <div class="obj terminal" data-id="quiz-control" style="left: 275px; top: 320px;">🎛️ PID 튜닝 콘솔</div>
+                    <div class="door exit-gate locked" id="door-exit" style="left: 650px; top: 300px;">MAIN EXIT</div>
+                </div>
+            </div>
+
+            <!-- 상호작용 안내 말풍선 -->
+            <div id="prompt-ui">[SPACE] 상호작용</div>
+        </div>
+
+        <!-- 퀴즈 팝업 모달 UI -->
+        <div id="quiz-modal" class="hidden">
+            <div class="modal-content">
+                <h3 id="quiz-title">SYSTEM QUIZ</h3>
+                <p id="quiz-desc">퀴즈 내용이 여기에 표시됩니다.</p>
+                <div id="quiz-options"></div>
+                <button id="close-quiz-btn">닫기 (ESC)</button>
             </div>
         </div>
 
-        <!-- 하단 조작 안내 -->
-        <div id="controls-hint">
-            이동: [WASD / 방향키] | 사물 조사: [E 또는 Space]
+        <!-- 엔딩 화면 -->
+        <div id="ending-screen" class="hidden">
+            <h1>SYSTEM REBOOT COMPLETE</h1>
+            <p>모든 공학 시스템을 정상 복구하고 연구소를 탈출했습니다!</p>
+            <button onclick="location.reload()">다시 시작하기</button>
         </div>
     </div>
 
