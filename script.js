@@ -1,798 +1,1828 @@
-/* =========================================
-   REBOOT - GAME SCRIPT
-   ========================================= */
+/* =================================================
+   ELEMENTS
+================================================= */
 
-const player = document.getElementById("player");
-const introArea = document.getElementById("intro-area");
-const systemArea = document.getElementById("system-area");
+const game =
+    document.getElementById("game");
 
-const sensorRoom = document.getElementById("puzzle-sensor");
-const powerRoom = document.getElementById("puzzle-power");
-const controlRoom = document.getElementById("puzzle-control");
-const finalRoom = document.getElementById("puzzle-final");
+const world =
+    document.getElementById("world");
 
-const messageBox = document.getElementById("message-box");
-const messageText = document.getElementById("message-text");
-const messageClose = document.getElementById("message-close");
+const player =
+    document.getElementById("player");
 
-const hiddenExit = document.getElementById("hidden-exit");
+const dialogue =
+    document.getElementById("dialogue-text");
 
-let currentRoom = "intro";
+const distanceValue =
+    document.getElementById("distance-value");
 
-let playerX = 120;
-let playerY = 300;
+const distanceGauge =
+    document.getElementById("distance-gauge");
 
-let keys = {};
+const systemObjects =
+    document.querySelectorAll(
+        ".system-object"
+    );
 
-let cleared = {
-    sensor: false,
-    power: false,
-    control: false
+const puzzleRooms =
+    document.querySelectorAll(
+        ".puzzle-room"
+    );
+
+const hiddenExit =
+    document.getElementById(
+        "hidden-exit"
+    );
+
+const clearedFiles =
+    document.getElementById(
+        "cleared-files"
+    );
+
+
+/* =================================================
+   SETTINGS
+================================================= */
+
+const WORLD_WIDTH =
+    3100;
+
+const SYSTEM_X =
+    1700;
+
+const SYSTEM_ACCESS_X =
+    1580;
+
+const SPEED =
+    5;
+
+
+/* =================================================
+   PLAYER
+================================================= */
+
+let playerX =
+    300;
+
+let playerY =
+    window.innerHeight *
+    0.5;
+
+
+/* =================================================
+   CAMERA
+================================================= */
+
+let cameraX =
+    0;
+
+
+/* =================================================
+   GAME MODE
+================================================= */
+
+let mode =
+    "intro";
+
+
+/* =================================================
+   INPUT
+================================================= */
+
+const keys = {};
+
+
+/* =================================================
+   PUZZLE STATE
+================================================= */
+
+const state = {
+
+    sensor:
+        false,
+
+    power:
+        false,
+
+    control:
+        false,
+
+    currentPuzzle:
+        null,
+
+    sensorMeasurements:
+        {},
+
+    powerNodes:
+        new Set(),
+
+    controlObservations:
+        new Set(),
+
+    exitRevealed:
+        false
+
 };
 
 
-/* =========================================
-   플레이어 기본 설정
-   ========================================= */
+/* =================================================
+   KEYBOARD
+================================================= */
 
-const PLAYER_SPEED = 4;
+document.addEventListener(
+    "keydown",
+    (event) => {
 
-function updatePlayer() {
-    if (!player) return;
+        if (
+            event.code === "Space"
+        ) {
 
-    player.style.left = playerX + "px";
-    player.style.top = playerY + "px";
-}
+            event.preventDefault();
+
+            interact();
+
+            return;
+        }
 
 
-/* =========================================
-   키보드 입력
-   ========================================= */
+        switch (
+            event.code
+        ) {
 
-document.addEventListener("keydown", function (event) {
+            case "KeyW":
+            case "ArrowUp":
 
-    keys[event.key.toLowerCase()] = true;
+                keys.up = true;
 
-    // SPACE
-    if (event.code === "Space" && !event.repeat) {
-        event.preventDefault();
-        interact();
+                break;
+
+
+            case "KeyS":
+            case "ArrowDown":
+
+                keys.down = true;
+
+                break;
+
+
+            case "KeyA":
+            case "ArrowLeft":
+
+                keys.left = true;
+
+                break;
+
+
+            case "KeyD":
+            case "ArrowRight":
+
+                keys.right = true;
+
+                break;
+        }
+
     }
-});
+);
 
 
-document.addEventListener("keyup", function (event) {
-    keys[event.key.toLowerCase()] = false;
-});
+document.addEventListener(
+    "keyup",
+    (event) => {
+
+        switch (
+            event.code
+        ) {
+
+            case "KeyW":
+            case "ArrowUp":
+
+                keys.up = false;
+
+                break;
 
 
-/* =========================================
-   게임 루프
-   ========================================= */
+            case "KeyS":
+            case "ArrowDown":
+
+                keys.down = false;
+
+                break;
+
+
+            case "KeyA":
+            case "ArrowLeft":
+
+                keys.left = false;
+
+                break;
+
+
+            case "KeyD":
+            case "ArrowRight":
+
+                keys.right = false;
+
+                break;
+        }
+
+    }
+);
+
+
+/* =================================================
+   GAME LOOP
+================================================= */
 
 function gameLoop() {
 
-    if (
-        currentRoom === "intro" ||
-        currentRoom === "system"
-    ) {
-        movePlayer();
-    }
+    updatePlayer();
 
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(
+        gameLoop
+    );
 }
 
-gameLoop();
 
+/* =================================================
+   PLAYER UPDATE
+================================================= */
 
-/* =========================================
-   플레이어 이동
-   ========================================= */
+function updatePlayer() {
 
-function movePlayer() {
+    if (
+        mode !== "intro" &&
+        mode !== "system"
+    ) {
 
-    if (!player) return;
+        return;
+    }
+
 
     let dx = 0;
+
     let dy = 0;
 
-    if (keys["w"] || keys["arrowup"]) {
-        dy -= PLAYER_SPEED;
+
+    if (keys.up) {
+        dy -= SPEED;
     }
 
-    if (keys["s"] || keys["arrowdown"]) {
-        dy += PLAYER_SPEED;
+    if (keys.down) {
+        dy += SPEED;
     }
 
-    if (keys["a"] || keys["arrowleft"]) {
-        dx -= PLAYER_SPEED;
+    if (keys.left) {
+        dx -= SPEED;
     }
 
-    if (keys["d"] || keys["arrowright"]) {
-        dx += PLAYER_SPEED;
+    if (keys.right) {
+        dx += SPEED;
     }
+
 
     playerX += dx;
+
     playerY += dy;
 
-    /* -------------------------------------
-       INTRO 범위
-       ------------------------------------- */
 
-    if (currentRoom === "intro") {
+    /* =============================================
+       INTRO LIMIT
+    ============================================= */
 
-        playerX = Math.max(30, Math.min(window.innerWidth - 70, playerX));
-        playerY = Math.max(50, Math.min(window.innerHeight - 100, playerY));
+    if (
+        mode === "intro"
+    ) {
 
-        updatePlayer();
+        playerX =
+            Math.max(
+                40,
+                Math.min(
+                    SYSTEM_ACCESS_X + 20,
+                    playerX
+                )
+            );
 
-        checkSystemEntrance();
     }
 
 
-    /* -------------------------------------
-       SYSTEM 방 범위
-       ------------------------------------- */
+    /* =============================================
+       SYSTEM LIMIT
+    ============================================= */
 
-    if (currentRoom === "system") {
+    if (
+        mode === "system"
+    ) {
 
-        playerX = Math.max(30, Math.min(window.innerWidth - 70, playerX));
-        playerY = Math.max(100, Math.min(window.innerHeight - 100, playerY));
+        const left =
+            SYSTEM_X + 50;
 
-        updatePlayer();
+        const right =
+            SYSTEM_X +
+            window.innerWidth -
+            50;
+
+
+        playerX =
+            Math.max(
+                left,
+                Math.min(
+                    right,
+                    playerX
+                )
+            );
     }
+
+
+    /* =============================================
+       Y LIMIT
+    ============================================= */
+
+    playerY =
+        Math.max(
+            70,
+            Math.min(
+                window.innerHeight - 70,
+                playerY
+            )
+        );
+
+
+    player.style.left =
+        `${playerX}px`;
+
+    player.style.top =
+        `${playerY}px`;
+
+
+    /* =============================================
+       CAMERA
+    ============================================= */
+
+    if (
+        mode === "intro"
+    ) {
+
+        updateIntroCamera();
+
+        checkWrongDirection();
+
+        updateIntroDistance();
+
+        checkSystemAccess();
+
+    }
+
+
+    if (
+        mode === "system"
+    ) {
+
+        updateSystemView();
+
+        updateSystemDistance();
+
+        checkHiddenExit();
+
+    }
+
 }
 
 
-/* =========================================
-   SYSTEM 진입
-   ========================================= */
+/* =================================================
+   INTRO CAMERA
+================================================= */
 
-function checkSystemEntrance() {
+function updateIntroCamera() {
 
-    // 화면 오른쪽에 도착하면 SYSTEM으로 이동
-    if (playerX > window.innerWidth - 140) {
-        enterSystem();
-    }
+    const target =
+        playerX -
+        window.innerWidth / 2;
+
+
+    const maxCamera =
+        SYSTEM_ACCESS_X -
+        window.innerWidth / 2;
+
+
+    cameraX =
+        Math.max(
+            0,
+            Math.min(
+                maxCamera,
+                target
+            )
+        );
+
+
+    world.style.transform =
+        `translateX(${-cameraX}px)`;
+
 }
 
 
-/* =========================================
-   INTRO → SYSTEM
-   ========================================= */
+/* =================================================
+   ENTER SYSTEM
+================================================= */
 
 function enterSystem() {
 
-    currentRoom = "system";
+    mode =
+        "system";
 
-    if (introArea) {
-        introArea.style.display = "none";
-    }
 
-    if (systemArea) {
-        systemArea.style.display = "block";
-    }
+    /*
+        SYSTEM은 브라우저 화면에
+        딱 맞게 고정된다.
+    */
 
-    playerX = 100;
-    playerY = window.innerHeight / 2;
+    world.style.transform =
+        `translateX(-${SYSTEM_X}px)`;
 
-    updatePlayer();
 
-    updateExit();
+    playerX =
+        SYSTEM_X +
+        window.innerWidth * 0.5;
 
-    showMessage("SYSTEM", "오래된 시스템 파일이 남아 있다.");
+    playerY =
+        window.innerHeight * 0.56;
+
+
+    player.style.left =
+        `${playerX}px`;
+
+    player.style.top =
+        `${playerY}px`;
+
+
+    showMessage(
+        "SYSTEM에 접속했다. 파일을 조사해 보자."
+    );
+
 }
 
 
-/* =========================================
-   오브젝트 찾기
-   ========================================= */
+/* =================================================
+   SYSTEM VIEW
+================================================= */
 
-function getObjects() {
+function updateSystemView() {
 
-    if (currentRoom !== "system") {
-        return [];
-    }
+    world.style.transform =
+        `translateX(-${SYSTEM_X}px)`;
 
-    return [
-        document.getElementById("file-sensor"),
-        document.getElementById("file-power"),
-        document.getElementById("file-control"),
-        hiddenExit
-    ].filter(Boolean);
 }
 
 
-/* =========================================
-   가장 가까운 오브젝트
-   ========================================= */
+/* =================================================
+   INTRO DISTANCE
+================================================= */
 
-function getNearestObject() {
+function updateIntroDistance() {
 
-    const objects = getObjects();
-
-    let nearest = null;
-    let nearestDistance = Infinity;
-
-    objects.forEach(function (object) {
-
-        const rect = object.getBoundingClientRect();
-
-        const objectX = rect.left + rect.width / 2;
-        const objectY = rect.top + rect.height / 2;
-
-        const dx = playerX + 25 - objectX;
-        const dy = playerY + 25 - objectY;
-
-        const distance = Math.sqrt(
-            dx * dx + dy * dy
+    const distance =
+        Math.max(
+            0,
+            SYSTEM_ACCESS_X -
+            playerX
         );
 
-        if (distance < nearestDistance) {
-            nearestDistance = distance;
-            nearest = object;
-        }
-    });
 
-    if (nearestDistance < 100) {
-        return nearest;
-    }
+    distanceValue.textContent =
+        `${Math.round(distance)}cm`;
 
-    return null;
+
+    const percentage =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                100 -
+                distance / 12
+            )
+        );
+
+
+    distanceGauge.style.width =
+        `${percentage}%`;
+
 }
 
 
-/* =========================================
-   SPACE 상호작용
-   ========================================= */
+/* =================================================
+   SYSTEM DISTANCE
+================================================= */
+
+function updateSystemDistance() {
+
+    const nearest =
+        findNearestObject();
+
+
+    if (!nearest) {
+
+        distanceValue.textContent =
+            "--cm";
+
+        return;
+    }
+
+
+    distanceValue.textContent =
+        `${Math.round(
+            nearest.distance
+        )}cm`;
+
+
+    const percentage =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                100 -
+                nearest.distance / 2
+            )
+        );
+
+
+    distanceGauge.style.width =
+        `${percentage}%`;
+
+}
+
+
+/* =================================================
+   WRONG WAY
+================================================= */
+
+let wrongCooldown =
+    0;
+
+
+function checkWrongDirection() {
+
+    if (
+        wrongCooldown > 0
+    ) {
+
+        wrongCooldown--;
+
+        return;
+    }
+
+
+    const center =
+        window.innerHeight / 2;
+
+
+    if (
+        Math.abs(
+            playerY -
+            center
+        ) > 220
+    ) {
+
+        showMessage(
+            "여긴 아닌 것 같다."
+        );
+
+        wrongCooldown =
+            80;
+
+    }
+
+
+}
+
+
+/* =================================================
+   SYSTEM ACCESS
+================================================= */
+
+function checkSystemAccess() {
+
+    const distance =
+        Math.sqrt(
+
+            Math.pow(
+                playerX -
+                SYSTEM_ACCESS_X,
+                2
+            )
+
+            +
+
+            Math.pow(
+                playerY -
+                window.innerHeight / 2,
+                2
+            )
+
+        );
+
+
+    if (
+        distance < 100
+    ) {
+
+        showMessage(
+            "SYSTEM ACCESS"
+        );
+
+
+        if (
+            distance < 55
+        ) {
+
+            enterSystem();
+        }
+
+    }
+
+}
+
+
+/* =================================================
+   INTERACTION
+================================================= */
 
 function interact() {
 
-    /* -------------------------------------
-       SYSTEM
-       ------------------------------------- */
+    if (
+        mode === "intro"
+    ) {
 
-    if (currentRoom === "system") {
+        checkSystemAccess();
 
-        const object = getNearestObject();
-
-        if (!object) return;
-
-        const fileType = object.dataset.file;
-
-        if (fileType === "sensor") {
-            enterPuzzle("sensor");
-            return;
-        }
-
-        if (fileType === "power") {
-            enterPuzzle("power");
-            return;
-        }
-
-        if (fileType === "control") {
-            enterPuzzle("control");
-            return;
-        }
-
-        if (
-            object === hiddenExit &&
-            cleared.sensor &&
-            cleared.power &&
-            cleared.control
-        ) {
-            enterFinal();
-            return;
-        }
-    }
-}
-
-
-/* =========================================
-   퍼즐 방 진입
-   ========================================= */
-
-function enterPuzzle(type) {
-
-    currentRoom = type;
-
-    hideAllRooms();
-
-    if (type === "sensor" && sensorRoom) {
-        sensorRoom.style.display = "block";
+        return;
     }
 
-    if (type === "power" && powerRoom) {
-        powerRoom.style.display = "block";
-    }
-
-    if (type === "control" && controlRoom) {
-        controlRoom.style.display = "block";
-    }
-
-    resetPuzzle(type);
-}
-
-
-/* =========================================
-   모든 방 숨기기
-   ========================================= */
-
-function hideAllRooms() {
-
-    if (introArea) introArea.style.display = "none";
-    if (systemArea) systemArea.style.display = "none";
-
-    if (sensorRoom) sensorRoom.style.display = "none";
-    if (powerRoom) powerRoom.style.display = "none";
-    if (controlRoom) controlRoom.style.display = "none";
-    if (finalRoom) finalRoom.style.display = "none";
-}
-
-
-/* =========================================
-   퍼즐 상태
-   ========================================= */
-
-let puzzleState = {
-
-    sensor: {
-        inspected: [],
-        solved: false
-    },
-
-    power: {
-        inspected: [],
-        solved: false
-    },
-
-    control: {
-        inspected: [],
-        solved: false
-    }
-};
-
-
-/* =========================================
-   퍼즐 초기화
-   ========================================= */
-
-function resetPuzzle(type) {
-
-    if (!puzzleState[type]) return;
-
-    puzzleState[type].inspected = [];
-
-    showMessage(
-        "SYSTEM",
-        "주변을 조사해서 단서를 찾아라."
-    );
-}
-
-
-/* =========================================
-   퍼즐 오브젝트 조사
-   ========================================= */
-
-document.addEventListener("click", function (event) {
-
-    const target = event.target.closest("[data-clue]");
-
-    if (!target) return;
-
-    const clue = target.dataset.clue;
-
-    const parentRoom = target.closest(
-        "#puzzle-sensor, #puzzle-power, #puzzle-control"
-    );
-
-    if (!parentRoom) return;
-
-    inspectClue(
-        target,
-        clue
-    );
-});
-
-
-/* =========================================
-   단서 조사
-   ========================================= */
-
-function inspectClue(object, clue) {
-
-    let type = null;
-
-    if (object.closest("#puzzle-sensor")) {
-        type = "sensor";
-    }
-
-    if (object.closest("#puzzle-power")) {
-        type = "power";
-    }
-
-    if (object.closest("#puzzle-control")) {
-        type = "control";
-    }
-
-    if (!type) return;
-
-    const index = clue;
-
-    if (!puzzleState[type].inspected.includes(index)) {
-
-        puzzleState[type].inspected.push(index);
-    }
-
-    const text =
-        object.dataset.text ||
-        "특별한 정보는 없는 것 같다.";
-
-    showMessage(
-        "조사",
-        text
-    );
-}
-
-
-/* =========================================
-   메시지 창
-   ========================================= */
-
-function showMessage(title, text) {
-
-    if (!messageBox || !messageText) return;
-
-    messageBox.style.display = "block";
-
-    messageText.innerHTML =
-        "<strong>" +
-        title +
-        "</strong><br><br>" +
-        text;
-}
-
-
-function closeMessage() {
-
-    if (!messageBox) return;
-
-    messageBox.style.display = "none";
-}
-
-
-if (messageClose) {
-    messageClose.addEventListener(
-        "click",
-        closeMessage
-    );
-}
-
-
-/* =========================================
-   SENSOR 퍼즐
-   ========================================= */
-
-function solveSensor() {
 
     if (
-        !puzzleState.sensor.inspected.includes("A") ||
-        !puzzleState.sensor.inspected.includes("B") ||
-        !puzzleState.sensor.inspected.includes("C")
+        mode !== "system"
+    ) {
+
+        return;
+    }
+
+
+    const nearest =
+        findNearestObject();
+
+
+    if (
+        !nearest
     ) {
 
         showMessage(
-            "SYSTEM",
-            "아직 조사하지 않은 측정값이 있다."
+            "주변에 조사할 것이 없다."
         );
 
         return;
     }
 
-    const answer = prompt(
-        "세 측정값에 공통으로 존재하는 오차를 입력하세요."
+
+    handleSystemObject(
+        nearest.type
     );
 
-    if (answer === null) return;
-
-    if (Number(answer) === -7) {
-
-        cleared.sensor = true;
-
-        puzzleState.sensor.solved = true;
-
-        showMessage(
-            "CALIBRATION COMPLETE",
-            "센서 오차가 보정되었다."
-        );
-
-        setTimeout(returnToSystem, 1000);
-
-    } else {
-
-        showMessage(
-            "ERROR",
-            "보정값이 맞지 않는다."
-        );
-    }
 }
 
 
-/* =========================================
-   POWER 퍼즐
-   ========================================= */
+/* =================================================
+   FIND NEAREST OBJECT
+================================================= */
 
-function solvePower() {
+function findNearestObject() {
+
+    let nearest =
+        null;
+
+    let nearestDistance =
+        Infinity;
+
+
+    systemObjects.forEach(
+        (object) => {
+
+            /*
+                system-area 내부의
+                % 위치를 실제 픽셀로 변환
+            */
+
+            const x =
+                SYSTEM_X +
+                window.innerWidth *
+                parseFloat(
+                    object.style.left
+                ) /
+                100;
+
+
+            const y =
+                window.innerHeight *
+                parseFloat(
+                    object.style.top
+                ) /
+                100;
+
+
+            const distance =
+                Math.sqrt(
+
+                    Math.pow(
+                        playerX - x,
+                        2
+                    )
+
+                    +
+
+                    Math.pow(
+                        playerY - y,
+                        2
+                    )
+
+                );
+
+
+            if (
+                distance <
+                nearestDistance
+            ) {
+
+                nearestDistance =
+                    distance;
+
+
+                nearest = {
+
+                    type:
+                        object.dataset.type,
+
+                    element:
+                        object,
+
+                    distance:
+                        distance
+                };
+
+            }
+
+        }
+    );
+
+
+    /*
+        EXIT
+    */
+
+    const exitX =
+        SYSTEM_X +
+        window.innerWidth *
+        0.90;
+
+
+    const exitY =
+        window.innerHeight *
+        0.78;
+
+
+    const exitDistance =
+        Math.sqrt(
+
+            Math.pow(
+                playerX -
+                exitX,
+                2
+            )
+
+            +
+
+            Math.pow(
+                playerY -
+                exitY,
+                2
+            )
+
+        );
+
 
     if (
-        !puzzleState.power.inspected.includes("sensor") ||
-        !puzzleState.power.inspected.includes("motor") ||
-        !puzzleState.power.inspected.includes("cooling")
+        exitDistance <
+        nearestDistance
     ) {
 
-        showMessage(
-            "SYSTEM",
-            "전력 시스템의 구성 요소를 모두 조사해야 한다."
+        nearest = {
+
+            type:
+                "exit",
+
+            element:
+                hiddenExit,
+
+            distance:
+                exitDistance
+        };
+
+    }
+
+
+    if (
+        nearest &&
+        nearest.distance <
+        130
+    ) {
+
+        return nearest;
+    }
+
+
+    return null;
+
+}
+
+
+/* =================================================
+   OBJECT HANDLER
+================================================= */
+
+function handleSystemObject(type) {
+
+    switch(type) {
+
+        case "sensor":
+
+            openPuzzle(
+                "sensor"
+            );
+
+            break;
+
+
+        case "power":
+
+            openPuzzle(
+                "power"
+            );
+
+            break;
+
+
+        case "control":
+
+            openPuzzle(
+                "control"
+            );
+
+            break;
+
+
+        case "diagnostics":
+
+            if (
+                state.sensor &&
+                state.power &&
+                state.control
+            ) {
+
+                openPuzzle(
+                    "final"
+                );
+
+            }
+
+            else {
+
+                showMessage(
+                    "아직 복구되지 않은 시스템이 있다."
+                );
+
+            }
+
+            break;
+
+
+        case "trash":
+
+            showMessage(
+                "휴지통에는 종이 조각만 남아 있다."
+            );
+
+            break;
+
+
+        case "exit":
+
+            if (
+                state.exitRevealed
+            ) {
+
+                openPuzzle(
+                    "final"
+                );
+
+            }
+
+            else {
+
+                showMessage(
+                    "이곳에는 출구가 없는 것 같다."
+                );
+
+            }
+
+            break;
+
+    }
+
+}
+
+
+/* =================================================
+   OPEN PUZZLE
+================================================= */
+
+function openPuzzle(name) {
+
+    mode =
+        name;
+
+
+    puzzleRooms.forEach(
+        (room) => {
+
+            room.classList.remove(
+                "active"
+            );
+
+        }
+    );
+
+
+    const target =
+        document.getElementById(
+            `puzzle-${name}`
         );
+
+
+    if (!target) {
 
         return;
     }
 
-    const answer = prompt(
-        "작동에 반드시 필요한 장치를 순서 없이 입력하세요.\n예: sensor,motor"
+
+    target.classList.add(
+        "active"
     );
 
-    if (answer === null) return;
 
-    const cleaned =
-        answer
-            .toLowerCase()
-            .replace(/\s/g, "");
+    /*
+        퍼즐마다 초기 데이터 설정
+    */
 
     if (
-        cleaned === "sensor,motor" ||
-        cleaned === "motor,sensor"
+        name === "sensor"
     ) {
 
-        cleared.power = true;
+        state.sensorMeasurements =
+            {};
 
-        puzzleState.power.solved = true;
+        document
+            .getElementById(
+                "sensor-evidence"
+            )
+            .textContent =
+            "센서 노드를 조사해라.";
 
-        showMessage(
-            "POWER RESTORED",
-            "필수 전력 라인이 복구되었다."
-        );
-
-        setTimeout(returnToSystem, 1000);
-
-    } else {
-
-        showMessage(
-            "ERROR",
-            "전력 분배 조건이 맞지 않는다."
-        );
     }
-}
 
-
-/* =========================================
-   CONTROL 퍼즐
-   ========================================= */
-
-function solveControl() {
 
     if (
-        !puzzleState.control.inspected.includes("low") ||
-        !puzzleState.control.inspected.includes("medium") ||
-        !puzzleState.control.inspected.includes("high")
+        name === "power"
     ) {
 
-        showMessage(
-            "SYSTEM",
-            "제어 응답 데이터를 모두 확인해야 한다."
-        );
+        state.powerNodes.clear();
 
-        return;
+        updatePowerText();
+
     }
 
-    const answer = prompt(
-        "안정적인 제어 설정값을 입력하세요.\nKp 값만 입력."
-    );
 
-    if (answer === null) return;
+    if (
+        name === "control"
+    ) {
 
-    if (Number(answer) === 40) {
+        state.controlObservations.clear();
 
-        cleared.control = true;
-
-        puzzleState.control.solved = true;
-
-        showMessage(
-            "CONTROL RESTORED",
-            "제어 시스템의 안정성이 회복되었다."
-        );
-
-        setTimeout(returnToSystem, 1000);
-
-    } else {
-
-        showMessage(
-            "ERROR",
-            "제어 계수가 불안정하다."
-        );
+        document
+            .getElementById(
+                "control-evidence"
+            )
+            .textContent =
+            "제어 응답을 조사해라.";
     }
+
 }
 
 
-/* =========================================
-   퍼즐 방 버튼 연결
-   ========================================= */
-
-const sensorSolveButton =
-    document.getElementById("sensor-solve");
-
-const powerSolveButton =
-    document.getElementById("power-solve");
-
-const controlSolveButton =
-    document.getElementById("control-solve");
-
-
-if (sensorSolveButton) {
-    sensorSolveButton.addEventListener(
-        "click",
-        solveSensor
-    );
-}
-
-if (powerSolveButton) {
-    powerSolveButton.addEventListener(
-        "click",
-        solvePower
-    );
-}
-
-if (controlSolveButton) {
-    controlSolveButton.addEventListener(
-        "click",
-        solveControl
-    );
-}
-
-
-/* =========================================
-   SYSTEM으로 돌아오기
-   ========================================= */
+/* =================================================
+   RETURN TO SYSTEM
+================================================= */
 
 function returnToSystem() {
 
-    hideAllRooms();
+    mode =
+        "system";
 
-    currentRoom = "system";
 
-    if (systemArea) {
-        systemArea.style.display = "block";
-    }
+    puzzleRooms.forEach(
+        (room) => {
 
-    playerX = 150;
-    playerY = window.innerHeight / 2;
+            room.classList.remove(
+                "active"
+            );
 
-    updatePlayer();
+        }
+    );
 
-    convertClearedFiles();
 
-    updateExit();
+    world.style.transform =
+        `translateX(-${SYSTEM_X}px)`;
+
+
+    updateSystemDistance();
+
 }
 
 
-/* =========================================
-   클리어한 파일 → 종이 조각
-   ========================================= */
+/* =================================================
+   BACK BUTTONS
+================================================= */
 
-function convertClearedFiles() {
+document
+    .querySelectorAll(
+        "[data-back]"
+    )
+    .forEach(
+        (button) => {
 
-    const files = [
+            button.addEventListener(
+                "click",
+                returnToSystem
+            );
 
-        {
-            id: "file-sensor",
-            solved: cleared.sensor,
-            text: "+7 cm OFFSET\nCALIBRATED"
-        },
-
-        {
-            id: "file-power",
-            solved: cleared.power,
-            text: "SENSOR + MOTOR\nPOWER RESTORED"
-        },
-
-        {
-            id: "file-control",
-            solved: cleared.control,
-            text: "STABLE RESPONSE\nKp = 40"
         }
+    );
 
-    ];
+
+/* =================================================
+   SENSOR INVESTIGATION
+================================================= */
+
+document
+    .querySelectorAll(
+        "[data-sensor]"
+    )
+    .forEach(
+        (node) => {
+
+            node.addEventListener(
+                "click",
+                () => {
+
+                    const id =
+                        node.dataset.sensor;
 
 
-    files.forEach(function (file) {
+                    const values = {
 
-        const element =
-            document.getElementById(file.id);
+                        A:
+                            "REFERENCE 20cm / MEASURED 27cm",
 
-        if (!element) return;
+                        B:
+                            "REFERENCE 30cm / MEASURED 37cm",
 
-        if (file.solved) {
+                        C:
+                            "REFERENCE 40cm / MEASURED 47cm"
 
-            element.classList.add("cleared");
+                    };
 
-            element.innerHTML =
-                "<div class='paper'>" +
-                file.text.replace("\n", "<br>") +
-                "</div>";
 
-            element.removeAttribute("data-file");
+                    state.sensorMeasurements[id] =
+                        values[id];
+
+
+                    document
+                        .getElementById(
+                            "sensor-evidence"
+                        )
+                        .innerHTML =
+                        values[id] +
+                        "<br><br>" +
+                        "공통적인 차이를 찾아라.";
+
+                }
+            );
+
         }
-    });
+    );
+
+
+/* =================================================
+   SENSOR SOLVE
+================================================= */
+
+document
+    .getElementById(
+        "sensor-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const answer =
+                Number(
+                    document
+                        .getElementById(
+                            "sensor-answer"
+                        )
+                        .value
+                );
+
+
+            if (
+                Object.keys(
+                    state.sensorMeasurements
+                ).length < 3
+            ) {
+
+                document
+                    .getElementById(
+                        "sensor-evidence"
+                    )
+                    .textContent =
+                    "세 센서를 모두 조사해야 한다.";
+
+                return;
+            }
+
+
+            if (
+                answer === -7
+            ) {
+
+                state.sensor =
+                    true;
+
+
+                showMessage(
+                    "센서의 +7cm 오차를 보정했다."
+                );
+
+
+                addClearedPaper(
+                    "SENSOR"
+                );
+
+
+                setTimeout(
+                    returnToSystem,
+                    700
+                );
+
+            }
+
+            else {
+
+                document
+                    .getElementById(
+                        "sensor-evidence"
+                    )
+                    .textContent =
+                    "세 측정값을 비교해 공통된 차이를 찾아라.";
+
+            }
+
+        }
+    );
+
+
+/* =================================================
+   POWER INVESTIGATION
+================================================= */
+
+document
+    .querySelectorAll(
+        "[data-power]"
+    )
+    .forEach(
+        (node) => {
+
+            node.addEventListener(
+                "click",
+                () => {
+
+                    const type =
+                        node.dataset.power;
+
+
+                    const messages = {
+
+                        sensor:
+                            "SENSOR: 항상 켜져 있어야 출구의 위치를 확인할 수 있다.",
+
+                        cooling:
+                            "COOLING: 현재 온도가 안전 범위라면 꺼도 된다.",
+
+                        motor:
+                            "MOTOR: 문을 움직이는 데 반드시 필요하다.",
+
+                        light:
+                            "LIGHT: 주변을 밝히지만 출구 제어에는 필요 없다."
+
+                    };
+
+
+                    state.powerNodes.add(
+                        type
+                    );
+
+
+                    document
+                        .getElementById(
+                            "power-evidence"
+                        )
+                        .textContent =
+                        messages[type];
+
+
+                    updatePowerText();
+
+                }
+            );
+
+        }
+    );
+
+
+/* =================================================
+   POWER TEXT
+================================================= */
+
+function updatePowerText() {
+
+    const active =
+        Array.from(
+            state.powerNodes
+        );
+
+
+    document
+        .getElementById(
+            "power-selected"
+        )
+        .textContent =
+
+        active.length === 0
+            ? "ACTIVE : NONE"
+            : "ACTIVE : " +
+              active.join(
+                  " / "
+              );
+
 }
 
 
-/* =========================================
-   EXIT 등장
-   ========================================= */
+/* =================================================
+   POWER SOLVE
+================================================= */
 
-function updateExit() {
+document
+    .getElementById(
+        "power-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
 
-    if (!hiddenExit) return;
+            const required =
+                [
+                    "sensor",
+                    "motor"
+                ];
+
+
+            const current =
+                Array.from(
+                    state.powerNodes
+                ).sort();
+
+
+            const answer =
+                [
+                    ...current
+                ].sort();
+
+
+            /*
+                SENSOR + MOTOR만
+            */
+
+            if (
+                JSON.stringify(
+                    answer
+                ) ===
+                JSON.stringify(
+                    required.sort()
+                )
+            ) {
+
+                state.power =
+                    true;
+
+
+                showMessage(
+                    "필수 장치만 활성화하여 전력망을 안정화했다."
+                );
+
+
+                addClearedPaper(
+                    "POWER"
+                );
+
+
+                setTimeout(
+                    returnToSystem,
+                    700
+                );
+
+            }
+
+            else {
+
+                document
+                    .getElementById(
+                        "power-evidence"
+                    )
+                    .textContent =
+                    "각 장치의 역할을 확인하고 필요한 장치만 남겨라.";
+
+            }
+
+        }
+    );
+
+
+/* =================================================
+   CONTROL INVESTIGATION
+================================================= */
+
+document
+    .querySelectorAll(
+        "[data-control]"
+    )
+    .forEach(
+        (node) => {
+
+            node.addEventListener(
+                "click",
+                () => {
+
+                    const type =
+                        node.dataset.control;
+
+
+                    const messages = {
+
+                        low:
+                            "RESPONSE A — 목표값에 늦게 접근하지만 진동은 거의 없다.",
+
+                        medium:
+                            "RESPONSE B — 목표값 근처에서 안정적으로 수렴한다.",
+
+                        high:
+                            "RESPONSE C — 목표값을 크게 넘어선 뒤 진동한다."
+
+                    };
+
+
+                    state.controlObservations.add(
+                        type
+                    );
+
+
+                    document
+                        .getElementById(
+                            "control-evidence"
+                        )
+                        .innerHTML =
+                        messages[type] +
+                        "<br><br>" +
+                        "어떤 특성이 안정적인 제어에 가까운가?";
+
+                }
+            );
+
+        }
+    );
+
+
+/* =================================================
+   CONTROL SOLVE
+================================================= */
+
+document
+    .getElementById(
+        "control-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            if (
+                state.controlObservations.size < 3
+            ) {
+
+                document
+                    .getElementById(
+                        "control-evidence"
+                    )
+                    .textContent =
+                    "세 응답을 모두 조사해야 한다.";
+
+                return;
+            }
+
+
+            const kp =
+                Number(
+                    document
+                        .getElementById(
+                            "control-kp"
+                        )
+                        .value
+                );
+
+            const kd =
+                Number(
+                    document
+                        .getElementById(
+                            "control-kd"
+                        )
+                        .value
+                );
+
+
+            /*
+                안정적인 조건
+            */
+
+            if (
+                kp === 40 &&
+                kd === 60
+            ) {
+
+                state.control =
+                    true;
+
+
+                showMessage(
+                    "제어 응답이 안정적으로 수렴한다."
+                );
+
+
+                addClearedPaper(
+                    "CONTROL"
+                );
+
+
+                setTimeout(
+                    returnToSystem,
+                    700
+                );
+
+            }
+
+            else {
+
+                document
+                    .getElementById(
+                        "control-evidence"
+                    )
+                    .textContent =
+                    "관찰한 응답을 비교하여 안정적인 Kp와 Kd를 추론해라.";
+
+            }
+
+        }
+    );
+
+
+/* =================================================
+   CLEARED PAPER
+================================================= */
+
+function addClearedPaper(type) {
+
+    /*
+        이미 만들어졌으면 다시 만들지 않음
+    */
 
     if (
-        cleared.sensor &&
-        cleared.power &&
-        cleared.control
+        document.querySelector(
+            `[data-cleared="${type}"]`
+        )
     ) {
 
-        hiddenExit.style.display = "block";
-
-    } else {
-
-        hiddenExit.style.display = "none";
-    }
-}
-
-
-/* =========================================
-   FINAL
-   ========================================= */
-
-function enterFinal() {
-
-    currentRoom = "final";
-
-    hideAllRooms();
-
-    if (finalRoom) {
-        finalRoom.style.display = "block";
+        return;
     }
 
-    showMessage(
-        "SYSTEM",
-        "모든 복구 작업이 완료되었다."
+
+    const paper =
+        document.createElement(
+            "div"
+        );
+
+
+    paper.className =
+        "cleared-paper";
+
+
+    paper.dataset.cleared =
+        type;
+
+
+    const positions = {
+
+        SENSOR:
+            ["18%", "72%"],
+
+        POWER:
+            ["48%", "75%"],
+
+        CONTROL:
+            ["72%", "70%"]
+
+    };
+
+
+    const position =
+        positions[type];
+
+
+    paper.style.left =
+        position[0];
+
+    paper.style.top =
+        position[1];
+
+
+    paper.innerHTML =
+
+        `
+        <strong>
+            ${type}
+        </strong>
+
+        <br><br>
+
+        RECOVERED
+        `;
+
+
+    clearedFiles.appendChild(
+        paper
     );
+
+
+    checkAllCleared();
+
 }
 
 
-/* =========================================
-   초기 상태
-   ========================================= */
+/* =================================================
+   CHECK ALL CLEAR
+================================================= */
 
-hideAllRooms();
+function checkAllCleared() {
 
-if (introArea) {
-    introArea.style.display = "block";
+    if (
+        state.sensor &&
+        state.power &&
+        state.control
+    ) {
+
+        state.exitRevealed =
+            true;
+
+
+        hiddenExit.classList.add(
+            "revealed"
+        );
+
+
+        document
+            .getElementById(
+                "system-state"
+            )
+            .textContent =
+            "SYSTEM RESTORED";
+
+
+        document
+            .getElementById(
+                "system-state"
+            )
+            .style.color =
+            "#a8c9b1";
+
+
+        showMessage(
+            "세 시스템이 모두 복구됐다. 방 어딘가에서 새로운 신호가 감지된다."
+        );
+
+    }
+
 }
 
-currentRoom = "intro";
 
-playerX = 100;
-playerY = window.innerHeight / 2;
+/* =================================================
+   FINAL CHECK
+================================================= */
 
-updatePlayer();
+document
+    .getElementById(
+        "final-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            if (
+                state.sensor
+            ) {
+
+                document
+                    .getElementById(
+                        "final-sensor"
+                    )
+                    .textContent =
+                    "ONLINE";
+
+            }
+
+
+            if (
+                state.power
+            ) {
+
+                document
+                    .getElementById(
+                        "final-power"
+                    )
+                    .textContent =
+                    "ONLINE";
+
+            }
+
+
+            if (
+                state.control
+            ) {
+
+                document
+                    .getElementById(
+                        "final-control"
+                    )
+                    .textContent =
+                    "ONLINE";
+
+            }
+
+
+            if (
+                state.sensor &&
+                state.power &&
+                state.control
+            ) {
+
+                setTimeout(
+                    finishGame,
+                    900
+                );
+
+            }
+
+        }
+    );
+
+
+/* =================================================
+   FINISH GAME
+================================================= */
+
+function finishGame() {
+
+    mode =
+        "escaped";
+
+
+    game.innerHTML =
+
+        `
+        <div class="ending-screen">
+
+            <div>
+                SYSTEM CONNECTION
+            </div>
+
+            <strong>
+                RESTORED
+            </strong>
+
+            <p>
+                센서와 전력, 제어 시스템을 복구했다.<br>
+                출구 잠금이 해제되었다.<br><br>
+                시설을 빠져나왔다.
+            </p>
+
+            <span>
+                END
+            </span>
+
+        </div>
+        `;
+
+}
+
+
+/* =================================================
+   MESSAGE
+================================================= */
+
+function showMessage(message) {
+
+    dialogue.textContent =
+        message;
+
+}
+
+
+/* =================================================
+   RESIZE
+================================================= */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        if (
+            mode === "intro"
+        ) {
+
+            playerY =
+                Math.min(
+                    playerY,
+                    window.innerHeight -
+                    70
+                );
+
+            updateIntroCamera();
+
+        }
+
+
+        if (
+            mode === "system"
+        ) {
+
+            playerY =
+                Math.min(
+                    playerY,
+                    window.innerHeight -
+                    70
+                );
+
+            updateSystemView();
+
+        }
+
+    }
+);
+
+
+/* =================================================
+   START
+================================================= */
+
+player.style.left =
+    `${playerX}px`;
+
+player.style.top =
+    `${playerY}px`;
+
+updateIntroCamera();
+
+updateIntroDistance();
+
+gameLoop();
