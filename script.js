@@ -1,1904 +1,1982 @@
-/* =========================================
+/* =========================================================
    REBOOT
    Main Game Script
-========================================= */
+   ========================================================= */
 
 
-/* =========================================
+/* =========================================================
    DOM
-========================================= */
+   ========================================================= */
 
 const game = document.getElementById("game");
 const player = document.getElementById("player");
 
-const promptBox =
-  document.getElementById("interaction-prompt");
+const dialogue = document.getElementById("dialogue");
+const dialogueTitle = document.getElementById("dialogue-title");
+const dialogueText = document.getElementById("dialogue-text");
+const dialogueClose = document.getElementById("dialogue-close");
 
-const dialogue =
-  document.getElementById("dialogue");
+const interactionPrompt = document.getElementById("interaction-prompt");
 
-const dialogueTitle =
-  document.getElementById("dialogue-title");
+const chapterText = document.getElementById("chapter");
+const objectiveText = document.getElementById("objective");
+const statusText = document.getElementById("status");
 
-const dialogueText =
-  document.getElementById("dialogue-text");
-
-const dialogueClose =
-  document.getElementById("dialogue-close");
-
-const ending =
-  document.getElementById("ending");
-
-const endingText =
-  document.getElementById("ending-text");
-
-const chapter =
-  document.getElementById("chapter");
-
-const objective =
-  document.getElementById("objective");
-
-const status =
-  document.getElementById("status");
+const ending = document.getElementById("ending");
+const endingText = document.getElementById("ending-text");
 
 
-/* =========================================
+/* =========================================================
    ROOMS
-========================================= */
+   ========================================================= */
 
 const rooms = {
-
-  intro:
-    document.getElementById("room-intro"),
-
-  system:
-    document.getElementById("room-system"),
-
-  sensor:
-    document.getElementById("room-sensor"),
-
-  power:
-    document.getElementById("room-power"),
-
-  control:
-    document.getElementById("room-control")
-
+    intro: document.getElementById("room-intro"),
+    system: document.getElementById("room-system"),
+    sensor: document.getElementById("room-sensor"),
+    power: document.getElementById("room-power"),
+    control: document.getElementById("room-control")
 };
 
 
-/* =========================================
+/* =========================================================
    GAME STATE
-========================================= */
+   ========================================================= */
 
-const state = {
+let currentRoom = "intro";
 
-  room: "intro",
+let playerX = 120;
+let playerY = 300;
 
-  x: 100,
+const playerWidth = 30;
+const playerHeight = 34;
 
-  y:
-    Math.round(window.innerHeight * 0.5),
+const speed = 4;
 
-  speed: 4,
 
-  solved: {
+/* =========================================================
+   KEY STATE
+   ========================================================= */
 
+const keys = {};
+
+let spaceDown = false;
+
+
+/* =========================================================
+   PUZZLE STATE
+   ========================================================= */
+
+const solved = {
     sensor: false,
-
     power: false,
-
     control: false
-
-  },
-
-  evidence: {
-
-    sensor: new Set(),
-
-    power: new Set(),
-
-    control: new Set()
-
-  },
-
-  puzzleUnlocked: {
-
-    sensor: false,
-
-    power: false,
-
-    control: false
-
-  }
-
 };
 
 
-/* =========================================
-   CONSTANTS
-========================================= */
+const evidence = {
+    sensor: new Set(),
+    power: new Set(),
+    control: new Set()
+};
+
+
+const unlocked = {
+    sensor: false,
+    power: false,
+    control: false
+};
+
+
+/* =========================================================
+   ROOM SIZE
+   ========================================================= */
 
 const ROOM_WIDTH = {
-
-  intro: 2200,
-
-  system: 1400,
-
-  sensor: 1300,
-
-  power: 1300,
-
-  control: 1300
-
+    intro: 2200,
+    system: 1400,
+    sensor: 1300,
+    power: 1300,
+    control: 1300
 };
 
 const ROOM_HEIGHT = 700;
 
 
-/* =========================================
-   KEY INPUT
-========================================= */
-
-const keys = new Set();
-
-let spacePressed = false;
-
-
-/* =========================================
-   HUD UPDATE
-========================================= */
+/* =========================================================
+   HUD
+   ========================================================= */
 
 function updateHUD() {
 
-  const labels = {
+    const data = {
 
-    intro: [
-      "BOOT SEQUENCE",
-      "Reach the system terminal."
-    ],
+        intro: {
+            chapter: "BOOT SEQUENCE",
+            objective: "Reach the system terminal."
+        },
 
-    system: [
-      "ARCHIVE NODE",
-      "Recover the three corrupted maintenance files."
-    ],
+        system: {
+            chapter: "ARCHIVE NODE",
+            objective: "Recover the three corrupted maintenance files."
+        },
 
-    sensor: [
-      "FILE 01 // SENSOR",
-      "Find the common measurement error."
-    ],
+        sensor: {
+            chapter: "FILE 01 // SENSOR",
+            objective: "Find the common measurement error."
+        },
 
-    power: [
-      "FILE 02 // POWER",
-      "Infer the safe path through the power system."
-    ],
+        power: {
+            chapter: "FILE 02 // POWER",
+            objective: "Infer the safe power route."
+        },
 
-    control: [
-      "FILE 03 // CONTROL",
-      "Identify the stable controller settings."
-    ]
+        control: {
+            chapter: "FILE 03 // CONTROL",
+            objective: "Identify the stable controller."
+        }
 
-  };
-
-
-  const info =
-    labels[state.room];
+    };
 
 
-  chapter.textContent =
-    info[0];
+    const info = data[currentRoom];
+
+    if (!info) return;
 
 
-  objective.textContent =
-    info[1];
+    chapterText.textContent =
+        info.chapter;
 
 
-  const recovered =
-    Object.values(state.solved)
-      .filter(Boolean)
-      .length;
+    objectiveText.textContent =
+        info.objective;
 
 
-  status.textContent =
-    `${recovered}/3 RECOVERED`;
+    const count =
+        Number(solved.sensor) +
+        Number(solved.power) +
+        Number(solved.control);
+
+
+    statusText.textContent =
+        `${count}/3 RECOVERED`;
 
 }
 
 
-/* =========================================
-   CHANGE ROOM
-========================================= */
+/* =========================================================
+   ROOM SWITCH
+   ========================================================= */
 
-function setRoom(name) {
+function switchRoom(roomName) {
 
-  Object.values(rooms)
-    .forEach(room => {
+    if (!rooms[roomName]) {
+        return;
+    }
 
-      room.classList.remove("active");
+
+    Object.values(rooms).forEach(room => {
+
+        room.classList.remove("active");
 
     });
 
 
-  if (!rooms[name]) {
-    return;
-  }
+    rooms[roomName].classList.add("active");
 
 
-  rooms[name]
-    .classList.add("active");
+    currentRoom = roomName;
 
 
-  state.room = name;
+    /* 카메라 초기화 */
+
+    const introSpace =
+        document.querySelector(".intro-space");
+
+    if (introSpace) {
+
+        introSpace.style.transform =
+            "translateX(0)";
+
+    }
 
 
-  player.style.transform =
-    "translateX(0)";
+    player.style.transform =
+        "translateX(0)";
 
 
-  updateHUD();
+    updateHUD();
 
-  updatePrompt();
+    updatePrompt();
 
 }
 
 
-/* =========================================
+/* =========================================================
    PLAYER POSITION
-========================================= */
+   ========================================================= */
 
-function updatePlayer() {
+function setPlayerPosition(x, y) {
 
-  player.style.left =
-    `${Math.round(state.x)}px`;
+    playerX = x;
+    playerY = y;
 
-
-  player.style.top =
-    `${Math.round(state.y)}px`;
+    updatePlayerPosition();
 
 }
 
 
-/* =========================================
-   PLAYER BOUNDARY
-========================================= */
+/* =========================================================
+   PLAYER POSITION UPDATE
+   ========================================================= */
 
-function clampPlayer() {
+function updatePlayerPosition() {
 
-  const maxX =
-    Math.max(
-      30,
-      ROOM_WIDTH[state.room] - 60
-    );
+    player.style.left =
+        `${playerX}px`;
 
-
-  const maxY =
-    ROOM_HEIGHT - 60;
-
-
-  state.x =
-    Math.max(
-      20,
-      Math.min(maxX, state.x)
-    );
-
-
-  state.y =
-    Math.max(
-      80,
-      Math.min(maxY, state.y)
-    );
+    player.style.top =
+        `${playerY}px`;
 
 }
 
 
-/* =========================================
+/* =========================================================
    INTRO CAMERA
-========================================= */
+   ========================================================= */
 
 function updateIntroCamera() {
 
-  if (state.room !== "intro") {
-    return;
-  }
+    if (currentRoom !== "intro") {
+        return;
+    }
 
 
-  const room =
-    rooms.intro;
+    const introSpace =
+        document.querySelector(".intro-space");
 
 
-  const space =
-    room.querySelector(".intro-space");
+    if (!introSpace) {
+        return;
+    }
 
 
-  if (!space) {
-    return;
-  }
+    const viewportWidth =
+        game.clientWidth;
 
 
-  const viewportWidth =
-    game.clientWidth;
+    const maximumCamera =
+        Math.max(
+            0,
+            ROOM_WIDTH.intro - viewportWidth
+        );
 
 
-  const maximumShift =
-    Math.max(
-      0,
-      ROOM_WIDTH.intro - viewportWidth
-    );
+    let cameraX =
+        playerX -
+        viewportWidth * 0.35;
 
 
-  const shift =
-    Math.max(
-      0,
-      Math.min(
-        maximumShift,
-        state.x -
-          viewportWidth * 0.35
-      )
-    );
+    cameraX =
+        Math.max(
+            0,
+            Math.min(
+                maximumCamera,
+                cameraX
+            )
+        );
 
 
-  space.style.transform =
-    `translateX(${-shift}px)`;
+    /* 배경 이동 */
+
+    introSpace.style.transform =
+        `translateX(${-cameraX}px)`;
 
 
-  player.style.transform =
-    `translateX(${shift}px)`;
+    /* 캐릭터 화면 위치 */
+
+    player.style.left =
+        `${playerX - cameraX}px`;
+
+    player.style.top =
+        `${playerY}px`;
 
 }
 
 
-/* =========================================
+/* =========================================================
+   PLAYER LIMIT
+   ========================================================= */
+
+function limitPlayerPosition() {
+
+    const currentWidth =
+        ROOM_WIDTH[currentRoom];
+
+
+    let maxX;
+
+
+    /*
+       INTRO에서는 실제 공간 전체를 사용
+    */
+
+    if (currentRoom === "intro") {
+
+        maxX =
+            currentWidth -
+            playerWidth -
+            20;
+
+    }
+
+    /*
+       다른 방에서는 화면 안에서 움직임
+    */
+
+    else {
+
+        maxX =
+            Math.min(
+                currentWidth,
+                game.clientWidth
+            ) -
+            playerWidth -
+            20;
+
+    }
+
+
+    const maxY =
+        Math.min(
+            ROOM_HEIGHT,
+            game.clientHeight
+        ) -
+        playerHeight -
+        30;
+
+
+    playerX =
+        Math.max(
+            20,
+            Math.min(
+                maxX,
+                playerX
+            )
+        );
+
+
+    playerY =
+        Math.max(
+            70,
+            Math.min(
+                maxY,
+                playerY
+            )
+        );
+
+}
+
+
+/* =========================================================
+   PLAYER MOVEMENT
+   ========================================================= */
+
+function movePlayer() {
+
+    if (
+        dialogue.classList.contains("visible")
+    ) {
+        return;
+    }
+
+
+    if (
+        ending.classList.contains("visible")
+    ) {
+        return;
+    }
+
+
+    let dx = 0;
+    let dy = 0;
+
+
+    if (
+        keys["w"] ||
+        keys["arrowup"]
+    ) {
+        dy -= speed;
+    }
+
+
+    if (
+        keys["s"] ||
+        keys["arrowdown"]
+    ) {
+        dy += speed;
+    }
+
+
+    if (
+        keys["a"] ||
+        keys["arrowleft"]
+    ) {
+        dx -= speed;
+    }
+
+
+    if (
+        keys["d"] ||
+        keys["arrowright"]
+    ) {
+        dx += speed;
+    }
+
+
+    if (
+        dx === 0 &&
+        dy === 0
+    ) {
+        return;
+    }
+
+
+    playerX += dx;
+    playerY += dy;
+
+
+    limitPlayerPosition();
+
+
+    if (currentRoom === "intro") {
+
+        updateIntroCamera();
+
+    }
+
+    else {
+
+        updatePlayerPosition();
+
+    }
+
+
+    updatePrompt();
+
+
+    /*
+       INTRO → SYSTEM
+    */
+
+    if (
+        currentRoom === "intro" &&
+        playerX >= 1800
+    ) {
+
+        enterSystem();
+
+    }
+
+}
+
+
+/* =========================================================
+   ENTER SYSTEM
+   ========================================================= */
+
+function enterSystem() {
+
+    if (currentRoom !== "intro") {
+        return;
+    }
+
+
+    switchRoom("system");
+
+
+    setPlayerPosition(
+        120,
+        360
+    );
+
+
+    showDialogue(
+        "SYSTEM ONLINE",
+
+        "유지보수 시뮬레이션에 접속했다.\n\n" +
+
+        "하지만 정상적인 시작 화면 대신\n" +
+        "MAINTENANCE LOCK 상태가 활성화되어 있다.\n\n" +
+
+        "중앙 아카이브에서 세 개의 손상된 유지보수 기록이 발견되었다.\n\n" +
+
+        "기록을 복구하면 시스템 잠금을 해제할 수 있을 것 같다."
+    );
+
+}
+
+
+/* =========================================================
    DIALOGUE
-========================================= */
+   ========================================================= */
 
 function showDialogue(title, text) {
 
-  dialogueTitle.textContent =
-    title;
+    dialogueTitle.textContent =
+        title;
 
 
-  dialogueText.textContent =
-    text;
+    dialogueText.textContent =
+        text;
 
 
-  dialogue.classList.add(
-    "visible"
-  );
+    dialogue.classList.add(
+        "visible"
+    );
 
 
-  updatePrompt();
+    updatePrompt();
 
 }
 
 
-function hideDialogue() {
+function closeDialogue() {
 
-  dialogue.classList.remove(
-    "visible"
-  );
+    dialogue.classList.remove(
+        "visible"
+    );
 
 
-  updatePrompt();
+    updatePrompt();
 
 }
 
 
 dialogueClose.addEventListener(
-  "click",
-  hideDialogue
+    "click",
+    closeDialogue
 );
 
 
 dialogue.addEventListener(
-  "click",
-  event => {
+    "click",
+    event => {
 
-    if (
-      event.target === dialogue
-    ) {
+        if (
+            event.target === dialogue
+        ) {
 
-      hideDialogue();
+            closeDialogue();
+
+        }
 
     }
-
-  }
 );
 
 
-/* =========================================
+/* =========================================================
    INTERACTABLES
-========================================= */
+   ========================================================= */
 
 function getInteractables() {
 
-  const room =
-    rooms[state.room];
+    const room =
+        rooms[currentRoom];
 
 
-  if (!room) {
-    return [];
-  }
+    if (!room) {
+        return [];
+    }
 
 
-  return [
-    ...room.querySelectorAll(
-      ".interactable"
-    )
-  ];
+    return [
+        ...room.querySelectorAll(
+            ".interactable"
+        )
+    ];
 
 }
 
 
-/* =========================================
+/* =========================================================
+   OBJECT POSITION
+   ========================================================= */
+
+function getObjectCenter(element) {
+
+    const rect =
+        element.getBoundingClientRect();
+
+
+    const gameRect =
+        game.getBoundingClientRect();
+
+
+    return {
+
+        x:
+            rect.left -
+            gameRect.left +
+            rect.width / 2,
+
+        y:
+            rect.top -
+            gameRect.top +
+            rect.height / 2
+
+    };
+
+}
+
+
+/* =========================================================
    DISTANCE
-========================================= */
+   ========================================================= */
 
 function getDistance(element) {
 
-  const elementRect =
-    element.getBoundingClientRect();
+    const object =
+        getObjectCenter(element);
 
 
-  const gameRect =
-    game.getBoundingClientRect();
+    const playerCenter = {
+
+        x:
+            playerX +
+            playerWidth / 2,
+
+        y:
+            playerY +
+            playerHeight / 2
+
+    };
 
 
-  const objectX =
-    elementRect.left -
-    gameRect.left +
-    elementRect.width / 2;
+    return Math.hypot(
 
+        playerCenter.x -
+        object.x,
 
-  const objectY =
-    elementRect.top -
-    gameRect.top +
-    elementRect.height / 2;
+        playerCenter.y -
+        object.y
 
-
-  const playerX =
-    state.x + 15;
-
-
-  const playerY =
-    state.y + 17;
-
-
-  return Math.hypot(
-    playerX - objectX,
-    playerY - objectY
-  );
+    );
 
 }
 
 
-/* =========================================
-   NEAREST OBJECT
-========================================= */
+/* =========================================================
+   FIND NEAREST
+   ========================================================= */
 
 function getNearestInteractable() {
 
-  const objects =
-    getInteractables();
+    const objects =
+        getInteractables();
 
 
-  let nearest = null;
+    let nearest = null;
 
-  let nearestDistance =
-    Infinity;
+    let nearestDistance =
+        Infinity;
 
 
-  for (
-    const object of objects
-  ) {
-
-    if (
-      object.classList.contains(
-        "disabled"
-      )
+    for (
+        const object of objects
     ) {
-      continue;
+
+        if (
+            object.classList.contains(
+                "disabled"
+            )
+        ) {
+            continue;
+        }
+
+
+        const distance =
+            getDistance(object);
+
+
+        if (
+            distance <
+            nearestDistance
+        ) {
+
+            nearest =
+                object;
+
+            nearestDistance =
+                distance;
+
+        }
+
     }
 
 
-    const distance =
-      getDistance(object);
-
-
     if (
-      distance <
-      nearestDistance
+        nearestDistance <= 110
     ) {
 
-      nearest =
-        object;
-
-      nearestDistance =
-        distance;
+        return nearest;
 
     }
 
-  }
 
-
-  if (
-    nearestDistance <= 100
-  ) {
-
-    return nearest;
-
-  }
-
-
-  return null;
+    return null;
 
 }
 
 
-/* =========================================
-   PROMPT
-========================================= */
+/* =========================================================
+   INTERACTION PROMPT
+   ========================================================= */
 
 function updatePrompt() {
 
-  if (
-    dialogue.classList.contains(
-      "visible"
-    )
-  ) {
+    if (
+        dialogue.classList.contains(
+            "visible"
+        )
+    ) {
 
-    promptBox.classList.remove(
-      "visible"
+        interactionPrompt.classList.remove(
+            "visible"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        ending.classList.contains(
+            "visible"
+        )
+    ) {
+
+        interactionPrompt.classList.remove(
+            "visible"
+        );
+
+        return;
+
+    }
+
+
+    const target =
+        getNearestInteractable();
+
+
+    if (!target) {
+
+        interactionPrompt.classList.remove(
+            "visible"
+        );
+
+        return;
+
+    }
+
+
+    interactionPrompt.textContent =
+        `SPACE  ${
+            target.dataset.label ||
+            "INTERACT"
+        }`;
+
+
+    interactionPrompt.classList.add(
+        "visible"
     );
-
-    return;
-
-  }
-
-
-  if (
-    ending.classList.contains(
-      "visible"
-    )
-  ) {
-
-    promptBox.classList.remove(
-      "visible"
-    );
-
-    return;
-
-  }
-
-
-  const target =
-    getNearestInteractable();
-
-
-  if (!target) {
-
-    promptBox.classList.remove(
-      "visible"
-    );
-
-    return;
-
-  }
-
-
-  promptBox.textContent =
-    `SPACE  ${
-      target.dataset.label ||
-      "INTERACT"
-    }`;
-
-
-  promptBox.classList.add(
-    "visible"
-  );
 
 }
 
 
-/* =========================================
+/* =========================================================
+   INTERACT
+   ========================================================= */
+
+function interact() {
+
+    if (
+        dialogue.classList.contains(
+            "visible"
+        )
+    ) {
+        return;
+    }
+
+
+    if (
+        ending.classList.contains(
+            "visible"
+        )
+    ) {
+        return;
+    }
+
+
+    const target =
+        getNearestInteractable();
+
+
+    if (!target) {
+        return;
+    }
+
+
+    const actionName =
+        target.dataset.action;
+
+
+    const action =
+        actions[actionName];
+
+
+    if (
+        typeof action ===
+        "function"
+    ) {
+
+        action(target);
+
+    }
+
+}
+
+
+/* =========================================================
    ACTIONS
-========================================= */
+   ========================================================= */
 
 const actions = {
 
 
-  /* ---------------------------
-     SYSTEM FILES
-  --------------------------- */
+    /* -----------------------------------------
+       FILES
+    ----------------------------------------- */
 
-  openSensor: () => {
+    openSensor: function () {
 
-    openPuzzle("sensor");
+        openPuzzle("sensor");
 
-  },
+    },
 
 
-  openPower: () => {
+    openPower: function () {
 
-    openPuzzle("power");
+        openPuzzle("power");
 
-  },
+    },
 
 
-  openControl: () => {
+    openControl: function () {
 
-    openPuzzle("control");
+        openPuzzle("control");
 
-  },
+    },
 
 
-  /* ---------------------------
-     EXIT
-  --------------------------- */
+    /* -----------------------------------------
+       EXIT
+    ----------------------------------------- */
 
-  exit: () => {
+    exit: function () {
 
-    finishGame();
+        const complete =
+            solved.sensor &&
+            solved.power &&
+            solved.control;
 
-  },
 
+        if (!complete) {
 
-  /* ---------------------------
-     SENSOR
-  --------------------------- */
+            return;
 
-  sensorA: element => {
+        }
 
-    inspect(
-      "sensor",
-      "a",
-      element.dataset.text
-    );
 
-  },
+        finishGame();
 
+    },
 
-  sensorB: element => {
 
-    inspect(
-      "sensor",
-      "b",
-      element.dataset.text
-    );
+    /* -----------------------------------------
+       SENSOR
+    ----------------------------------------- */
 
-  },
+    sensorA: function (element) {
 
+        inspect(
+            "sensor",
+            "a",
+            element.dataset.text
+        );
 
-  sensorC: element => {
+    },
 
-    inspect(
-      "sensor",
-      "c",
-      element.dataset.text
-    );
 
-  },
+    sensorB: function (element) {
 
+        inspect(
+            "sensor",
+            "b",
+            element.dataset.text
+        );
 
-  sensorConsole: () => {
+    },
 
-    solveSensor();
 
-  },
+    sensorC: function (element) {
 
+        inspect(
+            "sensor",
+            "c",
+            element.dataset.text
+        );
 
-  sensorReturn: () => {
+    },
 
-    returnToSystem(
-      "sensor"
-    );
 
-  },
+    sensorConsole: function () {
 
+        solveSensor();
 
-  /* ---------------------------
-     POWER
-  --------------------------- */
+    },
 
-  powerSensor: element => {
 
-    inspect(
-      "power",
-      "sensor",
-      element.dataset.text
-    );
+    sensorReturn: function () {
 
-  },
+        returnToSystem("sensor");
 
+    },
 
-  powerMotor: element => {
 
-    inspect(
-      "power",
-      "motor",
-      element.dataset.text
-    );
+    /* -----------------------------------------
+       POWER
+    ----------------------------------------- */
 
-  },
+    powerSensor: function (element) {
 
+        inspect(
+            "power",
+            "sensor",
+            element.dataset.text
+        );
 
-  powerCooling: element => {
+    },
 
-    inspect(
-      "power",
-      "cooling",
-      element.dataset.text
-    );
 
-  },
+    powerMotor: function (element) {
 
+        inspect(
+            "power",
+            "motor",
+            element.dataset.text
+        );
 
-  powerConsole: () => {
+    },
 
-    solvePower();
 
-  },
+    powerCooling: function (element) {
 
+        inspect(
+            "power",
+            "cooling",
+            element.dataset.text
+        );
 
-  powerReturn: () => {
+    },
 
-    returnToSystem(
-      "power"
-    );
 
-  },
+    powerConsole: function () {
 
+        solvePower();
 
-  /* ---------------------------
-     CONTROL
-  --------------------------- */
+    },
 
-  controlA: element => {
 
-    inspect(
-      "control",
-      "a",
-      element.dataset.text
-    );
+    powerReturn: function () {
 
-  },
+        returnToSystem("power");
 
+    },
 
-  controlB: element => {
 
-    inspect(
-      "control",
-      "b",
-      element.dataset.text
-    );
+    /* -----------------------------------------
+       CONTROL
+    ----------------------------------------- */
 
-  },
+    controlA: function (element) {
 
+        inspect(
+            "control",
+            "a",
+            element.dataset.text
+        );
 
-  controlC: element => {
+    },
 
-    inspect(
-      "control",
-      "c",
-      element.dataset.text
-    );
 
-  },
+    controlB: function (element) {
 
+        inspect(
+            "control",
+            "b",
+            element.dataset.text
+        );
 
-  controlConsole: () => {
+    },
 
-    solveControl();
 
-  },
+    controlC: function (element) {
 
+        inspect(
+            "control",
+            "c",
+            element.dataset.text
+        );
 
-  controlReturn: () => {
+    },
 
-    returnToSystem(
-      "control"
-    );
 
-  }
+    controlConsole: function () {
+
+        solveControl();
+
+    },
+
+
+    controlReturn: function () {
+
+        returnToSystem("control");
+
+    }
 
 };
 
 
-/* =========================================
-   INTERACTION
-========================================= */
-
-function interact() {
-
-  if (
-    dialogue.classList.contains(
-      "visible"
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  if (
-    ending.classList.contains(
-      "visible"
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  const target =
-    getNearestInteractable();
-
-
-  if (!target) {
-
-    return;
-
-  }
-
-
-  const action =
-    actions[target.dataset.action];
-
-
-  if (
-    typeof action ===
-    "function"
-  ) {
-
-    action(target);
-
-  }
-
-}
-
-
-/* =========================================
+/* =========================================================
    OPEN PUZZLE
-========================================= */
+   ========================================================= */
 
 function openPuzzle(type) {
 
-  if (
-    state.solved[type]
-  ) {
+    if (
+        solved[type]
+    ) {
 
-    showDialogue(
-      "RECOVERED FILE",
+        showDialogue(
 
-      "이 기록은 이미 복구되었다.\n\n" +
-      "원래 파일 대신 종이 조각만 남아 있다."
+            "RECOVERED FILE",
+
+            "이 기록은 이미 복구되었다.\n\n" +
+            "원래 파일 대신 종이 조각만 남아 있다."
+
+        );
+
+        return;
+
+    }
+
+
+    switchRoom(type);
+
+
+    setPlayerPosition(
+        100,
+        530
     );
 
-    return;
 
-  }
+    const messages = {
 
+        sensor:
 
-  setRoom(type);
+            "CALIBRATION CHAMBER에 진입했다.\n\n" +
 
+            "세 개의 측정 지점이 남아 있다.\n\n" +
 
-  state.x = 100;
+            "각 기준값과 센서 측정값을 비교해\n" +
 
-  state.y =
-    ROOM_HEIGHT - 110;
-
-
-  updatePlayer();
+            "공통으로 나타나는 오차를 찾아라.",
 
 
-  if (
-    type === "sensor"
-  ) {
+        power:
+
+            "POWER DISTRIBUTION BAY에 진입했다.\n\n" +
+
+            "메인 버스의 최대 용량은 70%다.\n\n" +
+
+            "각 장치의 역할과 작동 조건을 조사해서\n" +
+
+            "안전한 전력 경로를 찾아라.",
+
+
+        control:
+
+            "CONTROL LAB에 진입했다.\n\n" +
+
+            "서로 다른 세 개의 응답 기록이 남아 있다.\n\n" +
+
+            "빠르기만 한 제어기는 좋은 제어기가 아니다.\n\n" +
+
+            "속도와 안정성을 함께 판단하라."
+
+    };
+
 
     showDialogue(
-
-      "FILE 01 // SENSOR",
-
-      "세 개의 기준점이 살아 있다.\n\n" +
-
-      "각 지점의 기준값과 측정값을 비교해라.\n\n" +
-
-      "세 기록을 모두 조사한 뒤\n" +
-
-      "공통 오차를 찾아 보정해야 한다."
-
+        `FILE ${type.toUpperCase()}`,
+        messages[type]
     );
-
-  }
-
-
-  if (
-    type === "power"
-  ) {
-
-    showDialogue(
-
-      "FILE 02 // POWER",
-
-      "메인 버스의 한계는 70%다.\n\n" +
-
-      "모든 장치에 전력을 공급하는 것이\n" +
-
-      "반드시 정답은 아니다.\n\n" +
-
-      "각 부품의 역할과 작동 조건을 조사해라."
-
-    );
-
-  }
-
-
-  if (
-    type === "control"
-  ) {
-
-    showDialogue(
-
-      "FILE 03 // CONTROL",
-
-      "세 개의 제어 응답 기록이 남아 있다.\n\n" +
-
-      "속도만 빠른 응답이 좋은 것은 아니다.\n\n" +
-
-      "반응 속도와 안정성을 함께 비교해라."
-
-    );
-
-  }
 
 }
 
 
-/* =========================================
-   INSPECT CLUE
-========================================= */
+/* =========================================================
+   INSPECT
+   ========================================================= */
 
 function inspect(
-  type,
-  clue,
-  text
+    type,
+    clue,
+    text
 ) {
 
-  state.evidence[type]
-    .add(clue);
+    evidence[type].add(
+        clue
+    );
 
 
-  showDialogue(
+    showDialogue(
 
-    `EVIDENCE // ${
-      clue.toUpperCase()
-    }`,
+        `EVIDENCE // ${clue.toUpperCase()}`,
 
-    text
+        text ||
+        "특별한 정보는 없는 것 같다."
 
-  );
+    );
 
 }
 
 
-/* =========================================
-   SENSOR PUZZLE
-========================================= */
+/* =========================================================
+   SENSOR SOLUTION
+   ========================================================= */
 
 function solveSensor() {
 
-  const required = [
-    "a",
-    "b",
-    "c"
-  ];
+    const required = [
+        "a",
+        "b",
+        "c"
+    ];
 
 
-  const complete =
-    required.every(
-      clue =>
-        state.evidence.sensor
-          .has(clue)
-    );
+    const complete =
+        required.every(
+            clue =>
+                evidence.sensor.has(
+                    clue
+                )
+        );
 
 
-  if (!complete) {
+    if (!complete) {
 
-    showDialogue(
+        showDialogue(
 
-      "CONSOLE LOCKED",
+            "CONSOLE LOCKED",
 
-      "A, B, C 세 측정 지점을\n" +
-      "모두 조사해야 한다."
+            "A, B, C 세 지점을\n" +
+            "모두 조사해야 한다."
 
-    );
+        );
 
-    return;
+        return;
 
-  }
-
-
-  const answer =
-    window.prompt(
-
-      "세 측정값에 공통으로 적용할 보정값을 입력하세요.\n\n" +
-      "단위 : cm\n" +
-      "예 : -7"
-
-    );
+    }
 
 
-  if (
-    answer === null
-  ) {
+    const answer =
+        window.prompt(
 
-    return;
+            "센서의 공통 보정값을 입력하세요.\n\n" +
+            "단위 : cm"
 
-  }
-
-
-  if (
-    Number(answer) === -7
-  ) {
-
-    state.puzzleUnlocked.sensor =
-      true;
+        );
 
 
-    const returnDoor =
-      rooms.sensor.querySelector(
-        '[data-action="sensorReturn"]'
-      );
+    if (
+        answer === null
+    ) {
+        return;
+    }
 
 
-    returnDoor.classList.remove(
-      "disabled"
-    );
+    if (
+        Number(answer) === -7
+    ) {
+
+        unlocked.sensor =
+            true;
 
 
-    showDialogue(
+        const door =
+            rooms.sensor.querySelector(
+                '[data-action="sensorReturn"]'
+            );
 
-      "CALIBRATION ACCEPTED",
 
-      "120 → 127\n" +
-      "80 → 87\n" +
-      "50 → 57\n\n" +
+        if (door) {
 
-      "세 측정값 모두 +7 cm의\n" +
-      "공통 오차를 가진다.\n\n" +
+            door.classList.remove(
+                "disabled"
+            );
 
-      "보정값 : -7 cm\n\n" +
+            door.dataset.label =
+                "RETURN TO ARCHIVE";
 
-      "RETURN이 해제되었다."
+        }
 
-    );
 
-  }
+        showDialogue(
 
-  else {
+            "CALIBRATION ACCEPTED",
 
-    showDialogue(
+            "120 → 127\n" +
+            "80 → 87\n" +
+            "50 → 57\n\n" +
 
-      "CALIBRATION REJECTED",
+            "세 측정값 모두 +7 cm의\n" +
+            "공통 오차를 가진다.\n\n" +
 
-      "입력한 값으로는\n" +
-      "세 측정값의 공통 오차를\n" +
-      "설명할 수 없다."
+            "보정값 : -7 cm\n\n" +
 
-    );
+            "RETURN이 해제되었다."
 
-  }
+        );
+
+    }
+
+    else {
+
+        showDialogue(
+
+            "CALIBRATION REJECTED",
+
+            "입력값이 세 측정값의\n" +
+            "공통 오차와 일치하지 않는다."
+
+        );
+
+    }
 
 }
 
 
-/* =========================================
-   POWER PUZZLE
-========================================= */
+/* =========================================================
+   POWER SOLUTION
+   ========================================================= */
 
 function solvePower() {
 
-  const required = [
-    "sensor",
-    "motor",
-    "cooling"
-  ];
+    const required = [
+        "sensor",
+        "motor",
+        "cooling"
+    ];
 
 
-  const complete =
-    required.every(
-      clue =>
-        state.evidence.power
-          .has(clue)
-    );
+    const complete =
+        required.every(
+            clue =>
+                evidence.power.has(
+                    clue
+                )
+        );
 
 
-  if (!complete) {
+    if (!complete) {
 
-    showDialogue(
+        showDialogue(
 
-      "CONSOLE LOCKED",
+            "CONSOLE LOCKED",
 
-      "SENSOR, MOTOR, COOLING\n" +
-      "기록을 먼저 조사해야 한다."
+            "SENSOR, MOTOR, COOLING의\n" +
+            "기록을 먼저 조사해야 한다."
 
-    );
+        );
 
-    return;
+        return;
 
-  }
-
-
-  const answer =
-    window.prompt(
-
-      "출구 개방에 필요한\n" +
-      "안전한 전력 경로를 입력하세요.\n\n" +
-
-      "형식 : SENSOR>MOTOR"
-
-    );
+    }
 
 
-  if (
-    answer === null
-  ) {
+    const answer =
+        window.prompt(
 
-    return;
+            "출구 개방을 위한 안전한 전력 경로를 입력하세요.\n\n" +
+            "형식 : SENSOR>MOTOR"
 
-  }
-
-
-  const normalized =
-    answer
-      .toLowerCase()
-      .replace(/\s/g, "")
-      .replace("→", ">");
+        );
 
 
-  if (
-    normalized ===
-    "sensor>motor"
-  ) {
-
-    state.puzzleUnlocked.power =
-      true;
+    if (
+        answer === null
+    ) {
+        return;
+    }
 
 
-    const returnDoor =
-      rooms.power.querySelector(
-        '[data-action="powerReturn"]'
-      );
+    const normalized =
+        answer
+            .toLowerCase()
+            .replace(/\s/g, "")
+            .replace("→", ">");
 
 
-    returnDoor.classList.remove(
-      "disabled"
-    );
+    if (
+        normalized ===
+        "sensor>motor"
+    ) {
+
+        unlocked.power =
+            true;
 
 
-    showDialogue(
+        const door =
+            rooms.power.querySelector(
+                '[data-action="powerReturn"]'
+            );
 
-      "POWER ROUTE ACCEPTED",
 
-      "센서는 제어를 위해\n" +
-      "먼저 살아 있어야 한다.\n\n" +
+        if (door) {
 
-      "모터는 실제 출구 구동 장치다.\n\n" +
+            door.classList.remove(
+                "disabled"
+            );
 
-      "냉각은 연속 운전에서만 필요하며\n" +
-      "출구 장치는 짧은 펄스로 동작한다.\n\n" +
+            door.dataset.label =
+                "RETURN TO ARCHIVE";
 
-      "따라서 필요한 경로는\n\n" +
+        }
 
-      "SENSOR → MOTOR\n\n" +
 
-      "RETURN이 해제되었다."
+        showDialogue(
 
-    );
+            "POWER ROUTE ACCEPTED",
 
-  }
+            "센서는 제어 신호를 제공한다.\n\n" +
 
-  else {
+            "모터는 출구를 실제로 구동한다.\n\n" +
 
-    showDialogue(
+            "냉각은 연속 운전에서만 필요하고\n" +
 
-      "POWER ROUTE REJECTED",
+            "출구 장치는 짧은 펄스로 동작한다.\n\n" +
 
-      "기록과 맞지 않는 경로다.\n\n" +
-      "필요한 장치와 작동 조건을\n" +
-      "다시 확인하라."
+            "따라서 필요한 경로는\n\n" +
 
-    );
+            "SENSOR → MOTOR\n\n" +
 
-  }
+            "RETURN이 해제되었다."
+
+        );
+
+    }
+
+    else {
+
+        showDialogue(
+
+            "POWER ROUTE REJECTED",
+
+            "기록에 존재하는 작동 조건과\n" +
+            "맞지 않는 경로다."
+
+        );
+
+    }
 
 }
 
 
-/* =========================================
-   CONTROL PUZZLE
-========================================= */
+/* =========================================================
+   CONTROL SOLUTION
+   ========================================================= */
 
 function solveControl() {
 
-  const required = [
-    "a",
-    "b",
-    "c"
-  ];
+    const required = [
+        "a",
+        "b",
+        "c"
+    ];
 
 
-  const complete =
-    required.every(
-      clue =>
-        state.evidence.control
-          .has(clue)
-    );
+    const complete =
+        required.every(
+            clue =>
+                evidence.control.has(
+                    clue
+                )
+        );
 
 
-  if (!complete) {
+    if (!complete) {
 
-    showDialogue(
+        showDialogue(
 
-      "CONSOLE LOCKED",
+            "CONSOLE LOCKED",
 
-      "TRACE A, B, C 세 기록을\n" +
-      "모두 조사해야 한다."
+            "TRACE A, B, C를\n" +
+            "모두 조사해야 한다."
 
-    );
+        );
 
-    return;
+        return;
 
-  }
-
-
-  const answer =
-    window.prompt(
-
-      "안정 응답을 만든 제어값을 입력하세요.\n\n" +
-      "형식 : Kp,Kd\n" +
-      "예 : 40,60"
-
-    );
+    }
 
 
-  if (
-    answer === null
-  ) {
+    const answer =
+        window.prompt(
 
-    return;
+            "안정적인 제어 설정값을 입력하세요.\n\n" +
+            "형식 : Kp,Kd\n" +
+            "예 : 40,60"
 
-  }
-
-
-  const normalized =
-    answer.replace(
-      /\s/g,
-      ""
-    );
+        );
 
 
-  if (
-    normalized ===
-    "40,60"
-  ) {
-
-    state.puzzleUnlocked.control =
-      true;
+    if (
+        answer === null
+    ) {
+        return;
+    }
 
 
-    const returnDoor =
-      rooms.control.querySelector(
-        '[data-action="controlReturn"]'
-      );
+    const normalized =
+        answer.replace(
+            /\s/g,
+            ""
+        );
 
 
-    returnDoor.classList.remove(
-      "disabled"
-    );
+    if (
+        normalized ===
+        "40,60"
+    ) {
+
+        unlocked.control =
+            true;
 
 
-    showDialogue(
+        const door =
+            rooms.control.querySelector(
+                '[data-action="controlReturn"]'
+            );
 
-      "CONTROLLER ACCEPTED",
 
-      "TRACE A는 너무 공격적이다.\n" +
-      "큰 overshoot와 진동이 발생한다.\n\n" +
+        if (door) {
 
-      "TRACE C는 안정적이지만 너무 느리다.\n\n" +
+            door.classList.remove(
+                "disabled"
+            );
 
-      "TRACE B가 필요한 조건인\n" +
-      "속도와 안정성을 동시에 만족한다.\n\n" +
+            door.dataset.label =
+                "RETURN TO ARCHIVE";
 
-      "기록에서 B의 게인은\n\n" +
+        }
 
-      "Kp = 40\n" +
-      "Kd = 60\n\n" +
 
-      "RETURN이 해제되었다."
+        showDialogue(
 
-    );
+            "CONTROLLER ACCEPTED",
 
-  }
+            "TRACE A는 너무 공격적이며\n" +
+            "큰 overshoot와 진동이 발생한다.\n\n" +
 
-  else {
+            "TRACE C는 지나치게 느리다.\n\n" +
 
-    showDialogue(
+            "TRACE B가 속도와 안정성을\n" +
+            "동시에 만족한다.\n\n" +
 
-      "CONTROLLER REJECTED",
+            "기록된 설정값은\n\n" +
 
-      "선택한 값이 안정 응답 기록과\n" +
-      "일치하지 않는다."
+            "Kp = 40\n" +
+            "Kd = 60\n\n" +
 
-    );
+            "RETURN이 해제되었다."
 
-  }
+        );
+
+    }
+
+    else {
+
+        showDialogue(
+
+            "CONTROLLER REJECTED",
+
+            "입력한 게인이\n" +
+            "안정 응답과 일치하지 않는다."
+
+        );
+
+    }
 
 }
 
 
-/* =========================================
+/* =========================================================
    RETURN TO SYSTEM
-========================================= */
+   ========================================================= */
 
 function returnToSystem(type) {
 
-  if (
-    !state.puzzleUnlocked[type]
-  ) {
-
-    return;
-
-  }
+    if (
+        !unlocked[type]
+    ) {
+        return;
+    }
 
 
-  clearFile(type);
+    solved[type] =
+        true;
 
 
-  setRoom("system");
+    convertFile(type);
 
 
-  state.x = 150;
-
-  state.y = 360;
+    switchRoom("system");
 
 
-  updatePlayer();
+    setPlayerPosition(
+        150,
+        360
+    );
 
 
-  const messages = {
+    const messages = {
 
-    sensor:
-      "센서 복구 완료.\n\n" +
-      "세 기준값에서 동일한 오차를 발견하고\n" +
-      "보정값을 적용했다.",
+        sensor:
+            "센서 시스템이 복구되었다.\n\n" +
+            "공통 오차를 발견하고 보정값을 적용했다.",
 
-    power:
-      "전력 시스템 복구 완료.\n\n" +
-      "필요한 장치만 안전한 순서로 연결했다.",
+        power:
+            "전력 시스템이 복구되었다.\n\n" +
+            "필요한 장치만 안전한 경로로 연결했다.",
 
-    control:
-      "제어 시스템 복구 완료.\n\n" +
-      "빠르면서도 안정적인 응답을 선택했다."
+        control:
+            "제어 시스템이 복구되었다.\n\n" +
+            "빠르면서도 안정적인 응답을 선택했다."
 
-  };
+    };
 
 
-  showDialogue(
+    showDialogue(
 
-    "RECOVERY COMPLETE",
+        "RECOVERY COMPLETE",
 
-    messages[type] +
-    "\n\n" +
+        messages[type] +
 
-    "원래 파일 대신\n" +
+        "\n\n" +
 
-    "종이 조각 하나가 남아 있다."
+        "파일이 사라지고\n" +
+        "종이 조각 하나가 남았다."
 
-  );
+    );
+
+
+    updateHUD();
+
+    updateExit();
 
 }
 
 
-/* =========================================
-   CLEAR FILE
-========================================= */
+/* =========================================================
+   FILE → PAPER
+   ========================================================= */
 
-function clearFile(type) {
+function convertFile(type) {
 
-  state.solved[type] =
-    true;
+    const file =
+        rooms.system.querySelector(
+            `[data-file="${type}"]`
+        );
 
 
-  const file =
-    rooms.system.querySelector(
-      `[data-file="${type}"]`
+    if (!file) {
+        return;
+    }
+
+
+    file.classList.add(
+        "cleared"
     );
 
 
-  if (!file) {
-    return;
-  }
-
-
-  file.classList.add(
-    "cleared"
-  );
-
-
-  file.classList.add(
-    "disabled"
-  );
-
-
-  file.innerHTML = "";
-
-
-  const paper =
-    document.createElement(
-      "div"
+    file.classList.add(
+        "disabled"
     );
 
 
-  paper.className =
-    "paper-fragment";
+    file.dataset.action =
+        "";
 
 
-  const notes = {
-
-    sensor: [
-      "RECOVERED NOTE",
-      "OFFSET -7 CM"
-    ],
-
-    power: [
-      "RECOVERED NOTE",
-      "SENSOR > MOTOR"
-    ],
-
-    control: [
-      "RECOVERED NOTE",
-      "KP 40 / KD 60"
-    ]
-
-  };
+    file.dataset.label =
+        "";
 
 
-  paper.innerHTML =
-
-    `<span>${notes[type][0]}</span>` +
-
-    `<b>${notes[type][1]}</b>`;
+    file.innerHTML =
+        "";
 
 
-  file.appendChild(
-    paper
-  );
+    const paper =
+        document.createElement(
+            "div"
+        );
 
 
-  updateExit();
+    paper.className =
+        "paper-fragment";
+
+
+    const content = {
+
+        sensor:
+            [
+                "RECOVERED NOTE",
+                "OFFSET -7 CM"
+            ],
+
+        power:
+            [
+                "RECOVERED NOTE",
+                "SENSOR > MOTOR"
+            ],
+
+        control:
+            [
+                "RECOVERED NOTE",
+                "KP 40 / KD 60"
+            ]
+
+    };
+
+
+    paper.innerHTML =
+
+        `<span>${content[type][0]}</span>` +
+
+        `<b>${content[type][1]}</b>`;
+
+
+    file.appendChild(
+        paper
+    );
 
 }
 
 
-/* =========================================
+/* =========================================================
    EXIT
-========================================= */
+   ========================================================= */
 
 function updateExit() {
 
-  const exit =
-    document.getElementById(
-      "hidden-exit"
-    );
+    const exit =
+        document.getElementById(
+            "hidden-exit"
+        );
 
 
-  const complete =
-    Object.values(
-      state.solved
-    ).every(Boolean);
+    if (!exit) {
+        return;
+    }
 
 
-  if (complete) {
+    const complete =
+        solved.sensor &&
+        solved.power &&
+        solved.control;
 
-    exit.classList.add(
-      "revealed"
-    );
 
-    exit.classList.remove(
-      "disabled"
-    );
+    if (complete) {
 
-    exit.dataset.label =
-      "EXIT";
+        exit.classList.remove(
+            "disabled"
+        );
 
-  }
+        exit.classList.add(
+            "revealed"
+        );
 
-  else {
+        exit.dataset.label =
+            "OPEN EXIT";
 
-    exit.classList.remove(
-      "revealed"
-    );
+    }
 
-    exit.classList.add(
-      "disabled"
-    );
+    else {
 
-    exit.dataset.label =
-      "LOCKED";
+        exit.classList.add(
+            "disabled"
+        );
 
-  }
+        exit.classList.remove(
+            "revealed"
+        );
+
+        exit.dataset.label =
+            "LOCKED";
+
+    }
 
 }
 
 
-/* =========================================
+/* =========================================================
    ENDING
-========================================= */
+   ========================================================= */
 
 function finishGame() {
 
-  const complete =
-    Object.values(
-      state.solved
-    ).every(Boolean);
+    const complete =
+        solved.sensor &&
+        solved.power &&
+        solved.control;
 
 
-  if (!complete) {
-
-    return;
-
-  }
-
-
-  promptBox.classList.remove(
-    "visible"
-  );
-
-
-  endingText.innerHTML =
-
-    "세 개의 복구 기록이 하나의 순서를 만든다." +
-
-    "<br><br>" +
-
-    "<span>" +
-    "CALIBRATE → ROUTE → STABILIZE" +
-    "</span>" +
-
-    "<br><br>" +
-
-    "센서가 다시 정확한 값을 읽고," +
-
-    "<br>" +
-
-    "전력 시스템이 필요한 동력을 공급하며," +
-
-    "<br>" +
-
-    "제어 시스템이 시설을 안정 상태로 되돌린다." +
-
-    "<br><br>" +
-
-    "<b>유지보수 잠금이 해제되었다.</b>" +
-
-    "<br><br>" +
-
-    "탈출구가 열린다.";
-
-
-  ending.classList.add(
-    "visible"
-  );
-
-}
-
-
-/* =========================================
-   KEYBOARD
-========================================= */
-
-document.addEventListener(
-  "keydown",
-  event => {
-
-    const key =
-      event.key.toLowerCase();
-
-
-    if (
-      [
-        "w",
-        "a",
-        "s",
-        "d",
-        "arrowup",
-        "arrowdown",
-        "arrowleft",
-        "arrowright"
-      ].includes(key)
-    ) {
-
-      event.preventDefault();
-
+    if (!complete) {
+        return;
     }
 
 
-    if (
-      event.code === "Space"
-    ) {
-
-      event.preventDefault();
-
-
-      if (
-        !spacePressed
-      ) {
-
-        interact();
-
-      }
-
-
-      spacePressed =
-        true;
-
-    }
-
-
-    keys.add(key);
-
-
-    if (
-      event.code === "Escape"
-    ) {
-
-      if (
-        dialogue.classList.contains(
-          "visible"
-        )
-      ) {
-
-        hideDialogue();
-
-      }
-
-    }
-
-  }
-);
-
-
-/* =========================================
-   KEYUP
-========================================= */
-
-document.addEventListener(
-  "keyup",
-  event => {
-
-    keys.delete(
-      event.key.toLowerCase()
+    interactionPrompt.classList.remove(
+        "visible"
     );
 
 
-    if (
-      event.code === "Space"
-    ) {
+    endingText.innerHTML =
 
-      spacePressed =
-        false;
+        "세 개의 복구 기록이 하나의 순서를 만들었다." +
+
+        "<br><br>" +
+
+        "<span>" +
+        "CALIBRATE → ROUTE → STABILIZE" +
+        "</span>" +
+
+        "<br><br>" +
+
+        "센서가 정확한 값을 읽고," +
+
+        "<br>" +
+
+        "전력 시스템이 필요한 동력을 공급하며," +
+
+        "<br>" +
+
+        "제어 시스템이 시설을 안정 상태로 되돌린다." +
+
+        "<br><br>" +
+
+        "<b>MAINTENANCE LOCK : RELEASED</b>" +
+
+        "<br><br>" +
+
+        "출구가 열렸다.";
+
+
+    ending.classList.add(
+        "visible"
+    );
+
+}
+
+
+/* =========================================================
+   KEY DOWN
+   ========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        const key =
+            event.key.toLowerCase();
+
+
+        /*
+           방향키 페이지 스크롤 방지
+        */
+
+        if (
+            [
+                "arrowup",
+                "arrowdown",
+                "arrowleft",
+                "arrowright"
+            ].includes(key)
+        ) {
+
+            event.preventDefault();
+
+        }
+
+
+        /*
+           WASD
+        */
+
+        keys[key] =
+            true;
+
+
+        /*
+           SPACE
+        */
+
+        if (
+            event.code === "Space"
+        ) {
+
+            event.preventDefault();
+
+
+            if (!spaceDown) {
+
+                interact();
+
+            }
+
+
+            spaceDown =
+                true;
+
+        }
+
+
+        /*
+           ESC
+        */
+
+        if (
+            event.code === "Escape"
+        ) {
+
+            closeDialogue();
+
+        }
 
     }
-
-  }
 );
 
 
-/* =========================================
-   PLAYER MOVEMENT
-========================================= */
+/* =========================================================
+   KEY UP
+   ========================================================= */
 
-function movePlayer() {
+document.addEventListener(
+    "keyup",
+    event => {
 
-  if (
-    dialogue.classList.contains(
-      "visible"
-    )
-  ) {
-
-    return;
-
-  }
+        const key =
+            event.key.toLowerCase();
 
 
-  if (
-    ending.classList.contains(
-      "visible"
-    )
-  ) {
-
-    return;
-
-  }
+        keys[key] =
+            false;
 
 
-  let dx = 0;
+        if (
+            event.code === "Space"
+        ) {
 
-  let dy = 0;
+            spaceDown =
+                false;
 
-
-  if (
-    keys.has("w") ||
-    keys.has("arrowup")
-  ) {
-
-    dy -= state.speed;
-
-  }
-
-
-  if (
-    keys.has("s") ||
-    keys.has("arrowdown")
-  ) {
-
-    dy += state.speed;
-
-  }
-
-
-  if (
-    keys.has("a") ||
-    keys.has("arrowleft")
-  ) {
-
-    dx -= state.speed;
-
-  }
-
-
-  if (
-    keys.has("d") ||
-    keys.has("arrowright")
-  ) {
-
-    dx += state.speed;
-
-  }
-
-
-  if (
-    dx === 0 &&
-    dy === 0
-  ) {
-
-    return;
-
-  }
-
-
-  state.x += dx;
-
-  state.y += dy;
-
-
-  clampPlayer();
-
-
-  updatePlayer();
-
-
-  if (
-    state.room === "intro"
-  ) {
-
-    updateIntroCamera();
-
-
-    if (
-      state.x >= 1950
-    ) {
-
-      enterSystem();
+        }
 
     }
-
-  }
-
-
-  updatePrompt();
-
-}
+);
 
 
-/* =========================================
-   INTRO → SYSTEM
-========================================= */
+/* =========================================================
+   RESIZE
+   ========================================================= */
 
-function enterSystem() {
+window.addEventListener(
+    "resize",
+    () => {
 
-  if (
-    state.room === "system"
-  ) {
-
-    return;
-
-  }
+        limitPlayerPosition();
 
 
-  setRoom("system");
+        if (
+            currentRoom === "intro"
+        ) {
+
+            updateIntroCamera();
+
+        }
+
+        else {
+
+            updatePlayerPosition();
+
+        }
 
 
-  state.x = 130;
+        updatePrompt();
 
-  state.y = 360;
-
-
-  player.style.transform =
-    "translateX(0)";
+    }
+);
 
 
-  updatePlayer();
-
-
-  showDialogue(
-
-    "SYSTEM ONLINE",
-
-    "유지보수 시뮬레이션에 접속했다.\n\n" +
-
-    "하지만 정상적인 시작 화면이 나타나지 않는다.\n\n" +
-
-    "MAINTENANCE LOCK\n" +
-
-    "상태 : ACTIVE\n\n" +
-
-    "중앙 아카이브에서 세 개의 손상된 기록이 발견되었다.\n\n" +
-
-    "기록을 복구하면 잠금이 해제될 수 있다."
-
-  );
-
-}
-
-
-/* =========================================
+/* =========================================================
    MAIN LOOP
-========================================= */
+   ========================================================= */
 
 function gameLoop() {
 
-  movePlayer();
+    movePlayer();
 
-  requestAnimationFrame(
-    gameLoop
-  );
+    requestAnimationFrame(
+        gameLoop
+    );
 
 }
 
 
-/* =========================================
+/* =========================================================
    INITIALIZATION
-========================================= */
+   ========================================================= */
 
-setRoom("intro");
-
-
-state.x = 100;
-
-state.y =
-  Math.round(
-    window.innerHeight * 0.5
-  );
+switchRoom("intro");
 
 
-updatePlayer();
+setPlayerPosition(
+    120,
+    Math.round(
+        game.clientHeight * 0.5
+    )
+);
+
 
 updateHUD();
 
 updateExit();
 
 updateIntroCamera();
+
+updatePrompt();
+
 
 gameLoop();
