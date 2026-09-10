@@ -1,645 +1,764 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REBOOT</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REBOOT</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<main id="game">
+<div id="game">
 
-    <!-- =================================================
-         WORLD
-    ================================================== -->
+  <!-- =========================
+       HUD
+  ========================== -->
+  <header id="hud">
+    <div class="hud-left">
+      <div id="chapter">BOOT SEQUENCE</div>
+      <div id="objective">Reach the system terminal.</div>
+    </div>
 
-    <div id="world">
+    <div id="status">0/3 RECOVERED</div>
+  </header>
 
-        <!-- ================= INTRO ================= -->
 
-        <section id="intro-area">
+  <!-- =========================
+       INTRO ROOM
+  ========================== -->
+  <section id="room-intro" class="room active">
 
-            <div class="intro-title">
-                CONNECTION LOST
+    <div class="intro-space">
+
+      <div class="light-haze haze-1"></div>
+      <div class="light-haze haze-2"></div>
+      <div class="light-haze haze-3"></div>
+
+      <div class="intro-title">
+        <div class="intro-main">REBOOT</div>
+        <div class="intro-sub">MAINTENANCE SIMULATION</div>
+      </div>
+
+      <div class="system-gate">
+        <div class="gate-label">SYSTEM</div>
+        <div class="gate-sub">MAINTENANCE NODE 04</div>
+      </div>
+
+      <div class="intro-note">
+        W A S D / ARROW KEYS &nbsp; MOVE
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       SYSTEM ARCHIVE
+  ========================== -->
+  <section id="room-system" class="room">
+
+    <div class="archive-window">
+
+      <div class="window-bar">
+        <span>REBOOT://ARCHIVE</span>
+        <span>NODE 04</span>
+      </div>
+
+      <div class="archive-body">
+
+        <div class="archive-heading">
+          <div class="archive-title">
+            MAINTENANCE ARCHIVE
+          </div>
+
+          <div class="archive-desc">
+            Three corrupted maintenance records detected.
+          </div>
+        </div>
+
+
+        <div class="file-area">
+
+          <!-- SENSOR -->
+          <div
+            class="file interactable sensor-file"
+            data-file="sensor"
+            data-action="openSensor"
+            data-label="OPEN SENSOR_01"
+          >
+
+            <div class="file-tab"></div>
+
+            <div class="file-paper">
+              <span>SENSOR_01</span>
+              <small>CALIBRATION.LOG</small>
             </div>
 
-            <div class="intro-subtitle">
-                FOLLOW THE SIGNAL
+          </div>
+
+
+          <!-- POWER -->
+          <div
+            class="file interactable power-file"
+            data-file="power"
+            data-action="openPower"
+            data-label="OPEN POWER_02"
+          >
+
+            <div class="file-tab"></div>
+
+            <div class="file-paper">
+              <span>POWER_02</span>
+              <small>DISTRIBUTION.CFG</small>
             </div>
 
-            <div class="light-path"></div>
-            <div class="light-core"></div>
+          </div>
 
-            <div id="system-access">
 
-                <div class="access-frame"></div>
-                <div class="access-core"></div>
+          <!-- CONTROL -->
+          <div
+            class="file interactable control-file"
+            data-file="control"
+            data-action="openControl"
+            data-label="OPEN CONTROL_03"
+          >
 
-                <div class="access-label">
-                    SYSTEM
-                </div>
+            <div class="file-tab"></div>
 
+            <div class="file-paper">
+              <span>CONTROL_03</span>
+              <small>RESPONSE.LOG</small>
             </div>
 
-        </section>
+          </div>
+
+        </div>
 
 
-        <!-- ================= FILE ROOM ================= -->
+        <div class="archive-note">
 
-        <section id="system-area">
+          <div class="archive-warning">
+            MAINTENANCE LOCK
+          </div>
 
-            <div class="system-header">
+          <div class="archive-status">
+            SYSTEM STATUS : DEGRADED
+          </div>
 
-                <span>LOCAL SYSTEM</span>
+          <div class="archive-status">
+            EXIT : UNAVAILABLE
+          </div>
 
-                <span id="system-state">
-                    RECOVERY REQUIRED
-                </span>
+        </div>
 
+
+        <!-- HIDDEN EXIT -->
+        <div
+          id="hidden-exit"
+          class="exit interactable disabled"
+          data-action="exit"
+          data-label="LOCKED"
+        >
+
+          <div class="exit-frame">
+            <div class="exit-text">
+              EXIT
             </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
 
 
-            <!-- SENSOR FILE -->
+  <!-- =========================
+       SENSOR ROOM
+  ========================== -->
+  <section id="room-sensor" class="room puzzle-room">
 
-            <div
-                class="system-object"
-                data-type="sensor"
-                style="left: 20%; top: 30%;"
-            >
+    <div class="room-background sensor-background"></div>
 
-                <div class="file-icon sensor-file">
-
-                    <span>
-                        DAT
-                    </span>
-
-                </div>
-
-                <span>
-                    SENSOR_01.dat
-                </span>
-
-            </div>
+    <div class="room-title">
+      FILE 01 // CALIBRATION CHAMBER
+    </div>
 
 
-            <!-- POWER FILE -->
+    <!-- LEFT PANEL -->
+    <div class="machine-panel sensor-panel-left">
 
-            <div
-                class="system-object"
-                data-type="power"
-                style="left: 43%; top: 30%;"
-            >
+      <div class="panel-title">
+        RANGE SENSOR ARRAY
+      </div>
 
-                <div class="file-icon power-file">
+      <div class="panel-line"></div>
 
-                    <span>
-                        CFG
-                    </span>
-
-                </div>
-
-                <span>
-                    POWER.cfg
-                </span>
-
-            </div>
-
-
-            <!-- CONTROL FILE -->
-
-            <div
-                class="system-object"
-                data-type="control"
-                style="left: 66%; top: 30%;"
-            >
-
-                <div class="file-icon control-file">
-
-                    <span>
-                        LOG
-                    </span>
-
-                </div>
-
-                <span>
-                    CONTROL.log
-                </span>
-
-            </div>
-
-
-            <!-- CLEARED FILE PIECES -->
-
-            <div
-                id="cleared-files"
-                aria-hidden="true"
-            ></div>
-
-
-            <!-- HIDDEN EXIT -->
-
-            <div
-                id="hidden-exit"
-                data-type="exit"
-            >
-
-                <div class="exit-door">
-
-                    <div>
-                        EXIT
-                    </div>
-
-                </div>
-
-                <span>
-                    EXIT
-                </span>
-
-            </div>
-
-
-            <!-- PLAYER -->
-
-            <div id="player">
-
-                <div class="player-shadow"></div>
-                <div class="player-head"></div>
-                <div class="player-body"></div>
-
-            </div>
-
-        </section>
+      <div class="panel-small">
+        Three fixed reference points remain online.
+      </div>
 
     </div>
 
 
-    <!-- =================================================
-         HUD
-    ================================================== -->
+    <!-- STATION A -->
+    <div
+      class="measurement station-a interactable"
+      data-action="sensorA"
+      data-label="INSPECT STATION A"
+      data-text="STATION A
 
-    <section id="system-status">
+REFERENCE : 120 cm
+MEASURED  : 127 cm
 
-        <div class="status-title">
-            SYS STATUS
-        </div>
-
-
-        <div class="status-row">
-
-            <span>
-                DIST.
-            </span>
-
-            <div class="gauge">
-                <span id="distance-gauge"></span>
-            </div>
-
-            <strong id="distance-value">
-                --cm
-            </strong>
-
-        </div>
-
-
-        <div class="status-row">
-
-            <span>
-                TEMP.
-            </span>
-
-            <div class="gauge">
-                <span id="temperature-gauge"></span>
-            </div>
-
-            <strong id="temperature-value">
-                24°C
-            </strong>
-
-        </div>
-
-
-        <div class="status-row">
-
-            <span>
-                HP
-            </span>
-
-            <div class="gauge">
-                <span id="hp-gauge"></span>
-            </div>
-
-            <strong>
-                100%
-            </strong>
-
-        </div>
-
-    </section>
-
-
-    <!-- =================================================
-         DIALOGUE
-    ================================================== -->
-
-    <section id="dialogue">
-
-        <div id="dialogue-text">
-            SYSTEM READY.
-        </div>
-
-        <div id="dialogue-hint">
-            SPACE · 조사
-        </div>
-
-    </section>
-
-
-    <!-- =================================================
-         SENSOR ROOM
-    ================================================== -->
-
-    <section
-        id="puzzle-sensor"
-        class="puzzle-room"
+The reference marker is fixed.
+No physical obstruction is present."
     >
 
-        <div class="room-title">
-            SENSOR ROOM
-        </div>
+      <div class="station-number">A</div>
+      <div class="station-label">REFERENCE POINT</div>
 
-        <div class="room-subtitle">
-            TRACE THE ANOMALY
-        </div>
+    </div>
 
 
-        <div class="room-floor"></div>
+    <!-- STATION B -->
+    <div
+      class="measurement station-b interactable"
+      data-action="sensorB"
+      data-label="INSPECT STATION B"
+      data-text="STATION B
 
+REFERENCE : 80 cm
+MEASURED  : 87 cm
 
-        <!-- SENSOR NODE A -->
-
-        <button
-            class="room-object"
-            data-sensor="A"
-            style="left: 20%; top: 38%;"
-        >
-            <strong>
-                NODE A
-            </strong>
-
-            <small>
-                MEASURE
-            </small>
-        </button>
-
-
-        <!-- SENSOR NODE B -->
-
-        <button
-            class="room-object"
-            data-sensor="B"
-            style="left: 48%; top: 38%;"
-        >
-            <strong>
-                NODE B
-            </strong>
-
-            <small>
-                MEASURE
-            </small>
-        </button>
-
-
-        <!-- SENSOR NODE C -->
-
-        <button
-            class="room-object"
-            data-sensor="C"
-            style="left: 76%; top: 38%;"
-        >
-            <strong>
-                NODE C
-            </strong>
-
-            <small>
-                MEASURE
-            </small>
-        </button>
-
-
-        <div
-            id="sensor-evidence"
-            class="room-evidence"
-        >
-            센서 노드를 조사해라.
-        </div>
-
-
-        <div class="room-question">
-
-            세 측정값을 비교해<br>
-            공통된 이상을 찾아라.
-
-        </div>
-
-
-        <input
-            id="sensor-answer"
-            class="room-input"
-            type="number"
-            placeholder="OFFSET"
-        >
-
-
-        <button
-            id="sensor-submit"
-            class="room-submit"
-        >
-            CALIBRATE
-        </button>
-
-
-        <button
-            class="room-back"
-            data-back
-        >
-            SYSTEM으로 돌아가기
-        </button>
-
-    </section>
-
-
-    <!-- =================================================
-         POWER ROOM
-    ================================================== -->
-
-    <section
-        id="puzzle-power"
-        class="puzzle-room"
+The reference marker is intact.
+No object moved during the test."
     >
 
-        <div class="room-title">
-            POWER ROOM
-        </div>
+      <div class="station-number">B</div>
+      <div class="station-label">REFERENCE POINT</div>
 
-        <div class="room-subtitle">
-            RESTORE THE NETWORK
-        </div>
+    </div>
 
 
-        <div class="room-floor"></div>
+    <!-- STATION C -->
+    <div
+      class="measurement station-c interactable"
+      data-action="sensorC"
+      data-label="INSPECT STATION C"
+      data-text="STATION C
 
+REFERENCE : 50 cm
+MEASURED  : 57 cm
 
-        <!-- GRID NODES -->
-
-        <button
-            class="room-object power-node"
-            data-power="sensor"
-            style="left: 19%; top: 35%;"
-        >
-            SENSOR
-        </button>
-
-
-        <button
-            class="room-object power-node"
-            data-power="cooling"
-            style="left: 42%; top: 35%;"
-        >
-            COOLING
-        </button>
-
-
-        <button
-            class="room-object power-node"
-            data-power="motor"
-            style="left: 65%; top: 35%;"
-        >
-            MOTOR
-        </button>
-
-
-        <button
-            class="room-object power-node"
-            data-power="light"
-            style="left: 42%; top: 60%;"
-        >
-            LIGHT
-        </button>
-
-
-        <div
-            id="power-evidence"
-            class="room-evidence"
-        >
-            전력 노드를 조사해라.
-        </div>
-
-
-        <div class="power-budget">
-
-            AVAILABLE
-            <strong>
-                100%
-            </strong>
-
-        </div>
-
-
-        <div
-            id="power-selected"
-            class="power-selected"
-        >
-            ACTIVE : NONE
-        </div>
-
-
-        <button
-            id="power-submit"
-            class="room-submit"
-        >
-            RESTORE
-        </button>
-
-
-        <button
-            class="room-back"
-            data-back
-        >
-            SYSTEM으로 돌아가기
-        </button>
-
-    </section>
-
-
-    <!-- =================================================
-         CONTROL ROOM
-    ================================================== -->
-
-    <section
-        id="puzzle-control"
-        class="puzzle-room"
+The target distance is verified.
+The same sensor head was used."
     >
 
-        <div class="room-title">
-            CONTROL ROOM
-        </div>
+      <div class="station-number">C</div>
+      <div class="station-label">REFERENCE POINT</div>
 
-        <div class="room-subtitle">
-            FIND THE STABLE RESPONSE
-        </div>
+    </div>
 
 
-        <div class="room-floor"></div>
+    <!-- NOTE -->
+    <div
+      class="sensor-note interactable"
+      data-action="sensorA"
+      data-label="READ MAINTENANCE NOTE"
+      data-text="MAINTENANCE NOTE
 
+All three reference objects were checked
+before the sensor test.
 
-        <!-- OBSERVATION 1 -->
+No object was moved.
 
-        <button
-            class="room-object observation"
-            data-control="low"
-            style="left: 20%; top: 35%;"
-        >
-            RESPONSE A
-        </button>
-
-
-        <!-- OBSERVATION 2 -->
-
-        <button
-            class="room-object observation"
-            data-control="medium"
-            style="left: 48%; top: 35%;"
-        >
-            RESPONSE B
-        </button>
-
-
-        <!-- OBSERVATION 3 -->
-
-        <button
-            class="room-object observation"
-            data-control="high"
-            style="left: 76%; top: 35%;"
-        >
-            RESPONSE C
-        </button>
-
-
-        <div
-            id="control-evidence"
-            class="room-evidence"
-        >
-            제어 응답을 조사해라.
-        </div>
-
-
-        <div class="control-question">
-
-            세 응답 중 목표값에 안정적으로<br>
-            수렴하는 조건을 찾아라.
-
-        </div>
-
-
-        <input
-            id="control-kp"
-            class="control-input"
-            type="number"
-            placeholder="Kp"
-        >
-
-
-        <input
-            id="control-kd"
-            class="control-input control-kd"
-            type="number"
-            placeholder="Kd"
-        >
-
-
-        <button
-            id="control-submit"
-            class="room-submit"
-        >
-            APPLY
-        </button>
-
-
-        <button
-            class="room-back"
-            data-back
-        >
-            SYSTEM으로 돌아가기
-        </button>
-
-    </section>
-
-
-    <!-- =================================================
-         FINAL ROOM
-    ================================================== -->
-
-    <section
-        id="puzzle-final"
-        class="puzzle-room"
+The same sensor head was used
+for all measurements."
     >
 
-        <div class="room-title">
-            SYSTEM RECOVERY
-        </div>
+      <div class="note-title">
+        MAINTENANCE NOTE
+      </div>
 
-        <div class="room-subtitle">
-            FINAL CHECK
-        </div>
+      <div class="note-line"></div>
 
+      <div class="note-small">
+        calibration memo
+      </div>
 
-        <div class="final-check">
-
-            <div>
-                SENSOR
-                <span id="final-sensor">
-                    ERROR
-                </span>
-            </div>
-
-            <div>
-                POWER
-                <span id="final-power">
-                    ERROR
-                </span>
-            </div>
-
-            <div>
-                CONTROL
-                <span id="final-control">
-                    ERROR
-                </span>
-            </div>
-
-        </div>
+    </div>
 
 
-        <div class="final-description">
+    <!-- CONSOLE -->
+    <div
+      class="sensor-console interactable"
+      data-action="sensorConsole"
+      data-label="USE CALIBRATION CONSOLE"
+    >
 
-            모든 시스템의 상태를 확인했다.<br>
-            복구된 시스템을 다시 연결하라.
+      <div class="console-screen">
+        SENSOR CALIBRATION
+        <br>
+        INPUT OFFSET
+      </div>
 
-        </div>
+      <div class="console-body">
+
+        <div class="console-light"></div>
+        <div class="console-light"></div>
+        <div class="console-light"></div>
+
+      </div>
+
+    </div>
 
 
-        <button
-            id="final-submit"
-            class="room-submit"
-        >
-            COMPLETE RECOVERY
-        </button>
+    <!-- RETURN -->
+    <div
+      class="return-door interactable disabled"
+      data-action="sensorReturn"
+      data-label="RETURN TO ARCHIVE"
+    >
 
-    </section>
+      RETURN
+
+    </div>
+
+  </section>
 
 
-</main>
+  <!-- =========================
+       POWER ROOM
+  ========================== -->
+  <section id="room-power" class="room puzzle-room">
+
+    <div class="room-background power-background"></div>
+
+    <div class="room-title">
+      FILE 02 // POWER DISTRIBUTION BAY
+    </div>
+
+
+    <!-- MAIN CABINET -->
+    <div class="power-cabinet">
+
+      <div class="cabinet-title">
+        MAIN POWER BUS
+      </div>
+
+      <div class="cabinet-limit">
+        LIMIT : 70%
+      </div>
+
+      <div class="power-meter">
+
+        <div class="meter-line"></div>
+        <div class="meter-line"></div>
+        <div class="meter-line"></div>
+        <div class="meter-line"></div>
+
+      </div>
+
+    </div>
+
+
+    <!-- SENSOR -->
+    <div
+      class="load-box load-sensor interactable"
+      data-action="powerSensor"
+      data-label="INSPECT SENSOR LOAD"
+      data-text="SENSOR LOAD
+
+POWER : 20%
+
+The controller requires a valid sensor signal.
+Without the sensor, closed-loop control cannot operate.
+
+STATUS : REQUIRED"
+    >
+
+      <div class="load-name">
+        SENSOR
+      </div>
+
+      <div class="load-value">
+        20%
+      </div>
+
+    </div>
+
+
+    <!-- MOTOR -->
+    <div
+      class="load-box load-motor interactable"
+      data-action="powerMotor"
+      data-label="INSPECT MOTOR LOAD"
+      data-text="MOTOR LOAD
+
+POWER : 50%
+
+The actuator physically moves the exit mechanism.
+
+It requires the sensor signal
+before activation.
+
+STATUS : REQUIRED"
+    >
+
+      <div class="load-name">
+        MOTOR
+      </div>
+
+      <div class="load-value">
+        50%
+      </div>
+
+    </div>
+
+
+    <!-- COOLING -->
+    <div
+      class="load-box load-cooling interactable"
+      data-action="powerCooling"
+      data-label="INSPECT COOLING"
+      data-text="COOLING LOAD
+
+POWER : 15%
+
+Cooling is required during
+continuous motor operation.
+
+The exit actuator uses
+a short pulse.
+
+STATUS : CONDITIONAL"
+    >
+
+      <div class="load-name">
+        COOLING
+      </div>
+
+      <div class="load-value">
+        15%
+      </div>
+
+    </div>
+
+
+    <!-- LIGHT -->
+    <div class="load-box load-light">
+
+      <div class="load-name">
+        LIGHT
+      </div>
+
+      <div class="load-value">
+        5%
+      </div>
+
+    </div>
+
+
+    <!-- SERVICE NOTE -->
+    <div class="service-note">
+
+      SERVICE NOTE
+
+      <br><br>
+
+      Main bus maximum:
+      <strong>70%</strong>
+
+      <br><br>
+
+      Exit actuator:
+      <strong>SHORT PULSE</strong>
+
+    </div>
+
+
+    <!-- POWER CONSOLE -->
+    <div
+      class="power-console interactable"
+      data-action="powerConsole"
+      data-label="CHECK POWER ROUTE"
+    >
+
+      <div class="power-console-text">
+        POWER ROUTE
+        <br>
+        ANALYZER
+      </div>
+
+    </div>
+
+
+    <!-- RETURN -->
+    <div
+      class="return-door interactable disabled"
+      data-action="powerReturn"
+      data-label="RETURN TO ARCHIVE"
+    >
+
+      RETURN
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       CONTROL ROOM
+  ========================== -->
+  <section id="room-control" class="room puzzle-room">
+
+    <div class="room-background control-background"></div>
+
+    <div class="room-title">
+      FILE 03 // CONTROL LAB
+    </div>
+
+
+    <!-- TRACE A -->
+    <div
+      class="trace trace-a interactable"
+      data-action="controlA"
+      data-label="INSPECT TRACE A"
+      data-text="TRACE A
+
+Fast response.
+
+However:
+- large overshoot
+- repeated oscillation
+- signal crosses the target several times
+
+Interpretation:
+The controller is aggressive
+but poorly damped."
+    >
+
+      <div class="trace-title">
+        TRACE A
+      </div>
+
+      <div class="graph-line graph-a"></div>
+
+    </div>
+
+
+    <!-- TRACE B -->
+    <div
+      class="trace trace-b interactable"
+      data-action="controlB"
+      data-label="INSPECT TRACE B"
+      data-text="TRACE B
+
+Moderate response.
+
+- small overshoot
+- smooth recovery
+- reaches stable state quickly
+
+Interpretation:
+Fast enough without
+persistent oscillation."
+    >
+
+      <div class="trace-title">
+        TRACE B
+      </div>
+
+      <div class="graph-line graph-b"></div>
+
+    </div>
+
+
+    <!-- TRACE C -->
+    <div
+      class="trace trace-c interactable"
+      data-action="controlC"
+      data-label="INSPECT TRACE C"
+      data-text="TRACE C
+
+Very slow response.
+
+- almost no overshoot
+- very long settling time
+
+Interpretation:
+Stable, but too slow
+for the required response."
+    >
+
+      <div class="trace-title">
+        TRACE C
+      </div>
+
+      <div class="graph-line graph-c"></div>
+
+    </div>
+
+
+    <!-- NOTE -->
+    <div
+      class="control-note interactable"
+      data-action="controlA"
+      data-label="READ CONTROLLER NOTE"
+      data-text="CONTROLLER NOTE
+
+Kp increases response speed.
+
+Kd helps suppress excessive change
+and damp oscillation.
+
+Required condition:
+
+FAST ENOUGH
++
+STABLE
++
+LOW OSCILLATION"
+    >
+
+      CONTROLLER NOTE
+
+      <br><br>
+
+      Kp ↑ = faster response
+      <br>
+      Kd ↑ = stronger damping
+
+    </div>
+
+
+    <!-- GAIN TABLE -->
+    <div class="gain-table">
+
+      RECORDED TESTS
+
+      <br><br>
+
+      A : Kp 65 / Kd 20
+
+      <br>
+
+      B : Kp 40 / Kd 60
+
+      <br>
+
+      C : Kp 20 / Kd 75
+
+    </div>
+
+
+    <!-- CONSOLE -->
+    <div
+      class="control-console interactable"
+      data-action="controlConsole"
+      data-label="SELECT STABLE GAINS"
+    >
+
+      CONTROL
+      <br>
+      CONSOLE
+
+    </div>
+
+
+    <!-- RETURN -->
+    <div
+      class="return-door interactable disabled"
+      data-action="controlReturn"
+      data-label="RETURN TO ARCHIVE"
+    >
+
+      RETURN
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       PLAYER
+       IMPORTANT:
+       PLAYER IS OUTSIDE ALL ROOMS
+  ========================== -->
+  <div id="player">
+
+    <div class="player-head"></div>
+    <div class="player-body"></div>
+
+  </div>
+
+
+  <!-- =========================
+       INTERACTION PROMPT
+  ========================== -->
+  <div id="interaction-prompt">
+    SPACE
+  </div>
+
+
+  <!-- =========================
+       DIALOGUE
+  ========================== -->
+  <div id="dialogue">
+
+    <div class="dialogue-card">
+
+      <div id="dialogue-title">
+        SYSTEM
+      </div>
+
+      <div id="dialogue-text">
+      </div>
+
+      <button id="dialogue-close">
+        CLOSE
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       ENDING
+  ========================== -->
+  <div id="ending">
+
+    <div class="ending-card">
+
+      <div class="ending-small">
+        MAINTENANCE LOCK // RELEASED
+      </div>
+
+      <div class="ending-title">
+        REBOOT COMPLETE
+      </div>
+
+      <div id="ending-text">
+      </div>
+
+      <div class="ending-line"></div>
+
+      <div class="ending-small">
+        SESSION TERMINATED
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
 
 <script src="script.js"></script>
 
