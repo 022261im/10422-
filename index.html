@@ -3,89 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EngineOS v1.0.4 - Debugger</title>
+    <title>System Explorer - Sensor Repair</title>
     <link rel="stylesheet" href="style.css">
-    <!-- 레트로 폰트 불러오기 -->
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div id="desktop">
-        <!-- 1. 메인 시스템 모니터 창 -->
-        <div class="window" id="win-status" style="top: 20px; left: 20px; width: 320px;">
-            <div class="title-bar">
-                <span>[SYS_MONITOR.EXE]</span>
-                <span class="win-btn">_</span>
-            </div>
-            <div class="window-body">
-                <div class="stat-group">
-                    <label>CORE INTEGRITY (HP):</label>
-                    <div class="progress-bar"><div id="hp-bar" class="fill hp" style="width: 100%;"></div></div>
-                </div>
-                <div class="stat-group">
-                    <label>SYSTEM TEMP (HEAT):</label>
-                    <div class="progress-bar"><div id="heat-bar" class="fill heat" style="width: 30%;"></div></div>
-                    <span id="temp-text" class="stat-val">30°C</span>
-                </div>
-                <div class="stat-group">
-                    <label>POWER GRID (WATT):</label>
-                    <div class="progress-bar"><div id="power-bar" class="fill power" style="width: 80%;"></div></div>
-                    <span id="power-text" class="stat-val">80W / 100W</span>
-                </div>
-                
-                <div class="btn-group">
-                    <button id="btn-cool" class="pixel-btn">🌀 COOLING FLUSH</button>
-                    <button id="btn-overclock" class="pixel-btn">⚡ OVERCLOCK (OFF)</button>
-                </div>
-            </div>
+    <div id="game-container">
+        <!-- 상단 헤더 UI -->
+        <div id="status-bar">
+            <span>[SECTOR 01: LOGIC BUS]</span>
+            <span id="quest-text">Mission: 조사 가능한 센서 노드를 찾으세요.</span>
         </div>
 
-        <!-- 2. 회로 & 모듈 관리 창 -->
-        <div class="window" id="win-circuit" style="top: 20px; left: 360px; width: 300px;">
-            <div class="title-bar">
-                <span>[CIRCUIT_BOARD.SLOT]</span>
-                <span class="win-btn">_</span>
-            </div>
-            <div class="window-body">
-                <p class="guide-text">장착 모듈 클릭 시 토글:</p>
-                <div class="module-grid">
-                    <div class="module active" id="mod-fan" onclick="toggleModule('fan')">
-                        <div class="mod-icon">❄️</div>
-                        <div class="mod-name">Aux Cooling</div>
+        <!-- 메인 탐험 캔버스 -->
+        <canvas id="gameCanvas" width="640" height="480"></canvas>
+
+        <!-- 사물 조사 / 모달 UI (E 키 누를 때 팝업) -->
+        <div id="modal-overlay" class="hidden">
+            <div id="terminal-modal" class="pixel-modal">
+                <div class="modal-header">
+                    <span id="modal-title">[SENS_NODE_01 INTERFACE]</span>
+                    <button id="btn-close" onclick="closeModal()">X</button>
+                </div>
+                <div class="modal-body">
+                    <!-- 스토리 / 단서 텍스트 -->
+                    <div id="dialogue-box">
+                        <p id="dialogue-text">센서 노드 S-01에 접속 중... 온도가 비정상 측정되고 있습니다.</p>
                     </div>
-                    <div class="module active" id="mod-regulator" onclick="toggleModule('regulator')">
-                        <div class="mod-icon">🔋</div>
-                        <div class="mod-name">Vol. Regulator</div>
-                    </div>
-                    <div class="module" id="mod-filter" onclick="toggleModule('filter')">
-                        <div class="mod-icon">🛡️</div>
-                        <div class="mod-name">Noise Filter</div>
+
+                    <!-- 공학적 센서 보정 퍼즐 패널 -->
+                    <div id="puzzle-panel">
+                        <hr class="pixel-hr">
+                        <h4>🔧 SENSOR CALIBRATION (신호 보정)</h4>
+                        <p class="puzzle-desc">목표 출력값(Target): <strong id="target-val" style="color:#00ff00;">50.0 °C</strong></p>
+                        <p class="puzzle-desc">현재 측정값(Current): <strong id="current-val" style="color:#ff3333;">0.0 °C</strong></p>
+
+                        <div class="control-group">
+                            <label>GAIN (증폭도): <span id="gain-val">1.0</span></label>
+                            <input type="range" id="slider-gain" min="0.1" max="3.0" step="0.1" value="1.0">
+                        </div>
+
+                        <div class="control-group">
+                            <label>OFFSET (영점 보정): <span id="offset-val">0</span></label>
+                            <input type="range" id="slider-offset" min="-30" max="30" step="1" value="0">
+                        </div>
+
+                        <button id="btn-calibrate" class="pixel-btn" onclick="checkCalibration()">⚡ 교정 신호 전송</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 3. 터미널 이벤트 로그 창 -->
-        <div class="window" id="win-log" style="top: 280px; left: 20px; width: 640px; height: 180px;">
-            <div class="title-bar">
-                <span>[TERMINAL_LOG]</span>
-                <span class="win-btn">_</span>
-            </div>
-            <div class="window-body">
-                <div id="log-output" class="console">
-                    > System Kernel Initialized...<br>
-                    > EngineOS Monitoring Active...<br>
-                    > Warning: Anomalies detected on Grid B!
-                </div>
-            </div>
+        <!-- 하단 조작 안내 -->
+        <div id="controls-hint">
+            이동: [WASD / 방향키] | 사물 조사: [E 또는 Space]
         </div>
-    </div>
-
-    <!-- 하단 작업표시줄 -->
-    <div id="taskbar">
-        <button class="start-btn">🕹️ START</button>
-        <div class="task-item">EngineOS v1.0.4</div>
-        <div id="clock">00:00:00</div>
     </div>
 
     <script src="script.js"></script>

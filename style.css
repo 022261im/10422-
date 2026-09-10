@@ -1,4 +1,3 @@
-/* 픽셀 아트 및 레트로 OS 스타일링 */
 * {
     box-sizing: border-box;
     font-family: 'Press Start 2P', monospace;
@@ -10,181 +9,135 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #008080; /* 레트로 윈도우 한강철교 청록색 */
+    background-color: #0d0f12;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     height: 100vh;
-    overflow: hidden;
 }
 
-#desktop {
-    width: 100vw;
-    height: calc(100vh - 36px);
+#game-container {
     position: relative;
+    width: 640px;
+    background: #1a1c23;
+    border: 4px solid #3b4252;
+    box-shadow: 0 0 20px rgba(0,255,200,0.15);
 }
 
-/* 픽셀 창 스타일 */
-.window {
-    position: absolute;
-    background: #c0c0c0;
-    border: 3px solid #000;
-    box-shadow: inset 2px 2px #ffffff, inset -2px -2px #808080, 4px 4px 0px rgba(0,0,0,0.3);
-}
-
-.title-bar {
-    background: #000080;
-    color: #ffffff;
-    padding: 4px 6px;
+#status-bar {
+    background: #2e3440;
+    color: #88c0d0;
+    padding: 10px;
     display: flex;
     justify-content: space-between;
+    border-bottom: 3px solid #3b4252;
+    font-size: 9px;
+}
+
+canvas {
+    display: block;
+    background: #0f1115;
+}
+
+#controls-hint {
+    background: #2e3440;
+    color: #d8dee9;
+    padding: 8px;
+    text-align: center;
+    font-size: 8px;
+    border-top: 3px solid #3b4252;
+}
+
+/* 모달 및 퍼즐 UI */
+#modal-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
     align-items: center;
-    cursor: move;
+    z-index: 10;
+}
+
+.hidden { display: none !important; }
+
+.pixel-modal {
+    width: 480px;
+    background: #232731;
+    border: 4px solid #a3be8c;
+    box-shadow: 6px 6px 0px #000;
+    color: #eceff4;
+}
+
+.modal-header {
+    background: #a3be8c;
+    color: #2e3440;
+    padding: 6px 10px;
+    display: flex;
+    justify-content: space-between;
     font-weight: bold;
 }
 
-.window-body {
-    padding: 10px;
-}
-
-/* 프로그레스 바 (게이지) */
-.stat-group {
-    margin-bottom: 10px;
-}
-
-.stat-group label {
-    display: block;
-    margin-bottom: 4px;
-    font-size: 9px;
-}
-
-.progress-bar {
-    height: 16px;
-    background: #404040;
-    border: 2px solid #000;
-    box-shadow: inset 1px 1px #808080, inset -1px -1px #fff;
-    position: relative;
-}
-
-.fill {
-    height: 100%;
-    transition: width 0.2s ease;
-}
-
-.fill.hp { background: #00ee00; }
-.fill.heat { background: #ff3333; }
-.fill.power { background: #33ffff; }
-
-.stat-val {
-    font-size: 9px;
-    float: right;
-    margin-top: 2px;
-}
-
-/* 픽셀 버튼 */
-.pixel-btn {
-    background: #c0c0c0;
-    border: 2px solid #000;
-    box-shadow: inset 2px 2px #fff, inset -2px -2px #808080;
-    padding: 6px 8px;
-    margin-top: 5px;
+#btn-close {
+    background: none;
+    border: none;
+    font-weight: bold;
     cursor: pointer;
+}
+
+.modal-body {
+    padding: 16px;
+}
+
+#dialogue-box {
+    background: #191c21;
+    border: 2px solid #4c566a;
+    padding: 10px;
+    line-height: 1.5;
     font-size: 9px;
+    color: #ebcb8b;
+    margin-bottom: 12px;
+}
+
+.pixel-hr {
+    border: 0;
+    border-top: 2px dashed #4c566a;
+    margin: 12px 0;
+}
+
+.puzzle-desc {
+    font-size: 9px;
+    margin: 6px 0;
+}
+
+.control-group {
+    margin: 12px 0;
+}
+
+.control-group label {
+    display: block;
+    font-size: 8px;
+    margin-bottom: 4px;
+}
+
+input[type=range] {
     width: 100%;
+    accent-color: #a3be8c;
 }
 
-.pixel-btn:active {
-    box-shadow: inset -2px -2px #fff, inset 2px 2px #808080;
-    transform: translate(1px, 1px);
-}
-
-.btn-group {
-    display: flex;
-    gap: 5px;
-    margin-top: 10px;
-}
-
-/* 회로 모듈 그리드 */
-.module-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+.pixel-btn {
+    width: 100%;
+    background: #a3be8c;
+    color: #2e3440;
+    border: 2px solid #000;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: bold;
     margin-top: 8px;
 }
 
-.module {
-    background: #808080;
-    border: 2px solid #000;
-    padding: 8px 4px;
-    text-align: center;
-    cursor: pointer;
-    opacity: 0.6;
-}
-
-.module.active {
-    background: #008000;
+.pixel-btn:hover {
+    background: #b48ead;
     color: #fff;
-    opacity: 1;
-    box-shadow: inset 2px 2px #a0ffa0, inset -2px -2px #004000;
-}
-
-.mod-icon { font-size: 16px; margin-bottom: 4px; }
-.mod-name { font-size: 8px; }
-
-/* 터미널 로그 */
-.console {
-    background: #000;
-    color: #00ff00;
-    height: 120px;
-    padding: 8px;
-    overflow-y: auto;
-    font-size: 9px;
-    line-height: 1.4;
-    border: 2px solid #808080;
-}
-
-.guide-text { font-size: 9px; margin: 0; }
-
-/* 에러 팝업 (적 인카운터) */
-.anomaly-win {
-    border-color: #ff0000 !important;
-}
-
-.anomaly-win .title-bar {
-    background: #800000 !important;
-}
-
-/* 하단 작업 표시줄 */
-#taskbar {
-    height: 36px;
-    background: #c0c0c0;
-    border-top: 3px solid #fff;
-    display: flex;
-    align-items: center;
-    padding: 0 4px;
-    gap: 8px;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-}
-
-.start-btn {
-    height: 28px;
-    background: #c0c0c0;
-    border: 2px solid #000;
-    box-shadow: inset 2px 2px #fff, inset -2px -2px #808080;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.task-item {
-    background: #e0e0e0;
-    border: 2px solid #000;
-    padding: 4px 8px;
-    font-size: 9px;
-}
-
-#clock {
-    margin-left: auto;
-    background: #c0c0c0;
-    border: 2px solid #808080;
-    padding: 4px 8px;
-    font-size: 9px;
 }
