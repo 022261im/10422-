@@ -128,8 +128,9 @@ const state = {
 
   },
 
-  sequence:
-    []
+  armAngleOne: 0,
+
+  armAngleTwo: 0
 
 };
 
@@ -1794,240 +1795,64 @@ document
 
 
 /* =========================================================
-   CONTROL SEQUENCE
+   ROBOT ARM KINEMATICS
 ========================================================= */
 
-document
-  .querySelectorAll(
-    ".sequence-button"
-  )
-  .forEach(
-    button => {
+function updateArm() {
+  const a1 = Number(document.getElementById("arm-angle-one").value);
+  const a2 = Number(document.getElementById("arm-angle-two").value);
+  state.armAngleOne = a1;
+  state.armAngleTwo = a2;
+  const radians = Math.PI / 180;
+  const length1 = 80;
+  const length2 = 65;
+  const x = length1 * Math.cos(a1 * radians) + length2 * Math.cos((a1 + a2) * radians);
+  const y = length1 * Math.sin(a1 * radians) + length2 * Math.sin((a1 + a2) * radians);
+  const error = Math.hypot(124 - x, 69 - y);
 
-      button.addEventListener(
-        "click",
-        () => {
+  document.getElementById("arm-angle-one-value").textContent = a1 + "°";
+  document.getElementById("arm-angle-two-value").textContent = a2 + "°";
+  document.getElementById("arm-error").textContent = error.toFixed(1) + " units";
 
-          if (
-            state.sequence.length >= 3
-          ) {
-
-            return;
-
-          }
-
-
-          state.sequence.push(
-            button.dataset.sequence
-          );
-
-
-          button.classList.add(
-            "selected"
-          );
-
-
-          updateSequence();
-
-        }
-      );
-
-    }
-  );
-
-
-function updateSequence() {
-
-  const names = {
-
-    PRESSURE:
-      "압력 안정",
-
-    LOCK:
-      "잠금 해제",
-
-    MOTOR:
-      "모터 작동"
-
-  };
-
-
-  const result =
-    state.sequence.map(
-      value =>
-        names[value]
-    );
-
-
-  while (
-    result.length < 3
-  ) {
-
-    result.push(
-      "_"
-    );
-
-  }
-
-
-  document
-    .getElementById(
-      "sequence-display"
-    )
-    .textContent =
-    result.join(
-      " → "
-    );
-
+  document.getElementById("arm-link-one").style.transform = "rotate(" + (-a1) + "deg)";
+  document.getElementById("arm-link-two").style.transform = "rotate(" + (-a2) + "deg)";
+  const status = document.getElementById("arm-status");
+  status.textContent = error <= 6
+    ? "목표 범위 진입 — 위치를 고정할 수 있습니다."
+    : "목표와 " + error.toFixed(1) + " units 차이";
+  status.classList.toggle("arm-ready", error <= 6);
+  return error;
 }
 
-
-/* =========================================================
-   RESET SEQUENCE
-========================================================= */
-
-document
-  .getElementById(
-    "sequence-reset"
-  )
-  .addEventListener(
-    "click",
-    () => {
-
-      state.sequence =
-        [];
-
-
-      document
-        .querySelectorAll(
-          ".sequence-button"
-        )
-        .forEach(
-          button =>
-            button.classList.remove(
-              "selected"
-            )
-        );
-
-
-      updateSequence();
-
-    }
-  );
-
-
-/* =========================================================
-   CHECK SEQUENCE
-========================================================= */
+document.getElementById("arm-angle-one").addEventListener("input", updateArm);
+document.getElementById("arm-angle-two").addEventListener("input", updateArm);
+document.getElementById("arm-reset").addEventListener("click", () => {
+  document.getElementById("arm-angle-one").value = 0;
+  document.getElementById("arm-angle-two").value = 0;
+  updateArm();
+});
 
 function checkSequence() {
-
-  const inspected =
-
-    state.evidence.control.has(
-      "PRESSURE"
-    )
-
-    &&
-
-    state.evidence.control.has(
-      "LOCK"
-    )
-
-    &&
-
-    state.evidence.control.has(
-      "MOTOR"
-    )
-
-    &&
-
-    state.evidence.control.has(
-      "NOTE"
-    );
-
-
+  const inspected = state.evidence.control.has("PRESSURE") &&
+    state.evidence.control.has("LOCK") &&
+    state.evidence.control.has("MOTOR") &&
+    state.evidence.control.has("NOTE");
   if (!inspected) {
-
-    showDialogue(
-
-      "제어 순서 잠김",
-
-      "PRESSURE, SAFETY LOCK, DRIVE MOTOR와\n" +
-      "유지보수 기록을 모두 조사하세요."
-
-    );
-
+    showDialogue("로봇팔 제어 잠김", "PRESSURE, SAFETY LOCK, DRIVE MOTOR와\n유지보수 기록을 모두 조사한 뒤 조작하세요.");
     return false;
-
   }
-
-
-  const correct =
-
-    state.sequence.length === 3
-
-    &&
-
-    state.sequence[0] ===
-      "PRESSURE"
-
-    &&
-
-    state.sequence[1] ===
-      "LOCK"
-
-    &&
-
-    state.sequence[2] ===
-      "MOTOR";
-
-
-  if (!correct) {
-
-    showDialogue(
-
-      "순서 오류",
-
-      "장치 사이의 조건과 맞지 않는 순서입니다.\n\n" +
-
-      "어떤 조건이 먼저 만족되어야 하는지\n" +
-
-      "다시 생각해 보세요."
-
-    );
-
+  const error = updateArm();
+  if (error > 6) {
+    showDialogue("도달 범위 오류", "그리퍼가 목표 지점에 도달하지 못했습니다.\n\n관절 각도에 따른 X/Y 위치와 오차를 확인하고 다시 조정하세요.");
     return false;
-
   }
-
-
-  document
-    .getElementById(
-      "control-return"
-    )
-    .classList
-    .remove(
-      "disabled"
-    );
-
-
-  showDialogue(
-
-    "CONTROL RECOVERED",
-
-    "압력 안정 → 잠금 해제 → 모터 작동\n\n" +
-
-    "제어 순서가 정상적으로 복구되었습니다.\n\n" +
-
-    "RETURN이 해제되었습니다."
-
-  );
-
-
+  document.getElementById("control-return").classList.remove("disabled");
+  document.getElementById("arm-status").textContent = "GRAB 성공 — 위치가 고정되었습니다.";
+  showDialogue("CONTROL RECOVERED", "로봇팔이 목표 지점에 도달했습니다.\n\n두 링크의 길이와 관절 각도로 끝점 좌표를 계산해 도달 오차를 줄였습니다.\n\nRETURN이 해제되었습니다.");
   return true;
-
 }
+document.getElementById("arm-check").addEventListener("click", checkSequence);
+updateArm();
 
 
 /* =========================================================
