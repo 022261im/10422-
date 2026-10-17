@@ -752,58 +752,22 @@
 
       <!-- 순서 패널 -->
 
-      <div
-        id="sequence-panel"
-        class="sequence-panel"
-      >
-
-        <strong>
-          작동 순서 복구
-        </strong>
-
-        <span>
-          조사한 단서를 바탕으로
-          순서를 입력하세요.
-        </span>
-
-
-        <div
-          id="sequence-display"
-          class="sequence-display"
-        >
-          _ → _ → _
+      <!-- 로봇팔 도달 범위 퍼즐 -->
+      <div id="sequence-panel" class="sequence-panel arm-panel">
+        <strong>ROBOT ARM / RANGE CALIBRATION</strong>
+        <span>두 관절의 각도를 조절해 목표 지점에 도달하세요.</span>
+        <div class="arm-readouts">
+          <span>목표 X <b>124</b></span><span>목표 Y <b>69</b></span><span>오차 <b id="arm-error">—</b></span>
         </div>
-
-
-        <div class="sequence-buttons">
-
-          <button data-sequence="PRESSURE">
-            압력 안정
-          </button>
-
-          <button data-sequence="LOCK">
-            잠금 해제
-          </button>
-
-          <button data-sequence="MOTOR">
-            모터 작동
-          </button>
-
+        <div class="arm-visual" aria-label="로봇팔 시뮬레이션">
+          <div class="arm-origin"></div>
+          <div id="arm-link-one" class="arm-link arm-link-one"><div id="arm-joint" class="arm-joint"></div><div id="arm-link-two" class="arm-link arm-link-two"></div></div>
+          <div class="arm-target" title="목표 지점"><span>TARGET</span></div>
         </div>
-
-
-        <div class="sequence-actions">
-
-          <button id="sequence-reset">
-            초기화
-          </button>
-
-          <button id="sequence-check">
-            실행
-          </button>
-
-        </div>
-
+        <label class="arm-control" for="arm-angle-one"><span>관절 1 <b id="arm-angle-one-value">0°</b></span><input id="arm-angle-one" type="range" min="-90" max="90" value="0" step="1"></label>
+        <label class="arm-control" for="arm-angle-two"><span>관절 2 <b id="arm-angle-two-value">0°</b></span><input id="arm-angle-two" type="range" min="-150" max="150" value="0" step="1"></label>
+        <div id="arm-status" class="arm-status">관절 각도를 조절해 목표에 맞추세요.</div>
+        <div class="sequence-actions"><button id="arm-check">위치 고정 / GRAB</button><button id="arm-reset">초기화</button></div>
       </div>
 
 
