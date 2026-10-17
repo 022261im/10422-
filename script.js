@@ -105,5 +105,5 @@ function update(){frame++;input();if(toastTimer>0&&!--toastTimer)$('toast').clas
 $('start').addEventListener('click',()=>{started=true;$('start-screen').classList.add('hidden');status();if(!storySeen.intro){storySeen.intro=true;startDialogue('intro')}});
 window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();const wasDown=keys.has(k);keys.add(k);if(k===' '&&!wasDown){if(started)interact()}if(k==='shift'&&!wasDown&&started&&!dialogue){if(room==='cable')interact();else if(room==='atrium'&&done.wire&&done.arm&&done.sensor&&Math.hypot(player.x-160,player.y-65)<28)interact();else if(room==='memory'&&ending&&player.y>137)interact()}});
 window.addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys.delete(k);if(k==='shift'&&room==='cable'&&cableHeld&&!dialogue)interact();if(k==='shift'&&room==='servo'&&!done.arm){const tipX=160+Math.cos(armAngle*Math.PI/180)*28+Math.cos((armAngle-45)*Math.PI/180)*23;const tipY=101-Math.sin(armAngle*Math.PI/180)*28-Math.sin((armAngle-45)*Math.PI/180)*23;if(Math.hypot(tipX-203,tipY-81)<22){armLocked=true;done.arm=true;toast('서보 팔 기준점 고정');status()}else toast('아직 기준점에 닿지 않았어')}})
-status();drawRoom();requestAnimationFrame(update);
+drawLogo();status();drawRoom();requestAnimationFrame(update);
 })();
