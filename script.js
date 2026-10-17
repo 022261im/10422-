@@ -1,171 +1,93 @@
 (() => {
-  const $ = id => document.getElementById(id);
-  const canvas = $('gameCanvas'), ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  const W=960,H=540;
-  const rooms = {
-    hub:{title:'기억의 복도',crumb:'DIRECTORY',tag:'ROOT DIRECTORY',spawn:{x:145,y:390},nodes:[{id:'terminal',x:480,y:260,label:'CORE TERMINAL',symbol:'▣'}]},
-    servo:{title:'구동부 보관소',crumb:'01_SERVO',tag:'SERVO / KINEMATICS',spawn:{x:120,y:420},nodes:[{id:'arm',x:690,y:278,label:'SERVO ARM',symbol:'⌁'}]},
-    power:{title:'전력 분배실',crumb:'02_POWER',tag:'POWER / CIRCUIT ROUTING',spawn:{x:120,y:420},nodes:[{id:'wire',x:710,y:320,label:'ROUTER PANEL',symbol:'ϟ'}]},
-    sensor:{title:'센서 교정실',crumb:'03_SENSOR',tag:'SENSOR / CALIBRATION',spawn:{x:120,y:420},nodes:[{id:'sensor',x:690,y:280,label:'RANGE SENSOR',symbol:'⌖'}]}
-  };
-  let room='hub', player={x:145,y:390}, keys={}, nearby=null, modalOpen=false, toastTimer=0, lastTime=0, completed={servo:false,power:false,sensor:false}, fragments=[], arm={a:28,b:42}, wire={from:null,links:[]}, sensorOffset=0, sensorNoise=0, running=false;
-  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  function showToast(text){const t=$('sceneToast');t.textContent=text;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2100)}
-  function updateUI(){
-    const r=rooms[room];$('roomTitle').textContent=r.title;$('roomCrumb').textContent=r.crumb;$('sceneTag').textContent=r.tag;
-    document.querySelectorAll('.folder').forEach(b=>b.classList.toggle('active',b.dataset.room===room));
-    $('coords').textContent=String(Math.round(player.x)).padStart(3,'0')+' : '+String(Math.round(player.y)).padStart(3,'0');
-    const count=Object.values(completed).filter(Boolean).length;$('progressBar').style.width=(count/3*100)+'%';$('progressText').textContent=count+' / 3 NODES';$('progressPct').textContent=Math.round(count/3*100)+'%';$('syncBar').style.width=(12+count*29)+'%';$('syncValue').textContent=(12+count*29)+'%';
-    $('systemLabel').textContent=count===3?'SYSTEM STABLE':'SYSTEM UNSTABLE';$('footerProcess').textContent=count===3?'RECOVERY COMPLETE':'EXPLORING';
-    [['servo','servoMark'],['power','powerMark'],['sensor','sensorMark']].forEach(([key,id])=>{const b=$(id);b.textContent=completed[key]?'✓':'○';b.closest('.folder').classList.toggle('completed',completed[key])});
-    const trace=$('traceList');trace.innerHTML='';
-    const traces=[['servo','구동 범위 복구','관절 각도와 도달 좌표를 맞춰라.'],['power','전력망 재연결','전원을 올바른 노드로 전달하라.'],['sensor','거리 센서 교정','오차를 보정하고 기준 범위에 맞춰라.']];
-    traces.forEach(([key,title,desc])=>{const el=document.createElement('div');el.className='trace-item '+(completed[key]?'done':room===key?'current':'');el.innerHTML='<span class="trace-dot"></span><div><b>'+title+'</b><small>'+(completed[key]?'복구 완료 · 데이터 기록됨':desc)+'</small></div>';trace.appendChild(el)});
-    $('traceCount').textContent=String(count+1).padStart(2,'0');
-    const fg=$('fragmentGrid');fg.innerHTML='';if(!fragments.length)fg.innerHTML='<div class="fragment-empty">기록 조각이 아직 없습니다.</div>';else fragments.forEach(f=>{const el=document.createElement('div');el.className='fragment';el.innerHTML=f.symbol+'<small>'+f.label+'</small>';fg.appendChild(el)});
-  }
-  function goRoom(next){if(!rooms[next])return;room=next;player={...rooms[next].spawn};nearby=null;updateUI();showToast('DIRECTORY OPENED // '+rooms[next].tag)}
-  function rect(x,y,w,h,fill,stroke){ctx.fillStyle=fill;ctx.fillRect(x,y,w,h);if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.strokeRect(x,y,w,h)}}
-  function text(t,x,y,size,color,font='monospace'){ctx.font=size+'px '+font;ctx.fillStyle=color;ctx.fillText(t,x,y)}
-  function drawRoom(){
-    ctx.clearRect(0,0,W,H);
-    const isHub=room==='hub', isServo=room==='servo', isPower=room==='power', isSensor=room==='sensor';
-    const wall=isHub?'#242036':isServo?'#1c2632':isPower?'#292234':'#1c2930';
-    const floor=isHub?'#171522':isServo?'#131b25':isPower?'#191522':'#121c21';
-    rect(0,0,W,H,wall); 
-    // wall panel rhythm and pixel grid
-    for(let x=0;x<W;x+=80){rect(x,0,2,370,'#ffffff07');rect(x+12,26,30,3,'#ffffff0a')}
-    for(let y=36;y<355;y+=54){rect(0,y,W,1,'#d4caff0a')}
-    // windows / data glass
-    rect(55,50,250,118,'#10121d','#4a4264');rect(63,58,234,102,isServo?'#152b37':isPower?'#28213c':'#1a1930');
-    for(let i=0;i<9;i++){const h=12+(i*17%65);rect(77+i*23,145-h,10,h,isServo?'#6bd7c2':isPower?'#a995ff':'#7365a2')}
-    rect(330,65,570,72,'#11111c','#3c3652');text(isHub?'MEMORY INDEX / ROOT':isServo?'JOINT KINEMATICS // LIVE':isPower?'DISTRIBUTION GRID // OFFLINE':'RANGE ARRAY // CALIBRATION',350,91,12,'#a59bc9');
-    for(let i=0;i<12;i++)rect(350+i*43,108,28,3,i<3&&isHub?'#91f3d0':'#39344e');
-    // floor and perspective
-    ctx.fillStyle=floor;ctx.beginPath();ctx.moveTo(0,350);ctx.lineTo(W,350);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
-    ctx.strokeStyle='#b2a1ff16';ctx.lineWidth=1;
-    for(let x=-200;x<W+200;x+=80){ctx.beginPath();ctx.moveTo(480+(x-480)*.25,350);ctx.lineTo(x,H);ctx.stroke()}
-    for(let y=380;y<H;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
-    // pillars
-    [24,910].forEach(x=>{rect(x,178,27,195,'#171522','#403951');rect(x+5,189,17,5,'#7d6ca7');rect(x+5,350,17,22,'#252038')});
-    if(isHub){
-      // main data tree hologram
-      rect(407,204,148,145,'#131320','#51446e');rect(420,217,122,117,'#1b1830','#706095');
-      ctx.strokeStyle='#a995ff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(480,240);ctx.lineTo(447,270);ctx.lineTo(480,300);ctx.lineTo(514,270);ctx.closePath();ctx.stroke();
-      ctx.fillStyle='#91f3d0';ctx.fillRect(474,264,12,12);text('ROOT NODE',438,366,10,'#b8addc');
-    }
-    if(isServo){
-      // robot arm pedestal and target
-      rect(630,375,120,24,'#303048','#5c5277');rect(660,330,60,45,'#4b4367','#9a8bc6');
-      ctx.strokeStyle='#9b8be1';ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(690,337);ctx.lineTo(670,292);ctx.lineTo(700,252);ctx.stroke();
-      ctx.fillStyle='#c9bcff';ctx.fillRect(658,280,24,24);ctx.fillRect(688,240,24,24);
-      ctx.strokeStyle='#91f3d0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(772,238,25,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(759,238);ctx.lineTo(785,238);ctx.moveTo(772,225);ctx.lineTo(772,251);ctx.stroke();text('TARGET',749,204,9,'#91f3d0');
-      rect(130,250,180,95,'#151a25','#3b5264');text('ARM / AXIS 02',148,275,10,'#8ccdbf');text('R: 80 + 65 units',148,296,10,'#8b91a7');text('LINKS DISCONNECTED',148,321,9,'#f0bd83');
-    }
-    if(isPower){
-      // circuit board on wall
-      rect(520,175,290,190,'#13121f','#504367');
-      for(let i=0;i<4;i++)for(let j=0;j<3;j++){rect(550+i*62,205+j*43,28,20,'#27233d','#65567e')}
-      ctx.strokeStyle='#a995ff';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(564,215);ctx.lineTo(626,215);ctx.lineTo(626,258);ctx.lineTo(688,258);ctx.lineTo(750,258);ctx.stroke();
-      ctx.strokeStyle='#4b4760';ctx.beginPath();ctx.moveTo(564,258);ctx.lineTo(564,301);ctx.lineTo(688,301);ctx.lineTo(688,344);ctx.lineTo(750,344);ctx.stroke();
-      text('INPUT',544,193,9,'#a59bc9');text('OUTPUT',748,193,9,'#a59bc9');
-      rect(130,248,220,90,'#161522','#443957');text('GRID VOLTAGE',149,273,10,'#aaa0ce');text('24.0 V',149,303,20,'#f1d2a0');text('ROUTING FAULT × 2',149,324,9,'#dc9eac');
-    }
-    if(isSensor){
-      rect(530,200,290,150,'#121a20','#405c60');
-      ctx.strokeStyle='#4b7d80';ctx.lineWidth=1;for(let i=0;i<7;i++){ctx.beginPath();ctx.moveTo(550+i*38,215);ctx.lineTo(550+i*38,332);ctx.stroke()}
-      for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(545,230+i*28);ctx.lineTo(800,230+i*28);ctx.stroke()}
-      ctx.strokeStyle='#91f3d0';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(550,300);ctx.lineTo(590,300);ctx.lineTo(615,264);ctx.lineTo(650,264);ctx.lineTo(682,288);ctx.lineTo(730,288);ctx.lineTo(760,245);ctx.lineTo(800,245);ctx.stroke();
-      rect(130,250,205,94,'#131a20','#3b555b');text('DISTANCE / RAW',148,274,10,'#9bc8c8');text('0.84 m',148,304,20,'#91f3d0');text('BIAS +0.16 m',148,326,9,'#e5b88b');
-    }
-    // bottom door / portal
-    const open=Object.values(completed).filter(Boolean).length===3;
-    rect(425,350,110,122,open?'#273f42':'#101018',open?'#91f3d0':'#39334b');rect(437,363,86,109,open?'#325a58':'#1b1927',open?'#91f3d0':'#4a405e');
-    if(open){for(let i=0;i<5;i++)rect(445+i*15,374,4,84,'#91f3d055');text('EXIT',458,459,11,'#91f3d0')}else{text('LOCKED',448,459,10,'#77708f')}
-    // little scattered data scraps
-    for(let i=0;i<6;i++){const x=80+i*137,y=468+(i%2)*22;rect(x,y,25,15,'#29243b','#4d4269');rect(x+5,y+4,13,2,'#9382bd')}
-    // node glow and labels
-    const node=rooms[room].nodes[0];const pulse=.5+.5*Math.sin(performance.now()/260);
-    ctx.fillStyle='rgba(169,149,255,'+(.12+pulse*.1)+')';ctx.beginPath();ctx.arc(node.x,node.y,43+pulse*8,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='#b8a8ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(node.x,node.y,20+pulse*3,0,Math.PI*2);ctx.stroke();
-    ctx.fillStyle='#ded6ff';ctx.fillRect(node.x-7,node.y-7,14,14);text(node.symbol,node.x-5,node.y+5,12,'#161323');
-    rect(node.x-68,node.y+34,136,22,'#0d0c16d9','#4c426a');text(node.label,node.x-59,node.y+49,9,'#d6d0ee');
-    if(room==='hub'){text('A PROCESS WITHOUT A MEMORY',344,403,10,'#a7a0c6');text('FIND THE THREE DAMAGED NODES',340,420,9,'#66617e')}
-    drawPlayer();
-  }
-  function drawPlayer(){
-    const x=Math.round(player.x),y=Math.round(player.y);
-    // shadow
-    ctx.fillStyle='#05050b99';ctx.fillRect(x-12,y+18,27,6);
-    // scarf and body
-    ctx.fillStyle='#77709e';ctx.fillRect(x-9,y-5,19,21);ctx.fillStyle='#b7a8e5';ctx.fillRect(x-8,y-22,17,17);
-    ctx.fillStyle='#d9cfff';ctx.fillRect(x-5,y-25,11,5);ctx.fillStyle='#1c1a2c';ctx.fillRect(x-6,y-15,4,3);ctx.fillRect(x+3,y-15,4,3);
-    ctx.fillStyle='#b5f6df';ctx.fillRect(x+3,y-15,3,2);
-    ctx.fillStyle='#50476f';ctx.fillRect(x-8,y+16,7,9);ctx.fillRect(x+2,y+16,7,9);
-    ctx.fillStyle='#9b8bc9';ctx.fillRect(x-13,y-1,4,12);ctx.fillRect(x+9,y-1,4,12);
-    ctx.fillStyle='#a995ff';ctx.fillRect(x-3,y-3,6,3);
-  }
-  function update(dt){
-    if(modalOpen)return;
-    const speed=(keys.Shift?230:155)*dt;let dx=0,dy=0;
-    if(keys.ArrowLeft||keys.a||keys.A)dx-=speed;if(keys.ArrowRight||keys.d||keys.D)dx+=speed;
-    if(keys.ArrowUp||keys.w||keys.W)dy-=speed;if(keys.ArrowDown||keys.s||keys.S)dy+=speed;
-    if(dx&&dy){dx*=.707;dy*=.707}
-    player.x=clamp(player.x+dx,50,910);player.y=clamp(player.y+dy,205,478);
-    const node=rooms[room].nodes[0];const dist=Math.hypot(player.x-node.x,player.y-node.y);
-    nearby=dist<92?node:null;$('interactHint').classList.toggle('visible',!!nearby);
-    $('hintText').textContent=nearby?(nearby.id==='terminal'?'코어 터미널에 접속':nearby.id==='arm'?'로봇 팔 제어 패널 열기':nearby.id==='wire'?'전력 라우팅 패널 열기':'거리 센서 보정 패널 열기'):'빛나는 오브젝트와 상호작용';
-    $('coords').textContent=String(Math.round(player.x)).padStart(3,'0')+' : '+String(Math.round(player.y)).padStart(3,'0');
-  }
-  function loop(t){const dt=Math.min((t-lastTime)/1000||0,.04);lastTime=t;if(running){update(dt);drawRoom()}requestAnimationFrame(loop)}
-  function openModal(id){
-    modalOpen=true;$('modalBackdrop').hidden=false;$('puzzleContent').innerHTML='';
-    if(id==='terminal'){
-      $('modalCategory').textContent='ROOT ACCESS / SYSTEM MESSAGE';$('modalTitle').textContent='세 개의 손상된 노드';
-      $('modalDescription').textContent='이 컴퓨터의 기억은 서로 다른 세 개의 시스템에 흩어져 있다. 장치를 직접 복구해 데이터 흐름을 되살려라. 단순한 암호가 아니라 실제 장치의 작동 조건을 맞춰야 한다.';
-      const stage=document.createElement('div');stage.className='puzzle-stage';stage.innerHTML='<div class="stage-label">AVAILABLE DIRECTORIES</div><div class="wire-board"><button class="wire-terminal" data-go="servo"><b>⌁ 01_SERVO</b><small>2-link manipulator</small></button><button class="wire-terminal" data-go="power"><b>ϟ 02_POWER</b><small>Power distribution</small></button><button class="wire-terminal" data-go="sensor"><b>⌖ 03_SENSOR</b><small>Range calibration</small></button><button class="wire-terminal" data-go="exit"><b>▣ CORE EXIT</b><small>Unlock after 3 repairs</small></button></div><p class="wire-status">CORE LOG: “내가 누구였는지는 모르겠어. 하지만 이 시스템이 멈추면 나도 사라질 거야.”</p>';
-      $('puzzleContent').appendChild(stage);stage.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{const go=b.dataset.go;if(go==='exit'){if(Object.values(completed).every(Boolean)){closeModal();showToast('CORE EXIT AVAILABLE — 중앙 출구가 열렸습니다.')}else{$('modalStatus').textContent='3개의 노드를 먼저 복구해야 합니다.'}}else{closeModal();goRoom(go)}}));
-      $('modalStatus').textContent='3 SYSTEM NODES / 0–3 RESTORED';
-    } else if(id==='arm') buildArmPuzzle();
-    else if(id==='wire') buildWirePuzzle();
-    else if(id==='sensor') buildSensorPuzzle();
-  }
-  function buildArmPuzzle(){
-    $('modalCategory').textContent='ENGINEERING NODE 01 / KINEMATICS';$('modalTitle').textContent='2-link 로봇 팔 — 도달 좌표 맞추기';
-    $('modalDescription').textContent='두 링크의 길이는 각각 80, 65 단위다. 관절 각도를 직접 조절해 그리퍼를 목표점에 가져가라. 목표 좌표는 X=124, Y=69이며 오차가 6 단위 이하여야 잡을 수 있다.';
-    const stage=document.createElement('div');stage.className='puzzle-stage';stage.innerHTML='<div class="stage-label">JOINT CONTROL / FORWARD KINEMATICS</div><div class="range-row"><div class="range-head"><span>JOINT θ₁ · BASE</span><b id="angA">28°</b></div><input id="rangeA" type="range" min="-90" max="150" value="'+arm.a+'"></div><div class="range-row"><div class="range-head"><span>JOINT θ₂ · ELBOW</span><b id="angB">42°</b></div><input id="rangeB" type="range" min="-150" max="150" value="'+arm.b+'"></div><div class="engineering-readout"><div class="readout"><span>ENDPOINT X</span><b id="endX">—</b></div><div class="readout"><span>ENDPOINT Y</span><b id="endY">—</b></div><div class="readout"><span>POSITION ERROR</span><b id="endErr">—</b></div></div><div class="action-row"><button class="action-button" id="armReset">RESET ANGLES</button><button class="action-button primary" id="armGrab">CLOSE GRIPPER ↗</button></div><div class="wire-status" id="armStatus">관절을 움직여 목표점에 접근하세요.</div>';
-    $('puzzleContent').appendChild(stage);
-    function calc(){arm.a=+stage.querySelector('#rangeA').value;arm.b=+stage.querySelector('#rangeB').value;const a=arm.a*Math.PI/180,b=(arm.a+arm.b)*Math.PI/180;const x=80*Math.cos(a)+65*Math.cos(b),y=80*Math.sin(a)+65*Math.sin(b),err=Math.hypot(x-124,y-69);stage.querySelector('#angA').textContent=arm.a+'°';stage.querySelector('#angB').textContent=arm.b+'°';stage.querySelector('#endX').textContent=x.toFixed(1);stage.querySelector('#endY').textContent=y.toFixed(1);stage.querySelector('#endErr').textContent=err.toFixed(1);stage.querySelector('#endErr').style.color=err<=6?'#91f3d0':'#f4c98a';return err}
-    stage.querySelectorAll('input').forEach(el=>el.addEventListener('input',calc));stage.querySelector('#armReset').addEventListener('click',()=>{stage.querySelector('#rangeA').value=28;stage.querySelector('#rangeB').value=42;calc()});
-    stage.querySelector('#armGrab').addEventListener('click',()=>{const err=calc();if(err<=6){completeNode('servo','ARM','⌁');stage.querySelector('#armStatus').textContent='GRIP CONFIRMED — 목표점 도달. 구동부 로그 복구 완료.';stage.querySelector('#armStatus').style.color='#91f3d0';}else{stage.querySelector('#armStatus').textContent='도달 실패. 현재 오차 '+err.toFixed(1)+' 단위 — 각도를 다시 조절하세요.';stage.querySelector('#armStatus').style.color='#f4c98a'}});calc();$('modalStatus').textContent=completed.servo?'NODE RESTORED':'MANIPULATOR OFFLINE';
-  }
-  function buildWirePuzzle(){
-    $('modalCategory').textContent='ENGINEERING NODE 02 / CIRCUIT ROUTING';$('modalTitle').textContent='전력 분배 — 회로를 직접 연결하기';
-    $('modalDescription').textContent='전원에서 컨트롤러와 센서로 전력을 보내야 한다. 노드를 순서대로 선택해 유효한 연결을 만들고, 두 장치가 모두 전력을 받게 하라.';
-    const stage=document.createElement('div');stage.className='puzzle-stage';stage.innerHTML='<div class="stage-label">PATCH PANEL / CLICK TWO NODES TO CONNECT</div><div class="wire-board" id="wireBoard"><button class="wire-terminal" data-node="source"><b>◉ POWER SOURCE</b><small>24V / output</small></button><button class="wire-terminal" data-node="controller"><b>▣ CONTROLLER</b><small>required input</small></button><button class="wire-terminal" data-node="sensor"><b>⌖ SENSOR BUS</b><small>required input</small></button><button class="wire-terminal" data-node="ground"><b>⏚ GROUND</b><small>return path</small></button></div><div class="wire-status" id="wireStatus">연결: 없음. 노드를 두 개씩 선택해 배선을 연결하세요.</div><div class="action-row"><button class="action-button" id="wireReset">CLEAR WIRES</button><button class="action-button primary" id="wireTest">TEST CIRCUIT ↗</button></div>';
-    $('puzzleContent').appendChild(stage);wire={from:null,links:[]};const board=stage.querySelector('#wireBoard'),status=stage.querySelector('#wireStatus');
-    board.querySelectorAll('[data-node]').forEach(b=>b.addEventListener('click',()=>{const n=b.dataset.node;if(!wire.from){wire.from=n;b.classList.add('selected');status.textContent='첫 번째 노드 선택됨: '+n.toUpperCase()+'. 연결할 다음 노드를 선택하세요.'}else if(wire.from===n){wire.from=null;board.querySelectorAll('.selected').forEach(x=>x.classList.remove('selected'));status.textContent='선택이 취소되었습니다.'}else{const key=[wire.from,n].sort().join('-');if(!wire.links.includes(key))wire.links.push(key);wire.from=null;board.querySelectorAll('.selected').forEach(x=>x.classList.remove('selected'));board.querySelectorAll('[data-node]').forEach(x=>x.classList.toggle('connected',wire.links.some(k=>k.includes(x.dataset.node))));status.textContent='연결 수: '+wire.links.length+' · 계속 배선하거나 회로를 테스트하세요.'}}));
-    stage.querySelector('#wireReset').addEventListener('click',()=>{wire={from:null,links:[]};board.querySelectorAll('button').forEach(b=>b.classList.remove('selected','connected'));status.textContent='배선이 초기화되었습니다.'});
-    stage.querySelector('#wireTest').addEventListener('click',()=>{const valid=wire.links.includes('controller-source')&&wire.links.includes('sensor-source')&&wire.links.includes('ground-source');if(valid){completeNode('power','GRID','ϟ');status.textContent='CIRCUIT STABLE — 전력 공급이 정상화되었습니다.';status.style.color='#91f3d0'}else{status.textContent='전압 경로 불완전. SOURCE→CONTROLLER, SOURCE→SENSOR, SOURCE→GROUND 연결을 확인하세요.';status.style.color='#f4c98a'}});
-    $('modalStatus').textContent=completed.power?'NODE RESTORED':'ROUTING FAULT';
-  }
-  function buildSensorPuzzle(){
-    $('modalCategory').textContent='ENGINEERING NODE 03 / SENSOR CALIBRATION';$('modalTitle').textContent='거리 센서 — 오프셋 보정하기';
-    $('modalDescription').textContent='센서의 원시 측정값에는 +0.16m의 편향이 있다. 슬라이더로 보정값을 조절해 보정 후 측정값을 기준 거리 0.68m ±0.02m 안에 맞추고 교정을 실행하라.';
-    const stage=document.createElement('div');stage.className='puzzle-stage';stage.innerHTML='<div class="stage-label">RANGE SENSOR / RAW VALUE 0.84 m</div><div class="sensor-track"><div class="sensor-band"></div><div class="sensor-needle" id="sensorNeedle"></div></div><div class="sensor-labels"><span>0.40 m</span><span>REFERENCE BAND</span><span>1.00 m</span></div><div class="range-row"><div class="range-head"><span>BIAS CORRECTION</span><b id="offsetValue">−0.00 m</b></div><input id="offsetRange" type="range" min="-30" max="10" value="0"></div><div class="engineering-readout"><div class="readout"><span>RAW VALUE</span><b>0.84 m</b></div><div class="readout"><span>CALIBRATED</span><b id="calibratedValue">0.84 m</b></div><div class="readout"><span>ERROR</span><b id="sensorError">+0.16 m</b></div></div><div class="action-row"><button class="action-button primary" id="calibrateButton">APPLY CALIBRATION ↗</button></div><div class="wire-status" id="sensorStatus">기준 거리 0.68m에 맞게 센서의 편향을 보정하세요.</div>';
-    $('puzzleContent').appendChild(stage);const range=stage.querySelector('#offsetRange');
-    function upd(){sensorOffset=+range.value/100;const val=.84+sensorOffset;stage.querySelector('#offsetValue').textContent=(sensorOffset>0?'+':'−')+Math.abs(sensorOffset).toFixed(2)+' m';stage.querySelector('#calibratedValue').textContent=val.toFixed(2)+' m';stage.querySelector('#sensorError').textContent=(val-.68>=0?'+':'−')+Math.abs(val-.68).toFixed(2)+' m';stage.querySelector('#sensorNeedle').style.left=clamp((val-.4)/.6*100,0,100)+'%';stage.querySelector('#sensorError').style.color=Math.abs(val-.68)<=.02?'#91f3d0':'#f4c98a';return val}
-    range.addEventListener('input',upd);stage.querySelector('#calibrateButton').addEventListener('click',()=>{const val=upd();if(Math.abs(val-.68)<=.02){completeNode('sensor','RANGE','⌖');stage.querySelector('#sensorStatus').textContent='CALIBRATION SAVED — 센서 오차가 허용 범위에 들어왔습니다.';stage.querySelector('#sensorStatus').style.color='#91f3d0'}else{stage.querySelector('#sensorStatus').textContent='교정 실패. 기준 0.68m ±0.02m에 들어오도록 조절하세요.';stage.querySelector('#sensorStatus').style.color='#f4c98a'}});upd();$('modalStatus').textContent=completed.sensor?'NODE RESTORED':'BIAS DETECTED';
-  }
-  function completeNode(key,label,symbol){if(!completed[key]){completed[key]=true;fragments.push({label,symbol});updateUI();showToast('FRAGMENT RECOVERED // '+label)}else{showToast('NODE ALREADY RESTORED')} }
-  function closeModal(){$('modalBackdrop').hidden=true;modalOpen=false}
-  function interact(){if(modalOpen)return;if(!nearby){showToast('주변에 상호작용 가능한 장치가 없습니다.');return}openModal(nearby.id)}
-  $('startButton').addEventListener('click',()=>{$('bootScreen').hidden=true;$('gameApp').hidden=false;running=true;updateUI();showToast('MICA PROCESS INITIALIZED');canvas.focus()});
-  document.querySelectorAll('.folder').forEach(b=>b.addEventListener('click',()=>goRoom(b.dataset.room)));
-  $('closeModal').addEventListener('click',closeModal);$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal()});
-  $('helpButton').addEventListener('click',()=>$('helpBackdrop').hidden=false);$('closeHelp').addEventListener('click',()=>$('helpBackdrop').hidden=true);$('helpOkay').addEventListener('click',()=>$('helpBackdrop').hidden=true);
-  window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();if(e.key==='Escape'){if(modalOpen)closeModal();$('helpBackdrop').hidden=true}if(e.key===' '&&!$('bootScreen').hidden)return;if(e.key===' '&&running){interact();return}keys[e.key]=true});
-  window.addEventListener('keyup',e=>{keys[e.key]=false});
-  updateUI();requestAnimationFrame(loop);
+const canvas=document.getElementById('screen'),ctx=canvas.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+const $=id=>document.getElementById(id);
+const W=320,H=180,keys=new Set();
+let started=false,dialogue=null,dialoguePos=0,toastTimer=0,frame=0,room='atrium',lastRoom='atrium',done={wire:false,arm:false,sensor:false},cableHeld=false,cableAt='floor',armAngle=0,armLocked=false,sensorOffset=0,ending=false;
+const player={x:44,y:116,dx:0,dy:0,face:1,step:0};
+const story={
+intro:[['MICA','…전원 잔량 3%. 기록 복구 모듈, 기동.'],['MICA','여기는 기억 저장소의 가장 안쪽. 그런데 방들이 전부 끊겨 있어.'],['MICA','누군가 나를 깨우려고 했던 것 같아. 먼저 전력을 되돌리자.']],
+wire:[['MICA','케이블이 바닥에 떨어져 있어. 끝을 잡고 소켓까지 직접 옮겨야 해.'],['MICA','SHIFT를 누른 채 움직이면 케이블을 끌 수 있어. 소켓 가까이 가서 놓아 봐.']],
+arm:[['MICA','서보실이 멈췄어. 팔 끝이 표시된 받침점에 닿아야 해.'],['MICA','팔 밑에 서서 SHIFT를 누른 채 방향키로 관절을 움직여. 맞으면 손을 놓아 고정해.']],
+sensor:[['MICA','센서가 복도 끝을 0.12m 더 멀게 읽고 있어.'],['MICA','측정기 옆에서 SHIFT를 누르고 좌우로 보정값을 조절해. 기준값과 일치시키자.']],
+memory:[['MICA','이건… 내 제작자의 음성 기록이야.'],['기록 07','“미카, 네가 이걸 듣는다면 정전은 사고가 아니야. 핵심 기억을 분리한 건 내가 한 일이야.”'],['기록 07','“너를 지키려고 했어. 네가 스스로 선택할 수 있도록, 마지막 복구 키는 네 안에 남겨뒀어.”']],
+end:[['MICA','기억을 전부 연결했어. 이제 알겠어. 나는 고장 난 장치가 아니라, 누군가의 약속을 이어받은 로봇이야.'],['MICA','밖으로 나가면 이 기록을 세상에 전할 수 있어.'],['SYSTEM','복구 완료. 새로운 하루를 시작합니다.']]
+};
+function startDialogue(id){dialogue=story[id]||[[ 'MICA','아직 응답이 없어.' ]];dialoguePos=0;showLine();$('dialogue').classList.remove('hidden')}
+function showLine(){const line=dialogue[dialoguePos];$('speaker').textContent=line[0];$('line').textContent=line[1];$('dialogue-index').textContent=String(dialoguePos+1).padStart(2,'0')+' / '+String(dialogue.length).padStart(2,'0')}
+function advance(){if(!dialogue)return;dialoguePos++;if(dialoguePos>=dialogue.length){dialogue=null;$('dialogue').classList.add('hidden');if(room==='memory'&&done.wire&&done.arm&&done.sensor&&!storySeen.end){storySeen.end=true;startDialogue('end')}return}showLine()}
+function toast(s){$('toast').textContent=s;$('toast').classList.remove('hidden');toastTimer=105}
+function status(){const n=Object.values(done).filter(Boolean).length;$('parts').textContent='복구 '+n+'/3';$('battery-fill').style.width=(18+n*27)+'%';$('objective').textContent=ending?'목표: 기록을 세상으로 가져가기':!done.wire?'목표: 끊어진 전력 케이블 연결':!done.arm?'목표: 서보 팔을 기준점에 고정':!done.sensor?'목표: 거리 센서 보정':'목표: 중앙 기억실로 돌아가기';$('chapter').textContent=['기동 기록 00','기억 기록 01','기억 기록 02','기억 기록 03'][n]}
+function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
+function text(s,x,y,c='#f4e9dc'){ctx.fillStyle=c;ctx.font='7px monospace';ctx.fillText(s,x,y)}
+function drawFloor(){rect(0,0,W,H,'#211b2c');rect(0,30,W,118,'#393045');rect(0,148,W,32,'#211a2b');
+for(let y=38;y<148;y+=16){rect(0,y,W,1,'#4b3b52');for(let x=(y%32===0?0:8);x<W;x+=32)rect(x,y,1,16,'#49394f')}
+rect(0,30,W,2,'#77617a');rect(0,147,W,2,'#8b6e82');
+for(let i=0;i<12;i++){const x=(i*29+13)%W,y=42+(i*17)%98;rect(x,y,1,1,'#77627e')}
+}
+function wall(x,y,w,h){rect(x,y,w,h,'#282133');rect(x,y,w,2,'#76617b');rect(x,y+h-2,w,2,'#171321');for(let a=x+5;a<x+w-4;a+=10)rect(a,y+3,1,2,'#4c3b57')}
+function glow(x,y,col='#e5c3f5'){const p=(frame%32<16?1:0);rect(x-3,y-3,7,1,col);rect(x-3,y+3,7,1,col);rect(x-3,y-2,1,5,col);rect(x+3,y-2,1,5,col);rect(x-1,y-1,3,3,p?'#fff0c9':col)}
+function drawRoom(){
+drawFloor();
+if(room==='atrium'){
+wall(14,42,52,18);wall(254,42,52,18);rect(117,39,86,10,'#54405f');rect(121,41,78,6,'#80648a');text('MEMORY ATRIUM',130,36,'#c9b5d5');
+rect(25,74,20,28,'#282037');rect(28,77,14,22,'#4d3c5c');rect(32,82,6,12,'#b5a0c8');rect(276,74,20,28,'#282037');rect(279,77,14,22,'#4d3c5c');rect(283,82,6,12,'#b5a0c8');
+if(done.wire)glow(34,88,'#a8e3bc');else{rect(44,127,70,2,'#e2bc62');rect(44,127,70,1,'#fff0b8');glow(46,128,'#ffe2a0')}
+rect(141,63,38,12,'#252033');rect(145,66,30,5,done.arm?'#91c6a2':'#5b435f');if(done.sensor)glow(160,69,'#a8e3bc');else glow(160,69);
+door(150,145,'down');text('CORE',151,139,'#e8c8f1');
+if(done.wire&&done.arm&&done.sensor){glow(160,53,'#f4d69a');text('MEMORY',143,51,'#f4d69a')}
+}else if(room==='cable'){
+wall(18,39,84,13);wall(218,39,84,13);text('POWER HALL',125,37,'#c9b5d5');
+rect(34,61,36,35,'#292037');rect(38,65,28,27,'#4d3b5a');rect(42,69,20,4,'#b49ac5');rect(46,79,12,9,'#2a2234');
+rect(244,61,36,35,'#292037');rect(248,65,28,27,'#4d3b5a');rect(252,69,20,4,'#b49ac5');rect(256,79,12,9,'#2a2234');
+rect(54,82,3,3,'#ffca83');rect(260,82,3,3,done.wire?'#a8e3bc':'#ffca83');
+if(!done.wire){if(cableAt==='floor'){for(let i=0;i<8;i++){const xx=88+i*4,yy=115+Math.sin(i*.8)*3;rect(xx,yy,4,1,'#e8bd66')}glow(100,115,'#ffe4a1')}else if(cableAt==='held'){for(let i=0;i<6;i++)rect(player.x+5+i*2,player.y+8+Math.sin(frame/4+i)*2,2,1,'#f0c978')}else{rect(62,84,195,2,'#a9e5b8');glow(260,84,'#a9e5b8')}}
+text(cableHeld?'케이블을 끌고 있어':'바닥의 빛나는 케이블을 잡아 봐',77,132,'#e3d2eb');
+}else if(room==='servo'){
+wall(18,39,82,13);wall(220,39,82,13);text('SERVO BAY',130,37,'#c9b5d5');
+rect(125,108,70,27,'#282034');rect(130,112,60,19,'#53405f');rect(136,116,48,11,'#30263b');
+rect(154,102,12,10,'#b7a0c9');rect(157,99,6,5,'#e4c4f4');
+const a=armAngle*Math.PI/180,x1=160+Math.cos(a)*28,y1=101-Math.sin(a)*28,a2=(armAngle-45)*Math.PI/180,x2=x1+Math.cos(a2)*23,y2=y1-Math.sin(a2)*23;
+rect(156,98,8,8,'#b69acb');line(160,101,x1,y1,'#d8c2eb',5);line(x1,y1,x2,y2,'#b79acb',4);rect(x2-3,y2-3,7,7,'#e8d1f5');rect(194,73,17,17,'#282034');rect(198,77,9,9,'#f0cf9a');glow(203,81,armLocked?'#a8e3bc':'#f0cf9a');text('TARGET',190,69,'#f0cf9a');text('SHIFT + ARROWS',118,141,'#d8c3e7');
+}else if(room==='sensor'){
+wall(18,39,85,13);wall(217,39,85,13);text('SENSOR CORRIDOR',111,37,'#c9b5d5');
+for(let i=0;i<5;i++){rect(35+i*50,58,26,3,'#5c4767');rect(35+i*50,61,26,2,'#80678a')}
+rect(45,83,26,34,'#292037');rect(49,87,18,26,'#5a4565');rect(54,92,8,8,'#c3a8d4');rect(54,104,8,5,'#7a5f87');
+rect(236,81,37,35,'#292037');rect(240,85,29,27,'#584463');rect(244,89,21,7,'#d4b9e3');rect(248,101,13,5,done.sensor?'#a8e3bc':'#e9bf87');glow(254,103,done.sensor?'#a8e3bc':'#f0cf9a');
+rect(77,91,151,1,'#d6ad73');for(let i=0;i<6;i++)rect(84+i*25,87,1,8,'#e3c18d');
+text('RAW 0.84m',127,122,'#e4c7e9');text('SHIFT + LEFT / RIGHT',103,137,'#d8c3e7');
+}else if(room==='memory'){
+wall(18,39,284,13);text('CORE MEMORY',130,37,'#c9b5d5');rect(123,63,74,62,'#282034');rect(128,68,64,52,'#51405f');rect(134,74,52,40,'#2d2437');
+for(let i=0;i<5;i++){rect(140+i*8,82,4,24,'#8c719e');rect(140+i*8,76,4,3,'#d5b5e6')}
+glow(160,91,'#f2d49c');text(ending?'EXIT OPEN':'MEMORY SEALED',123,137,ending?'#a8e3bc':'#e6c6ee');
+}
+drawDoorways();drawPlayer();drawPrompt();
+}
+function line(x1,y1,x2,y2,c,w){const dx=x2-x1,dy=y2-y1,n=Math.max(Math.abs(dx),Math.abs(dy));for(let i=0;i<=n;i++){const t=n?i/n:0;rect(x1+dx*t-w/2,y1+dy*t-w/2,w,w,c)}}
+function door(x,y,dir){rect(x,y,20,5,'#171321');rect(x+2,y-1,16,2,'#bba0c8')}
+function drawDoorways(){if(room!=='atrium'){rect(145,29,30,4,'#b39ac4');rect(145,148,30,4,'#b39ac4')}if(room==='atrium'){rect(148,145,24,4,'#b39ac4')}if(room==='memory'&&ending){rect(148,145,24,4,'#a8e3bc')}}
+function drawPlayer(){const x=Math.round(player.x),y=Math.round(player.y),bob=(Math.sin(player.step)*1.2)|0;
+rect(x-4,y+9,9,2,'#171321');rect(x-4,y+4+bob,3,5,'#6d526f');rect(x+1,y+4-bob,3,5,'#6d526f');
+rect(x-4,y-5+bob,8,10,'#b8a0ca');rect(x-3,y-9+bob,6,5,'#e0c4e8');rect(x-5,y-5+bob,10,3,'#a184b5');rect(x+(player.face>0?1:-3),y-3+bob,2,2,'#35243f');rect(x-2,y+2+bob,5,4,'#8f739f');rect(x-3,y+6,2,3,'#e7d2e9');rect(x+1,y+6,2,3,'#e7d2e9');if(cableHeld){rect(x+4,y+5,3,3,'#f0c978');line(x+6,y+7,x+10,y+10,'#e8bd66',1)}}
+function drawPrompt(){if(!started||dialogue)return;let s='';if(room==='cable'&&!done.wire&&Math.hypot(player.x-(cableAt==='floor'?100:260),player.y-(cableAt==='floor'?115:84))<28)s=cableHeld?'SHIFT — 케이블 연결':'SHIFT — 케이블 잡기';else if(room==='servo'&&!done.arm&&Math.hypot(player.x-160,player.y-126)<38)s=armLocked?'SHIFT — 다시 조정':'SHIFT + 방향키 — 팔 움직이기';else if(room==='sensor'&&!done.sensor&&Math.hypot(player.x-254,player.y-103)<34)s='SHIFT + 좌우 — 보정';else if(room==='atrium'&&done.wire&&done.arm&&done.sensor&&Math.hypot(player.x-160,player.y-65)<25)s='SHIFT — 기억 열기';else if(room==='memory'&&ending&&player.y>137)s='SHIFT — 나가기';if(s){rect(70,158,180,13,'#171321');rect(70,158,180,1,'#8d7599');text(s,79,167,'#f1dfb9')}}
+function moveRoom(next){lastRoom=room;room=next;if(next==='cable'){player.x=45;player.y=110;if(!storySeen.wire){storySeen.wire=true;startDialogue('wire')}}else if(next==='servo'){player.x=160;player.y=133;if(!storySeen.arm){storySeen.arm=true;startDialogue('arm')}}else if(next==='sensor'){player.x=60;player.y=124;if(!storySeen.sensor){storySeen.sensor=true;startDialogue('sensor')}}else if(next==='memory'){player.x=160;player.y=132;if(!storySeen.memory){storySeen.memory=true;startDialogue('memory')}}else{player.x=160;player.y=130} }
+const storySeen={intro:false,wire:false,arm:false,sensor:false,memory:false,end:false};
+function interact(){if(dialogue){advance();return}if(room==='cable'&&!done.wire){const d=Math.hypot(player.x-(cableAt==='floor'?100:260),player.y-(cableAt==='floor'?115:84));if(d<28){if(!cableHeld&&cableAt==='floor'){cableHeld=true;cableAt='held';toast('케이블을 잡았다');}else if(cableHeld){cableHeld=false;cableAt='socket';done.wire=true;toast('전력 회로 연결 완료');status();}return}}
+if(room==='servo'&&!done.arm&&Math.hypot(player.x-160,player.y-126)<38){if(!armLocked){armLocked=true;const tipX=160+Math.cos(armAngle*Math.PI/180)*28+Math.cos((armAngle-45)*Math.PI/180)*23;const tipY=101-Math.sin(armAngle*Math.PI/180)*28-Math.sin((armAngle-45)*Math.PI/180)*23;if(Math.hypot(tipX-203,tipY-81)<22){done.arm=true;toast('서보 팔 기준점 고정');status()}else toast('기준점에서 벗어났어. 다시 조정해 봐')}else{armLocked=false;toast('관절 잠금 해제')}return}
+if(room==='sensor'&&!done.sensor&&Math.hypot(player.x-254,player.y-103)<34){if(Math.abs(sensorOffset+0.16)<=0.02){done.sensor=true;toast('센서 보정 완료');status()}else toast('측정값이 아직 기준과 달라');return}
+if(room==='atrium'&&done.wire&&done.arm&&done.sensor&&Math.hypot(player.x-160,player.y-65)<28){moveRoom('memory');return}
+if(room==='memory'&&ending&&player.y>137){ending=false;toast('END — 기억이 이어졌다');$('objective').textContent='기록 복구 완료';return}
+
+toast('조금 더 가까이 다가가 봐')}
+function input(){if(!started||dialogue)return;let dx=0,dy=0;const up=keys.has('w')||keys.has('arrowup'),down=keys.has('s')||keys.has('arrowdown'),left=keys.has('a')||keys.has('arrowleft'),right=keys.has('d')||keys.has('arrowright');
+if(room==='servo'&&!done.arm&&keys.has('shift')&&!armLocked){if(left)armAngle=Math.max(-10,armAngle-1.5);if(right)armAngle=Math.min(90,armAngle+1.5);if(up)armAngle=Math.min(90,armAngle+1.5);if(down)armAngle=Math.max(-10,armAngle-1.5);return}
+if(room==='sensor'&&!done.sensor&&keys.has('shift')){if(left)sensorOffset=Math.max(-.3,sensorOffset-.005);if(right)sensorOffset=Math.min(.1,sensorOffset+.005);return}
+if(up)dy=-1;if(down)dy=1;if(left)dx=-1;if(right)dx=1;if(dx&&dy){dx*=.707;dy*=.707}
+player.x=Math.max(4,Math.min(316,player.x+dx*1.15));player.y=Math.max(31,Math.min(151,player.y+dy*1.15));if(dx)player.face=dx>0?1:-1;if(dx||dy)player.step+=.6;
+if(room==='atrium'&&player.x<7)moveRoom('cable');else if(room==='atrium'&&player.x>313)moveRoom('sensor');else if(room==='cable'&&player.x>311)moveRoom('atrium');else if(room==='sensor'&&player.x<8)moveRoom('atrium');else if(room==='atrium'&&player.y<34)moveRoom('servo');else if(room==='servo'&&player.y>146)moveRoom('atrium');else if(room==='memory'&&player.y>150&&ending){player.y=150}}
+function update(){frame++;input();if(toastTimer>0&&!--toastTimer)$('toast').classList.add('hidden');if(room==='sensor')$('objective').textContent=done.sensor?'목표: 중앙 기억실로 돌아가기':'목표: 보정값 '+sensorOffset.toFixed(2)+'m 조절';if(room==='servo')$('objective').textContent=done.arm?'목표: 중앙 기억실로 돌아가기':'목표: 관절 각도 '+Math.round(armAngle)+'°';if(done.wire&&done.arm&&done.sensor&&!ending)ending=true;drawRoom();requestAnimationFrame(update)}
+$('start').addEventListener('click',()=>{started=true;$('start-screen').classList.add('hidden');status();if(!storySeen.intro){storySeen.intro=true;startDialogue('intro')}});
+window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();keys.add(k);if(k===' '){if(started)interact()}if(k==='shift'&&started&&room==='servo'&&!done.arm){if(armLocked){armLocked=false}else{armLocked=false}}});
+window.addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys.delete(k);if(k==='shift'&&room==='servo'&&!done.arm){const tipX=160+Math.cos(armAngle*Math.PI/180)*28+Math.cos((armAngle-45)*Math.PI/180)*23;const tipY=101-Math.sin(armAngle*Math.PI/180)*28-Math.sin((armAngle-45)*Math.PI/180)*23;if(Math.hypot(tipX-203,tipY-81)<22){armLocked=true;done.arm=true;toast('서보 팔 기준점 고정');status()}else toast('아직 기준점에 닿지 않았어')}})
+status();drawRoom();requestAnimationFrame(update);
 })();
