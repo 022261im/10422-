@@ -5,29 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#100f20">
 <title>REBOOT — 기억 복구 기록</title>
-<link rel="stylesheet" href="./style.css?v=4">
+<link rel="stylesheet" href="./style.css?v=5">
 </head>
 <body>
 <main id="game-wrap" aria-label="REBOOT 픽셀 어드벤처 게임">
   <canvas id="screen" width="320" height="180" aria-label="게임 화면"></canvas>
   <div id="hud">
-    <div class="hud-top"><span class="brand">REBOOT <i>///</i></span><span id="chapter">기동 기록 00</span><span class="battery"><b id="battery-fill"></b></span></div>
+    <div class="hud-top"><span class="brand">기억 복구</span><span id="chapter">기동 기록 00</span><span class="battery"><b id="battery-fill"></b></span></div>
     <div class="hud-bottom"><span id="objective">목표: 주변을 살펴보자</span><span id="parts">복구 0/3</span></div>
   </div>
   <section id="dialogue" class="hidden" aria-live="polite">
     <div class="speaker"><span id="speaker">MICA</span><span id="dialogue-index">01 / 01</span></div>
-    <p id="line"></p><div class="dialogue-hint"><span class="space-key">SPACE</span><span class="next-arrow">▶</span></div>
+    <p id="line"></p><div class="dialogue-hint"><canvas class="space-key" id="space-key" width="54" height="15" aria-label="SPACE"></canvas><span class="next-arrow">▶</span></div>
   </section>
-  <div id="start-screen">
-    <div class="start-mark">R<span>·</span></div>
-    <p class="eyebrow">A SMALL PIXEL ADVENTURE</p>
-    <h1>REBOOT</h1>
-    <p class="subtitle">꺼진 기억을 다시 연결하는 이야기</p>
-    <button id="start">게임 시작 <span>↵</span></button>
-    <p class="keys">이동 WASD / 방향키　·　상호작용 SHIFT　·　대화 SPACE</p>
-  </div>
+  <div id="start-screen" aria-label="시작하려면 클릭하거나 SPACE를 누르세요"><canvas id="logo-pixel" width="112" height="20"></canvas></div>
   <div id="toast" class="hidden"></div>
 </main>
-<script src="./script.js?v=4"></script>
+<script src="./script.js?v=5"></script>
 </body>
 </html>
