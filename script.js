@@ -6,10 +6,10 @@ const W=320,H=180,keys=new Set();
 let started=false,dialogue=null,dialoguePos=0,toastTimer=0,frame=0,room='atrium',lastRoom='atrium',done={wire:false,arm:false,sensor:false},cableHeld=false,cableAt='floor',armAngle=0,armLocked=false,sensorOffset=0,ending=false;
 const player={x:44,y:116,dx:0,dy:0,face:1,step:0};
 const story={
-intro:[['MICA','…전원 잔량 3%. 기록 복구 모듈, 기동.'],['MICA','여기는 기억 저장소의 가장 안쪽. 그런데 방들이 전부 끊겨 있어.'],['MICA','누군가 나를 깨우려고 했던 것 같아. 먼저 전력을 되돌리자.']],
-wire:[['MICA','케이블이 바닥에 떨어져 있어. 끝을 잡고 소켓까지 직접 옮겨야 해.'],['MICA','SHIFT를 누른 채 움직이면 케이블을 끌 수 있어. 소켓 가까이 가서 놓아 봐.']],
-arm:[['MICA','서보실이 멈췄어. 팔 끝이 표시된 받침점에 닿아야 해.'],['MICA','팔 밑에 서서 SHIFT를 누른 채 방향키로 관절을 움직여. 맞으면 손을 놓아 고정해.']],
-sensor:[['MICA','센서가 복도 끝을 0.12m 더 멀게 읽고 있어.'],['MICA','측정기 옆에서 SHIFT를 누르고 좌우로 보정값을 조절해. 기준값과 일치시키자.']],
+intro:[['MICA','…전원 잔량 3%. 기록 복구 모듈, 기동.'],['MICA','여기는 기억 저장소야. 방마다 멈춘 장치가 있고, 빛나는 표시가 상호작용할 수 있는 곳이야.'],['MICA','먼저 바닥에 반짝이는 케이블을 찾아보자. WASD나 방향키로 움직이고, 케이블 가까이에서 SHIFT를 눌러 잡아. 잡은 채 소켓까지 끌고 가면 돼.']],
+wire:[['MICA','좋아, 전력실이야. 바닥에 노란색으로 반짝이는 케이블 끝이 보여.'],['MICA','케이블 가까이 가서 SHIFT를 눌러 잡고, 오른쪽 소켓까지 걸어가자. 소켓 근처에서 SHIFT를 놓으면 연결돼.']],
+arm:[['MICA','서보실이야. 로봇팔 끝을 오른쪽 위의 금색 표적에 맞춰야 해.'],['MICA','팔 밑으로 다가가 SHIFT를 누른 채 방향키를 눌러 각도를 조절해. 팔 끝이 표적에 가까워지면 SHIFT를 놓아 고정하자. 빗나가면 다시 SHIFT로 조정할 수 있어.']],
+sensor:[['MICA','센서 복도에 도착했어. 센서가 실제보다 0.12m 멀리 측정하고 있어.'],['MICA','센서 장치 옆에 서서 SHIFT를 누른 채 좌우 방향키로 보정값을 바꿔 보자. 화면의 보정값을 -0.16m 근처로 맞춘 다음 SHIFT를 놓으면 측정값을 확인할 수 있어.']],
 memory:[['MICA','이건… 내 제작자의 음성 기록이야.'],['기록 07','“미카, 네가 이걸 듣는다면 정전은 사고가 아니야. 핵심 기억을 분리한 건 내가 한 일이야.”'],['기록 07','“너를 지키려고 했어. 네가 스스로 선택할 수 있도록, 마지막 복구 키는 네 안에 남겨뒀어.”']],
 end:[['MICA','기억을 전부 연결했어. 이제 알겠어. 나는 고장 난 장치가 아니라, 누군가의 약속을 이어받은 로봇이야.'],['MICA','밖으로 나가면 이 기록을 세상에 전할 수 있어.'],['SYSTEM','복구 완료. 새로운 하루를 시작합니다.']]
 };
@@ -19,7 +19,7 @@ function advance(){if(!dialogue)return;dialoguePos++;if(dialoguePos>=dialogue.le
 function toast(s){$('toast').textContent=s;$('toast').classList.remove('hidden');toastTimer=105}
 function status(){const n=Object.values(done).filter(Boolean).length;$('parts').textContent='복구 '+n+'/3';$('battery-fill').style.width=(18+n*27)+'%';$('objective').textContent=ending?'목표: 기록을 세상으로 가져가기':!done.wire?'목표: 끊어진 전력 케이블 연결':!done.arm?'목표: 서보 팔을 기준점에 고정':!done.sensor?'목표: 거리 센서 보정':'목표: 중앙 기억실로 돌아가기';$('chapter').textContent=['기동 기록 00','기억 기록 01','기억 기록 02','기억 기록 03'][n]}
 function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
-function text(s,x,y,c='#f4e9dc'){ctx.fillStyle=c;ctx.font='7px monospace';ctx.fillText(s,x,y)}
+function text(s,x,y,c='#f4e9dc'){ctx.fillStyle=c;ctx.font='8px monospace';ctx.textBaseline='alphabetic';ctx.fillText(s,Math.round(x),Math.round(y))}
 function drawFloor(){rect(0,0,W,H,'#211b2c');rect(0,30,W,118,'#393045');rect(0,148,W,32,'#211a2b');
 for(let y=38;y<148;y+=16){rect(0,y,W,1,'#4b3b52');for(let x=(y%32===0?0:8);x<W;x+=32)rect(x,y,1,16,'#49394f')}
 rect(0,30,W,2,'#77617a');rect(0,147,W,2,'#8b6e82');
@@ -30,7 +30,7 @@ function glow(x,y,col='#e5c3f5'){const p=(frame%32<16?1:0);rect(x-3,y-3,7,1,col)
 function drawRoom(){
 drawFloor();
 if(room==='atrium'){
-wall(14,42,52,18);wall(254,42,52,18);rect(117,39,86,10,'#54405f');rect(121,41,78,6,'#80648a');text('MEMORY ATRIUM',130,36,'#c9b5d5');
+wall(14,42,52,18);wall(254,42,52,18);rect(117,39,86,10,'#54405f');rect(121,41,78,6,'#80648a');text('MEMORY ATRIUM',111,36,'#f0dff5');
 rect(25,74,20,28,'#282037');rect(28,77,14,22,'#4d3c5c');rect(32,82,6,12,'#b5a0c8');rect(276,74,20,28,'#282037');rect(279,77,14,22,'#4d3c5c');rect(283,82,6,12,'#b5a0c8');
 if(done.wire)glow(34,88,'#a8e3bc');else{rect(44,127,70,2,'#e2bc62');rect(44,127,70,1,'#fff0b8');glow(46,128,'#ffe2a0')}
 rect(141,63,38,12,'#252033');rect(145,66,30,5,done.arm?'#91c6a2':'#5b435f');if(done.sensor)glow(160,69,'#a8e3bc');else glow(160,69);
