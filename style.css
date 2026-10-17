@@ -2785,3 +2785,26 @@ button {
   pointer-events:
     none !important;
 }
+
+/* ROBOT ARM ENGINEERING PUZZLE */
+.arm-panel{left:50%;top:52%;width:min(520px,calc(100vw - 36px));max-height:72vh;overflow-y:auto;transform:translate(-50%,-42%);padding:18px;border:2px solid #66536a;background:linear-gradient(180deg,rgba(31,23,35,.98),rgba(8,7,10,.98));box-shadow:0 0 0 5px rgba(4,4,6,.6),0 12px 50px rgba(0,0,0,.55);z-index:120}
+.arm-panel>strong{display:block;color:var(--accent);font-size:12px;letter-spacing:1.2px}
+.arm-panel>span{display:block;color:var(--muted);font-size:10px;margin-top:8px;line-height:1.6}
+.arm-readouts{display:flex;justify-content:space-between;gap:8px;margin:14px 0 8px;font-size:10px;color:var(--muted)}
+.arm-readouts b,.arm-control b{color:var(--text)}
+.arm-visual{height:190px;position:relative;overflow:hidden;border:1px solid var(--line);margin:10px 0 14px;background:linear-gradient(rgba(133,99,147,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(133,99,147,.07) 1px,transparent 1px),#0c090f;background-size:20px 20px}
+.arm-origin{position:absolute;left:38px;bottom:28px;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px #b59a72}
+.arm-link-one{position:absolute;left:45px;bottom:34px;width:80px;height:7px;background:#a68b6b;transform-origin:0 50%;border:1px solid #e0c7a3}
+.arm-joint{position:absolute;right:-6px;top:-6px;width:17px;height:17px;border:3px solid #d7c2a2;border-radius:50%;background:#3b2b3f}
+.arm-link-two{position:absolute;left:78px;top:0;width:65px;height:6px;background:#82759a;border:1px solid #c0b2d6;transform-origin:0 50%}
+.arm-target{position:absolute;left:169px;bottom:97px;width:15px;height:15px;border:2px dashed #9db49e;border-radius:50%;box-shadow:0 0 13px rgba(157,180,158,.4)}
+.arm-target span{position:absolute;left:18px;top:-3px;font-size:8px;color:var(--good);letter-spacing:1px}
+.arm-control{display:block;margin:10px 0;color:var(--muted);font-size:10px}
+.arm-control span{display:flex;justify-content:space-between;margin-bottom:6px}
+.arm-control input{display:block;width:100%;accent-color:var(--accent);cursor:pointer}
+.arm-status{padding:9px;margin:12px 0;background:#171019;border-left:3px solid var(--bad);color:var(--muted);font-size:10px;line-height:1.5}
+.arm-status.arm-ready{border-left-color:var(--good);color:var(--good)}
+.arm-panel .sequence-actions{display:flex;gap:8px}
+.arm-panel button{flex:1;min-height:34px;padding:7px;border:1px solid var(--line-light);background:#211827;color:var(--text);cursor:pointer;font-size:10px}
+.arm-panel button:hover{background:#34243d;border-color:var(--accent)}
+@media(max-width:600px){.arm-panel{top:55%;padding:12px}.arm-visual{height:150px}.arm-readouts{font-size:9px}}
