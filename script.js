@@ -1,111 +1,96 @@
 (() => {
-const canvas=document.getElementById('screen'),ctx=canvas.getContext('2d');
-ctx.imageSmoothingEnabled=false;
-const $=id=>document.getElementById(id);
-const W=320,H=180,keys=new Set();
-let started=false,dialogue=null,dialoguePos=0,toastTimer=0,frame=0,room='atrium',lastRoom='atrium',done={wire:false,arm:false,sensor:false},cableHeld=false,cableAt='floor',armAngle=0,armLocked=false,sensorOffset=0,ending=false;
-const player={x:44,y:116,dx:0,dy:0,face:1,step:0};
-const story={
-intro:[['MICA','…전원 잔량 3%. 기록 복구 모듈, 기동.'],['MICA','여기는 기억 저장소야. 방마다 멈춘 장치가 있고, 빛나는 표시가 상호작용할 수 있는 곳이야.'],['MICA','먼저 **노란색 케이블 끝**을 찾아보자. **WASD / 방향키**로 다가가서 **SHIFT를 누른 채** 오른쪽 소켓까지 끌고 가면 돼.']],
-wire:[['MICA','좋아, 전력실이야. 바닥에 노란색으로 반짝이는 케이블 끝이 보여.'],['MICA','**케이블 끝**에 다가가 **SHIFT를 누른 채** 오른쪽 소켓까지 이동하자. 소켓 가까이에서 SHIFT를 놓으면 연결돼!']],
-arm:[['MICA','서보실이야. 로봇팔 끝을 오른쪽 위의 금색 표적에 맞춰야 해.'],['MICA','팔 밑으로 다가가 SHIFT를 누른 채 방향키를 눌러 각도를 조절해. 팔 끝이 표적에 가까워지면 SHIFT를 놓아 고정하자. 빗나가면 다시 SHIFT로 조정할 수 있어.']],
-sensor:[['MICA','센서 복도에 도착했어. 센서가 실제보다 0.12m 멀리 측정하고 있어.'],['MICA','센서 옆에서 **SHIFT + 좌우 방향키**로 보정값을 조절해. 목표는 **-0.16m**야. 값을 맞춘 뒤 SHIFT를 놓으면 복구돼!']],
-memory:[['MICA','이건… 내 제작자의 음성 기록이야.'],['기록 07','“미카, 네가 이걸 듣는다면 정전은 사고가 아니야. 핵심 기억을 분리한 건 내가 한 일이야.”'],['기록 07','“너를 지키려고 했어. 네가 스스로 선택할 수 있도록, 마지막 복구 키는 네 안에 남겨뒀어.”']],
-end:[['MICA','기억을 전부 연결했어. 이제 알겠어. 나는 고장 난 장치가 아니라, 누군가의 약속을 이어받은 로봇이야.'],['MICA','밖으로 나가면 이 기록을 세상에 전할 수 있어.'],['SYSTEM','복구 완료. 새로운 하루를 시작합니다.']]
+const canvas = document.getElementById('screen');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+const $ = id => document.getElementById(id);
+const W = 320, H = 180, keys = new Set();
+let started = false, frame = 0, toastTimer = 0, toastText = '';
+let stage = 0, carried = null, restored = { light: false, belt: false, floor: false };
+let dialogue = null, dialoguePos = 0;
+const player = { x: 28, y: 126, vx: 0, vy: 0, w: 8, h: 15, face: 1, grounded: false, step: 0 };
+const world = {
+  light: { name:'OPTICS LAB', title:'광학 장치', desc:'고장 난 반사판을 복구해 빛을 수신기로 보내자.', platforms:[{x:0,y:151,w:320,h:29},{x:65,y:125,w:42,h:6},{x:136,y:106,w:42,h:6},{x:222,y:126,w:38,h:6}], exit:{x:298,y:126,w:14,h:25}},
+  belt: { name:'SORTING BAY', title:'자동 분류 라인', desc:'벨트 위의 잘못 분류된 상자를 올바른 투입구로 옮기자.', platforms:[{x:0,y:151,w:320,h:29},{x:74,y:124,w:45,h:6},{x:201,y:124,w:43,h:6}], exit:{x:298,y:126,w:14,h:25}},
+  floor: { name:'LOAD TEST CHAMBER', title:'하중 시험 구역', desc:'바닥 지지대를 복구해 약한 발판을 안전하게 건너자.', platforms:[{x:0,y:151,w:82,h:29},{x:124,y:151,w:66,h:29},{x:232,y:151,w:88,h:29},{x:25,y:124,w:35,h:6},{x:253,y:124,w:34,h:6}], exit:{x:298,y:126,w:14,h:25}}
 };
-function startDialogue(id){dialogue=story[id]||[[ 'MICA','아직 응답이 없어.' ]];dialoguePos=0;showLine();$('dialogue').classList.remove('hidden')}
-function showLine(){const line=dialogue[dialoguePos];const safe=line[1].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');$('speaker').textContent=({'MICA':'미카','SYSTEM':'시스템'})[line[0]]||line[0];$('line').innerHTML=safe.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');$('dialogue-index').textContent=String(dialoguePos+1).padStart(2,'0')+' / '+String(dialogue.length).padStart(2,'0')}
-function advance(){if(!dialogue)return;dialoguePos++;if(dialoguePos>=dialogue.length){dialogue=null;$('dialogue').classList.add('hidden');if(room==='memory'&&done.wire&&done.arm&&done.sensor&&!storySeen.end){storySeen.end=true;startDialogue('end')}return}showLine()}
-function toast(s){$('toast').textContent=s;$('toast').classList.remove('hidden');toastTimer=105}
-function status(){drawHudPixel()}function drawHudPixel(){const cv=$('hud-pixel');if(!cv)return;const c=cv.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,320,28);c.fillStyle='#241b30';c.fillRect(0,0,320,28);c.fillStyle='#d9c0e5';c.font='7px monospace';c.fillText('기억 복구',7,9);const goal=ending?'목표: 중앙 기록을 복구하자':!done.wire?'목표: 끊어진 케이블 연결':!done.arm?'목표: 로봇팔을 표적에 맞추기':!done.sensor?'목표: 거리 센서 보정':'목표: 중앙 기억실로 돌아가기';c.fillStyle='#f0dfb9';c.fillText(goal,7,19);const n=Object.values(done).filter(Boolean).length;c.fillStyle='#594565';c.fillRect(248,6,64,7);c.fillStyle='#171321';c.fillRect(249,7,62,5);c.fillStyle='#e5c3f5';c.fillRect(249,7,Math.round(62*n/3),5);c.fillStyle='#d9c0e5';c.font='6px monospace';c.fillText('복구',248,25);c.fillText(n+'/3',294,25)}
+const dialogues = [
+  [['MICA','복구 모듈 기동. 이번엔 직접 움직이며 장치를 복구해야 해.']],
+  [['MICA','광학 실험실이야. 위쪽 발판을 점프해서 건너가 봐.'],['MICA','깨진 반사판 근처에서 E를 눌러 복구하면 빛이 다시 수신기로 향할 거야.']],
+  [['MICA','자동 분류 라인이 멈췄어. 벨트 위에 잘못 분류된 상자가 있어.'],['MICA','상자 옆에서 E를 눌러 들고, 오른쪽의 파란 투입구까지 옮긴 다음 다시 E를 눌러 내려놔.']],
+  [['MICA','하중 시험 구역이야. 가운데 바닥이 무너져 있어.'],['MICA','느슨해진 지지대를 찾아 E로 들고, 끊어진 바닥 틈으로 가져가 E를 눌러 설치해. 그 뒤에 건너가면 돼.']]
+];
+function say(lines){dialogue=lines;dialoguePos=0;showLine();$('dialogue').classList.remove('hidden')}
+function showLine(){const a=dialogue[dialoguePos];$('speaker').textContent=a[0];$('line').textContent=a[1];$('dialogue-index').textContent=String(dialoguePos+1).padStart(2,'0')+' / '+String(dialogue.length).padStart(2,'0')}
+function advance(){if(!dialogue)return;if(++dialoguePos>=dialogue.length){dialogue=null;$('dialogue').classList.add('hidden');return}showLine()}
+function toast(s){toastText=s;$('toast').textContent=s;$('toast').classList.remove('hidden');toastTimer=100}
+function setStage(n){stage=Math.max(0,Math.min(2,n));player.x=stage===0?20:stage===1?20:18;player.y=126;player.vx=player.vy=0;carried=null;drawHud();if(!restored[['light','belt','floor'][stage]])say(dialogues[stage+1]);}
+function drawHud(){const c=$('hud-pixel')?.getContext('2d');if(!c)return;c.imageSmoothingEnabled=false;c.clearRect(0,0,320,28);c.fillStyle='#211a2b';c.fillRect(0,0,320,28);c.fillStyle='#f2d5a0';c.font='7px monospace';c.fillText('REBOOT  /  '+world[['light','belt','floor'][stage]].name,7,10);c.fillStyle='#e5d6e8';c.fillText(restored.light&&restored.belt&&restored.floor?'시스템 복구 완료':world[['light','belt','floor'][stage]].desc,7,21);for(let i=0;i<3;i++){c.fillStyle=restored[['light','belt','floor'][i]]?'#9ee2b0':'#66516f';c.fillRect(277+i*12,5,8,5);c.fillStyle='#e5c6f1';c.fillRect(277+i*12,12,8,1)}}
 function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
-function text(s,x,y,c='#f4e9dc'){
-  ctx.fillStyle=c;ctx.textBaseline='alphabetic';
-  const glyph={
-  'A':'010/101/111/101/101','B':'110/101/110/101/110','C':'011/100/100/100/011','D':'110/101/101/101/110','E':'111/100/110/100/111','F':'111/100/110/100/100','G':'011/100/101/101/011','H':'101/101/111/101/101','I':'111/010/010/010/111','J':'001/001/001/101/010','K':'101/101/110/101/101','L':'100/100/100/100/111','M':'101/111/111/101/101','N':'101/111/111/111/101','O':'010/101/101/101/010','P':'110/101/110/100/100','Q':'010/101/101/111/011','R':'110/101/110/101/101','S':'011/100/010/001/110','T':'111/010/010/010/010','U':'101/101/101/101/111','V':'101/101/101/101/010','W':'101/101/111/111/101','X':'101/101/010/101/101','Y':'101/101/010/010/010','Z':'111/001/010/100/111',
-  '0':'111/101/101/101/111','1':'010/110/010/010/111','2':'110/001/010/100/111','3':'110/001/010/001/110','4':'101/101/111/001/001','5':'111/100/110/001/110','6':'011/100/110/101/010','7':'111/001/010/010/010','8':'010/101/010/101/010','9':'010/101/011/001/110',':':'000/010/000/010/000','/':'001/001/010/100/100','-':'000/000/111/000/000'};
-  if([...s].every(ch=>ch.charCodeAt(0)>=32&&ch.charCodeAt(0)<=126)){
-    let px=Math.round(x);
-    for(const ch of s.toUpperCase()){
-      if(ch===' '){px+=4;continue}
-      const rows=glyph[ch];
-      if(rows){rows.split('/').forEach((row,yy)=>{for(let xx=0;xx<3;xx++)if(row[xx]==='1')rect(px+xx,Math.round(y)-5+yy,1,1,c)});px+=4}
-      else px+=4;
-    }
-    return;
-  }
-  ctx.font='8px monospace';ctx.fillText(s,Math.round(x),Math.round(y));
+function line(x1,y1,x2,y2,c,w=1){const n=Math.max(Math.abs(x2-x1),Math.abs(y2-y1));for(let i=0;i<=n;i++){const t=n?i/n:0;rect(x1+(x2-x1)*t,y1+(y2-y1)*t,w,w,c)}}
+function glow(x,y,c='#f3d48d'){const p=frame%24<12;rect(x-4,y-1,9,3,c);rect(x-1,y-4,3,9,c);rect(x-1,y-1,3,3,p?'#fff6d9':c)}
+function background(){const id=['light','belt','floor'][stage];rect(0,0,W,H,'#101d2a');rect(0,0,W,151,stage===0?'#173345':stage===1?'#263744':'#292b3c');
+ // deep industrial wall panels
+ for(let x=0;x<W;x+=32){rect(x,27,1,120,'#3a5662');rect(x+2,31,26,1,'#294552');rect(x+3,33,1,22,'#223d49');rect(x+24,32,1,25,'#345260')}
+ for(let y=42;y<145;y+=25){rect(0,y,W,1,'#284653');rect(0,y+1,W,1,'#1a3442')}
+ // upper pipes and glowing indicators
+ rect(0,22,W,4,'#17232e');rect(0,25,W,2,'#65717a');rect(12,18,64,5,'#46525c');rect(12,18,64,2,'#84949b');rect(245,17,64,6,'#3c4d58');rect(245,17,64,2,'#788d95');
+ for(let i=0;i<6;i++){rect(16+i*12,8,5,3,i%2?'#6da8a7':'#c1a875');rect(17+i*12,9,2,1,'#e8e4c5')}
+ // background machinery silhouettes
+ rect(8,73,36,66,'#142633');rect(11,77,30,57,'#2b424e');rect(15,82,22,3,'#60747a');rect(15,91,22,2,'#49636d');rect(15,102,22,22,'#1b303c');
+ rect(273,69,34,70,'#14232e');rect(277,73,26,61,'#334a55');rect(281,80,18,4,'#78878a');rect(281,91,18,2,'#4b6870');rect(281,101,18,20,'#1c303b');
+ // floor and hazard stripe
+ rect(0,145,W,6,'#4a5058');rect(0,145,W,2,'#9a9b8f');rect(0,151,W,29,'#202530');for(let x=0;x<W;x+=16){rect(x,153,8,2,'#353d48');rect(x+8,153,8,2,'#252d39');rect(x,175,1,5,'#4b5360')}
+ if(stage===0)drawOptics();if(stage===1)drawConveyor();if(stage===2)drawLoadRoom();
 }
-const PIXEL_GLYPHS={'A':'010/101/111/101/101','B':'110/101/110/101/110','C':'011/100/100/100/011','D':'110/101/101/101/110','E':'111/100/110/100/111','F':'111/100/110/100/100','G':'011/100/101/101/011','H':'101/101/111/101/101','I':'111/010/010/010/111','J':'001/001/001/101/010','K':'101/101/110/101/101','L':'100/100/100/100/111','M':'101/111/111/101/101','N':'101/111/111/111/101','O':'010/101/101/101/010','P':'110/101/110/100/100','Q':'010/101/101/111/011','R':'110/101/110/101/101','S':'011/100/010/001/110','T':'111/010/010/010/010','U':'101/101/101/101/111','V':'101/101/101/101/010','W':'101/101/111/111/101','X':'101/101/010/101/101','Y':'101/101/010/010/010','Z':'111/001/010/100/111','0':'111/101/101/101/111','1':'010/110/010/010/111','2':'110/001/010/100/111','3':'110/001/010/001/110','4':'101/101/111/001/001','5':'111/100/110/001/110','6':'011/100/110/101/010','7':'111/001/010/010/010','8':'010/101/010/101/010','9':'101/101/011/001/110'};
-function drawBitmapLabel(canvasId,label,scale=1,color='#f2e6df'){const canvas=$(canvasId);if(!canvas)return;const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,canvas.width,canvas.height);const width=label.length*4*scale;let x=Math.max(0,Math.floor((canvas.width-width)/2));const yo=Math.max(0,Math.floor((canvas.height-5*scale)/2));for(const ch of label){if(ch===' '){x+=4*scale;continue}const rows=PIXEL_GLYPHS[ch];if(rows)rows.split('/').forEach((row,y)=>{for(let xx=0;xx<3;xx++)if(row[xx]==='1'){c.fillStyle=color;c.fillRect(x+xx*scale,yo+y*scale,scale,scale)}});x+=4*scale}}
-function drawLogo(){drawBitmapLabel('logo-pixel','REBOOT',2,'#f2e6df');drawBitmapLabel('space-key','SPACE',1,'#24172e')}
-function drawFloor(){rect(0,0,W,H,'#211b2c');rect(0,30,W,118,'#393045');rect(0,148,W,32,'#211a2b');
-for(let y=38;y<148;y+=16){rect(0,y,W,1,'#4b3b52');for(let x=(y%32===0?0:8);x<W;x+=32)rect(x,y,1,16,'#49394f')}
-rect(0,30,W,2,'#77617a');rect(0,147,W,2,'#8b6e82');
-for(let i=0;i<12;i++){const x=(i*29+13)%W,y=42+(i*17)%98;rect(x,y,1,1,'#77627e')}
+function drawOptics(){rect(38,57,62,8,'#263641');rect(42,60,54,3,'#506875');rect(245,48,45,7,'#253b47');rect(249,51,37,2,'#5c777f');
+ // laser emitter and receiver
+ rect(25,111,22,25,'#24343d');rect(28,114,16,18,'#59656a');rect(31,119,10,7,restored.light?'#9ce7bd':'#b9d9e0');rect(30,117,12,2,'#b8d7dc');
+ rect(270,81,25,26,'#24343d');rect(274,85,17,18,'#435964');rect(277,89,11,9,restored.light?'#a8e8b9':'#c17e71');rect(278,91,9,5,'#e4cfa3');
+ // broken mirror
+ rect(158,75,12,19,'#2b303b');rect(160,77,8,15,restored.light?'#9ce7bd':'#9bbac6');if(!restored.light){line(161,79,167,84,'#f1e9ce',1);line(164,85,161,89,'#e8c58d',1);glow(164,73,'#e9cf8b')}
+ if(restored.light){line(39,122,164,84,'#f6d98a',1);line(164,84,281,95,'#f6d98a',1);glow(164,84,'#f7e4a3');glow(281,95,'#a4e7b8')}else{line(39,122,159,85,'#cf8c78',1);glow(164,73,'#e9cf8b')}
+ text('MIRROR',148,70,'#e5d7d3');text('RX',279,78,'#b7dce1');
 }
-function wall(x,y,w,h){rect(x,y,w,h,'#282133');rect(x,y,w,2,'#76617b');rect(x,y+h-2,w,2,'#171321');for(let a=x+5;a<x+w-4;a+=10)rect(a,y+3,1,2,'#4c3b57')}
-function glow(x,y,col='#e5c3f5'){const p=(Math.floor(frame/18)%2),q=(Math.floor(frame/12)%2);rect(x-3,y-3,7,1,col);rect(x-3,y+3,7,1,col);rect(x-3,y-2,1,5,col);rect(x+3,y-2,1,5,col);rect(x-1,y-1,3,3,p?'#fff0c9':col);if(q){rect(x-6,y-5,2,2,'#fff0c9');rect(x+5,y-6,2,2,col);rect(x-7,y+2,2,2,col);rect(x+5,y+4,2,2,'#fff0c9')}if(Math.floor(frame/24)%2===0){rect(x-1,y-7,2,2,'#fff0c9');rect(x+6,y-1,2,2,'#fff0c9')}}
-function drawRoom(){
-drawFloor();
-if(room==='atrium'){
-wall(14,42,52,18);wall(254,42,52,18);rect(117,39,86,10,'#54405f');rect(121,41,78,6,'#80648a');text('MEMORY ATRIUM',111,36,'#f0dff5');
-rect(25,74,20,28,'#282037');rect(28,77,14,22,'#4d3c5c');rect(32,82,6,12,'#b5a0c8');rect(276,74,20,28,'#282037');rect(279,77,14,22,'#4d3c5c');rect(283,82,6,12,'#b5a0c8');
-if(done.wire)glow(34,88,'#a8e3bc');else{rect(44,127,70,2,'#e2bc62');rect(44,127,70,1,'#fff0b8');glow(46,128,'#ffe2a0')}
-rect(141,63,38,12,'#252033');rect(145,66,30,5,done.arm?'#91c6a2':'#5b435f');if(done.sensor)glow(160,69,'#a8e3bc');else glow(160,69);
-door(150,145,'down');text('CORE',151,139,'#e8c8f1');
-if(done.wire&&done.arm&&done.sensor){glow(160,53,'#f4d69a');text('MEMORY',143,51,'#f4d69a')}
-}else if(room==='cable'){
-wall(18,39,84,13);wall(218,39,84,13);text('POWER HALL',125,37,'#c9b5d5');
-rect(34,61,36,35,'#292037');rect(38,65,28,27,'#4d3b5a');rect(42,69,20,4,'#b49ac5');rect(46,79,12,9,'#2a2234');
-rect(244,61,36,35,'#292037');rect(248,65,28,27,'#4d3b5a');rect(252,69,20,4,'#b49ac5');rect(256,79,12,9,'#2a2234');
-rect(54,82,3,3,'#ffca83');rect(260,82,3,3,done.wire?'#a8e3bc':'#ffca83');
-if(!done.wire){if(cableAt==='floor'){for(let i=0;i<8;i++){const xx=88+i*4,yy=115+Math.sin(i*.8)*3;rect(xx,yy,4,1,'#e8bd66')}glow(100,115,'#ffe4a1');glow(94,115,'#f0cf9a')}else if(cableAt==='held'){line(player.x+5,player.y+7,player.x+10,player.y+10,'#fff0b8',2);for(let i=0;i<8;i++){const t=i/7;const xx=player.x+9+t*7,yy=player.y+10+Math.sin(frame/3+i)*2;rect(xx,yy,2,2,i%2?'#f0c978':'#fff0b8')}glow(player.x+12,player.y+10,'#fff0b8');glow(260,84,'#ffe4a1')}else{rect(62,84,195,2,'#a9e5b8');glow(260,84,'#a9e5b8')}}
-text(cableHeld?'E를 눌러 소켓에 연결':'케이블 끝에서 E를 눌러 잡기',56,132,cableHeld?'#fff0b8':'#e3d2eb');
-}else if(room==='servo'){
-wall(18,39,82,13);wall(220,39,82,13);text('SERVO BAY',130,37,'#c9b5d5');
-rect(125,108,70,27,'#282034');rect(130,112,60,19,'#53405f');rect(136,116,48,11,'#30263b');
-rect(154,102,12,10,'#b7a0c9');rect(157,99,6,5,'#e4c4f4');
-const a=armAngle*Math.PI/180,x1=160+Math.cos(a)*28,y1=101-Math.sin(a)*28,a2=(armAngle-45)*Math.PI/180,x2=x1+Math.cos(a2)*23,y2=y1-Math.sin(a2)*23;
-rect(156,98,8,8,'#b69acb');line(160,101,x1,y1,'#d8c2eb',5);line(x1,y1,x2,y2,'#b79acb',4);rect(x2-3,y2-3,7,7,'#e8d1f5');rect(194,73,17,17,'#282034');rect(198,77,9,9,'#f0cf9a');glow(203,81,armLocked?'#a8e3bc':'#f0cf9a');text('TARGET',190,69,'#f0cf9a');text('SHIFT + ARROWS',118,141,'#d8c3e7');
-}else if(room==='sensor'){
-wall(18,39,85,13);wall(217,39,85,13);text('SENSOR CORRIDOR',111,37,'#c9b5d5');
-for(let i=0;i<5;i++){rect(35+i*50,58,26,3,'#5c4767');rect(35+i*50,61,26,2,'#80678a')}
-rect(45,83,26,34,'#292037');rect(49,87,18,26,'#5a4565');rect(54,92,8,8,'#c3a8d4');rect(54,104,8,5,'#7a5f87');
-rect(236,81,37,35,'#292037');rect(240,85,29,27,'#584463');rect(244,89,21,7,'#d4b9e3');rect(248,101,13,5,done.sensor?'#a8e3bc':'#e9bf87');glow(254,103,done.sensor?'#a8e3bc':'#f0cf9a');
-rect(77,91,151,1,'#d6ad73');for(let i=0;i<6;i++)rect(84+i*25,87,1,8,'#e3c18d');
-text('RAW 0.84m',127,122,'#e4c7e9');text('SHIFT + LEFT / RIGHT',103,137,'#d8c3e7');
-}else if(room==='memory'){
-wall(18,39,284,13);text('CORE MEMORY',130,37,'#c9b5d5');rect(123,63,74,62,'#282034');rect(128,68,64,52,'#51405f');rect(134,74,52,40,'#2d2437');
-for(let i=0;i<5;i++){rect(140+i*8,82,4,24,'#8c719e');rect(140+i*8,76,4,3,'#d5b5e6')}
-glow(160,91,'#f2d49c');text(ending?'EXIT OPEN':'MEMORY SEALED',123,137,ending?'#a8e3bc':'#e6c6ee');
+function drawConveyor(){// belt
+ rect(25,117,270,17,'#1b252e');rect(28,120,264,8,'#67747b');rect(28,128,264,3,'#2d3942');for(let x=30;x<290;x+=12){rect(x,121,6,6,'#3a4c56');rect(x+6,122,2,4,'#879194')}
+ rect(42,88,42,27,'#293943');rect(46,92,34,19,'#52616a');rect(50,96,26,3,'#91a1a1');rect(50,103,26,3,'#384e5a');
+ rect(240,78,43,37,'#24313b');rect(244,82,35,29,'#4c626c');rect(249,87,25,15,restored.belt?'#8ed7aa':'#c2a66e');rect(249,105,25,3,'#1c2932');text('SORT',247,74,'#e7d9ba');
+ // box
+ const bx=restored.belt?95:carried==='box'?Math.round(player.x+player.face*9):154+Math.sin(frame/28)*12;
+ const by=carried==='box'?Math.round(player.y-13):103;
+ rect(bx,by,13,13,'#8c6948');rect(bx+2,by+2,9,9,'#c5a16b');rect(bx+5,by+2,2,9,'#6f523c');rect(bx+2,by+5,9,2,'#6f523c');
+ if(!restored.belt)glow(bx+6,by-3,'#e8cf8b');else{rect(91,101,20,3,'#8ed7aa');glow(101,98,'#9ce7b2')}
+ rect(110,83,6,25,'#263740');rect(112,87,2,17,'#d9a77b');rect(202,84,6,24,'#263740');rect(204,88,2,16,'#d9a77b');text('BELT',132,113,'#d5e0df');
 }
-drawDoorways();drawPlayer();drawPrompt();
+function drawLoadRoom(){// gap and beams
+ rect(82,145,42,35,'#101a25');rect(190,145,42,35,'#101a25');rect(82,145,42,3,'#a76d68');rect(190,145,42,3,'#a76d68');
+ for(let x=85;x<121;x+=8){rect(x,150,4,24,'#35424c');rect(x+1,152,1,18,'#62717a')}for(let x=193;x<229;x+=8){rect(x,150,4,24,'#35424c');rect(x+1,152,1,18,'#62717a')}
+ rect(39,111,32,10,'#27343f');rect(43,114,24,4,'#67767c');rect(250,111,32,10,'#27343f');rect(254,114,24,4,'#67767c');
+ // loose support beam near start
+ if(!restored.floor&&carried!=='beam'){rect(51,132,23,5,'#8a7658');rect(53,133,19,2,'#c5b18a');glow(62,129,'#e8cf8b')}
+ if(carried==='beam'){rect(player.x-5,player.y-7,18,4,'#bda77b');rect(player.x-4,player.y-6,16,2,'#e2d0a1')}
+ if(restored.floor){rect(82,145,42,6,'#6e857c');rect(190,145,42,6,'#6e857c');rect(83,146,40,2,'#b4d1ad');rect(191,146,40,2,'#b4d1ad');for(let x=86;x<121;x+=8)rect(x,152,3,21,'#62776e');for(let x=194;x<229;x+=8)rect(x,152,3,21,'#62776e');glow(103,141,'#9ce7b2');glow(211,141,'#9ce7b2')}
+ text('LOAD TEST',128,55,'#d4c8df');text('MAX LOAD',133,69,'#c1b6c6');rect(134,74,51,5,'#17232e');rect(135,75,restored.floor?48:21,3,restored.floor?'#8ed7aa':'#d78d77');
 }
-function line(x1,y1,x2,y2,c,w){const dx=x2-x1,dy=y2-y1,n=Math.max(Math.abs(dx),Math.abs(dy));for(let i=0;i<=n;i++){const t=n?i/n:0;rect(x1+dx*t-w/2,y1+dy*t-w/2,w,w,c)}}
-function door(x,y,dir){rect(x,y,20,5,'#171321');rect(x+2,y-1,16,2,'#bba0c8')}
-function drawDoorways(){if(room!=='atrium'){rect(145,29,30,4,'#b39ac4');rect(145,148,30,4,'#b39ac4')}if(room==='atrium'){rect(148,145,24,4,'#b39ac4')}if(room==='memory'&&ending){rect(148,145,24,4,'#a8e3bc')}}
-function drawPlayer(){const x=Math.round(player.x),y=Math.round(player.y),bob=(Math.sin(player.step)*1.2)|0;
-rect(x-4,y+9,9,2,'#171321');rect(x-4,y+4+bob,3,5,'#6d526f');rect(x+1,y+4-bob,3,5,'#6d526f');
-rect(x-4,y-5+bob,8,10,'#b8a0ca');rect(x-3,y-9+bob,6,5,'#e0c4e8');rect(x-5,y-5+bob,10,3,'#a184b5');rect(x+(player.face>0?1:-3),y-3+bob,2,2,'#35243f');rect(x-2,y+2+bob,5,4,'#8f739f');rect(x-3,y+6,2,3,'#e7d2e9');rect(x+1,y+6,2,3,'#e7d2e9');if(cableHeld){rect(x+4,y+5,3,3,'#f0c978');line(x+6,y+7,x+10,y+10,'#e8bd66',1)}}
-function drawPrompt(){if(!started||dialogue)return;let s='';if(room==='cable'&&!done.wire&&Math.hypot(player.x-(cableAt==='floor'?100:260),player.y-(cableAt==='floor'?115:84))<72)s=cableHeld?'SHIFT — 케이블 연결':'SHIFT — 케이블 잡기';else if(room==='servo'&&!done.arm&&Math.hypot(player.x-160,player.y-126)<38)s=armLocked?'SHIFT — 다시 조정':'SHIFT + 방향키 — 팔 움직이기';else if(room==='sensor'&&!done.sensor&&Math.hypot(player.x-254,player.y-103)<34)s='SHIFT + 좌우 — 보정';else if(room==='atrium'&&done.wire&&done.arm&&done.sensor&&Math.hypot(player.x-160,player.y-65)<25)s='SHIFT — 기억 열기';else if(room==='memory'&&ending&&player.y>137)s='SHIFT — 나가기';if(s){rect(70,158,180,13,'#171321');rect(70,158,180,1,'#8d7599');text(s,79,167,'#f1dfb9')}}
-function moveRoom(next){lastRoom=room;room=next;if(next==='cable'){player.x=45;player.y=110;if(!storySeen.wire){storySeen.wire=true;startDialogue('wire')}}else if(next==='servo'){player.x=160;player.y=133;if(!storySeen.arm){storySeen.arm=true;startDialogue('arm')}}else if(next==='sensor'){player.x=60;player.y=124;if(!storySeen.sensor){storySeen.sensor=true;startDialogue('sensor')}}else if(next==='memory'){player.x=160;player.y=132;if(!storySeen.memory){storySeen.memory=true;startDialogue('memory')}}else{player.x=160;player.y=130} }
-const storySeen={intro:false,wire:false,arm:false,sensor:false,memory:false,end:false};
-function interact(){if(dialogue){advance();return}if(room==='cable'&&!done.wire){const d=Math.hypot(player.x-100,player.y-115);if(!cableHeld&&cableAt==='floor'&&d<80){cableHeld=true;cableAt='held';toast('케이블을 잡았어! 오른쪽 소켓까지 이동한 뒤 E를 눌러.');return}if(cableHeld){if(player.x>150&&player.y<155){cableHeld=false;cableAt='socket';done.wire=true;toast('전력 케이블 연결 완료!');status()}else toast('오른쪽 소켓 가까이 이동한 뒤 E를 눌러!');return}toast('노란색 케이블 끝에 가까이 가서 E를 눌러 잡아.');return}
-if(room==='servo'&&!done.arm&&Math.hypot(player.x-160,player.y-126)<38){if(!armLocked){armLocked=true;const tipX=160+Math.cos(armAngle*Math.PI/180)*28+Math.cos((armAngle-45)*Math.PI/180)*23;const tipY=101-Math.sin(armAngle*Math.PI/180)*28-Math.sin((armAngle-45)*Math.PI/180)*23;if(Math.hypot(tipX-203,tipY-81)<22){done.arm=true;toast('서보 팔 기준점 고정');status()}else toast('기준점에서 벗어났어. 다시 조정해 봐')}else{armLocked=false;toast('관절 잠금 해제')}return}
-if(room==='sensor'&&!done.sensor&&Math.hypot(player.x-254,player.y-103)<34){if(Math.abs(sensorOffset+0.16)<=0.02){done.sensor=true;toast('센서 보정 완료');status()}else toast('측정값이 아직 기준과 달라');return}
-if(room==='atrium'&&done.wire&&done.arm&&done.sensor&&Math.hypot(player.x-160,player.y-65)<28){moveRoom('memory');return}
-if(room==='memory'&&ending&&player.y>137){ending=false;toast('END — 기억이 이어졌다');$('objective').textContent='기록 복구 완료';return}
-
-toast('조금 더 가까이 다가가 봐')}
-function input(){if(!started||dialogue)return;let dx=0,dy=0;const up=keys.has('w')||keys.has('arrowup'),down=keys.has('s')||keys.has('arrowdown'),left=keys.has('a')||keys.has('arrowleft'),right=keys.has('d')||keys.has('arrowright');
-if(room==='servo'&&!done.arm&&keys.has('shift')&&!armLocked){if(left)armAngle=Math.max(-10,armAngle-1.5);if(right)armAngle=Math.min(90,armAngle+1.5);if(up)armAngle=Math.min(90,armAngle+1.5);if(down)armAngle=Math.max(-10,armAngle-1.5);return}
-if(room==='sensor'&&!done.sensor&&keys.has('shift')){if(left)sensorOffset=Math.max(-.3,sensorOffset-.005);if(right)sensorOffset=Math.min(.1,sensorOffset+.005);return}
-if(up)dy=-1;if(down)dy=1;if(left)dx=-1;if(right)dx=1;if(dx&&dy){dx*=.707;dy*=.707}
-player.x=Math.max(4,Math.min(316,player.x+dx*1.15));player.y=Math.max(31,Math.min(151,player.y+dy*1.15));if(dx)player.face=dx>0?1:-1;if(dx||dy)player.step+=.6;
-if(room==='atrium'&&player.x<7)moveRoom('cable');else if(room==='atrium'&&player.x>313)moveRoom('sensor');else if(room==='cable'&&player.x>311)moveRoom('atrium');else if(room==='sensor'&&player.x<8)moveRoom('atrium');else if(room==='atrium'&&player.y<34)moveRoom('servo');else if(room==='servo'&&player.y>146)moveRoom('atrium');else if(room==='memory'&&player.y>150&&ending){player.y=150}}
-function update(){frame++;input();if(toastTimer>0&&!--toastTimer)$('toast').classList.add('hidden');if(room==='sensor'||room==='servo')drawHudPixel();if(done.wire&&done.arm&&done.sensor&&!ending)ending=true;drawRoom();requestAnimationFrame(update)}
-function beginGame(){if(started)return;started=true;$('start-screen').classList.add('hidden');status();if(!storySeen.intro){storySeen.intro=true;startDialogue('intro')}}$('start-screen').addEventListener('click',beginGame);
-window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();const wasDown=keys.has(k);keys.add(k);if(k===' '&&!wasDown){if(!started)beginGame();else if(dialogue)advance();else interact()}if(k==='enter'&&!started)beginGame();if(k==='e'&&!wasDown&&started&&!dialogue){if(room==='cable'&&!done.wire){if(cableHeld){if(player.x>150&&player.y<155){cableHeld=false;cableAt='socket';done.wire=true;toast('전력 케이블 연결 완료!');status()}else toast('오른쪽 소켓 가까이 이동한 뒤 E를 눌러!')}else interact()}else if(room==='servo'&&!done.arm){armAngle=Math.max(-10,Math.min(100,armAngle+5));toast('팔 각도 '+Math.round(armAngle)+'°')}else if(room==='sensor'&&!done.sensor){sensorOffset=Math.min(.1,Math.max(-.3,sensorOffset+.02));toast('보정값 '+sensorOffset.toFixed(2)+'m')}}});window.addEventListener('keyup',e=>{keys.delete(e.key.toLowerCase());if(e.key.toLowerCase()==='shift'&&room==='servo'&&!done.arm){const tipX=160+Math.cos(armAngle*Math.PI/180)*28+Math.cos((armAngle-45)*Math.PI/180)*23;const tipY=101-Math.sin(armAngle*Math.PI/180)*28-Math.sin((armAngle-45)*Math.PI/180)*23;if(Math.hypot(tipX-203,tipY-81)<28){armLocked=true;done.arm=true;toast('서보 팔 기준점 고정');status()}else toast('아직 기준점에 닿지 않았어')}if(e.key.toLowerCase()==='shift'&&room==='sensor'&&!done.sensor&&Math.abs(sensorOffset+0.16)<=0.03){done.sensor=true;toast('센서 보정 완료');status()}});
-drawLogo();status();drawRoom();requestAnimationFrame(update);
+function text(s,x,y,color='#e8e2dc'){ctx.fillStyle=color;ctx.font='7px monospace';ctx.fillText(s,x,y)}
+function platforms(){return world[['light','belt','floor'][stage]].platforms}
+function collide(){player.grounded=false;for(const p of platforms()){if(player.vy>=0&&player.x+player.w>p.x&&player.x<p.x+p.w&&player.y+player.h>=p.y&&player.y+player.h-player.vy<=p.y+2){player.y=p.y-player.h;player.vy=0;player.grounded=true}}}
+function physics(){const left=keys.has('a')||keys.has('arrowleft'),right=keys.has('d')||keys.has('arrowright');player.vx=left?-1.45:right?1.45:0;if(player.vx)player.face=player.vx>0?1:-1;player.x=Math.max(0,Math.min(W-player.w,player.x+player.vx));player.vy=Math.min(4.8,player.vy+.22);player.y+=player.vy;collide();if(player.y>190){player.x=18;player.y=120;player.vy=0;toast('발판에서 떨어졌어. 다시 시도해 봐.')}if(player.grounded&&player.vx)player.step+=.5}
+function playerDraw(){const x=Math.round(player.x),y=Math.round(player.y),b=player.grounded?Math.sin(player.step)*1:0;rect(x-2,y+player.h,12,2,'#111821');rect(x+1,y+8+b,3,6,'#5b4a65');rect(x+5,y+8-b,3,6,'#5b4a65');rect(x,y+1+b,8,9,'#a8a0b8');rect(x+1,y-4+b,6,6,'#d8c6d7');rect(x-1,y+1+b,10,3,'#776985');rect(x+(player.face>0?5:1),y+b,2,2,'#27303b');rect(x+2,y+6+b,4,3,'#6d5c7a');if(carried==='box'){rect(x+player.face*4,y-9,11,10,'#9b744b');rect(x+player.face*4+2,y-7,7,6,'#c7a16a')}if(carried==='beam'){rect(x-5,y-8,18,4,'#bda77b');rect(x-4,y-7,16,2,'#e2d0a1')}}
+function near(x,y,r=23){return Math.hypot(player.x+4-x,player.y+7-y)<r}
+function prompt(){if(!started||dialogue)return;let s='';if(stage===0&&!restored.light&&near(164,84))s='E  반사판 복구';if(stage===1&&!restored.belt&&carried!=='box'&&near(160,109,27))s='E  상자 들기';if(stage===1&&!restored.belt&&carried==='box'&&near(260,99,32))s='E  분류 투입구에 놓기';if(stage===2&&!restored.floor&&carried!=='beam'&&near(62,134,27))s='E  지지대 들기';if(stage===2&&!restored.floor&&carried==='beam'&&near(103,148,34))s='E  지지대 설치';if(s){rect(78,159,164,13,'#141923');rect(78,159,164,1,'#b7a1b9');text(s,86,168,'#f2dfb6')}}
+function interact(){if(dialogue){advance();return}
+ if(stage===0&&!restored.light&&near(164,84)){restored.light=true;toast('광선 경로 복구 — 수신기 감지!');drawHud();return}
+ if(stage===1&&!restored.belt){if(carried!=='box'&&near(160,109,27)){carried='box';toast('상자를 들었어. 파란 분류 투입구로 옮겨.');return}if(carried==='box'&&near(260,99,34)){carried=null;restored.belt=true;toast('분류 완료 — 자동 라인 정상 작동!');drawHud();return}}
+ if(stage===2&&!restored.floor){if(carried!=='beam'&&near(62,134,28)){carried='beam';toast('지지대를 들었어. 바닥의 틈으로 이동해.');return}if(carried==='beam'&&near(103,148,36)){carried=null;restored.floor=true;toast('지지대 설치 완료 — 바닥 안정화!');drawHud();return}}
+ if(near(305,139,25)){if(stage===0&&restored.light){setStage(1);return}if(stage===1&&restored.belt){setStage(2);return}if(stage===2&&restored.floor){toast('세 장치 복구 완료. 시스템이 안정됐어.');return}}
+ toast('주변을 더 살펴봐. 빛나는 장치에 가까이 가면 E로 상호작용할 수 있어.')}
+function drawExit(){const ex=world[['light','belt','floor'][stage]].exit;rect(ex.x,ex.y,ex.w,ex.h,'#17232d');rect(ex.x+3,ex.y+3,ex.w-6,ex.h-6,stage===2&&restored.floor?'#8dd5a7':'#425660');rect(ex.x+5,ex.y+5,2,ex.h-10,'#c4d0c9');if((stage===0&&restored.light)||(stage===1&&restored.belt)||(stage===2&&restored.floor))glow(ex.x+6,ex.y+3,'#a5e8b8');else rect(ex.x+4,ex.y+5,6,2,'#bd8e77')}
+function draw(){background();for(const p of platforms()){if(stage===2&&p.y===151&&((p.x===0)||(p.x===124)||(p.x===232)))continue;rect(p.x,p.y,p.w,p.h,'#414d58');rect(p.x,p.y,p.w,2,'#a5a5a0');for(let x=p.x+5;x<p.x+p.w-3;x+=13)rect(x,p.y+4,5,2,'#303b47')}drawExit();playerDraw();prompt()}
+function begin(){if(started)return;started=true;$('start-screen').classList.add('hidden');drawHud();say(dialogues[0])}
+$('start-screen').addEventListener('click',begin);
+window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if([' ','arrowleft','arrowright','arrowup','arrowdown'].includes(k))e.preventDefault();const was=keys.has(k);keys.add(k);if((k===' '||k==='arrowup'||k==='w')&&!was){if(!started)begin();else if(dialogue)advance();else if(player.grounded){player.vy=-4.6;player.grounded=false}}if(k==='e'&&!was&&started&&!dialogue)interact();if(k==='enter'&&!started)begin()});
+window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+function loop(){frame++;if(started&&!dialogue){physics();if(player.x>world[['light','belt','floor'][stage]].exit.x-3&&player.y+player.h>125&&player.y<154){if(stage===0&&restored.light)setStage(1);else if(stage===1&&restored.belt)setStage(2);else if(stage===2&&restored.floor)toast('모든 장치 복구 완료!')}}if(toastTimer>0&&!--toastTimer)$('toast').classList.add('hidden');draw();requestAnimationFrame(loop)}
+drawHud();loop();
 })();
