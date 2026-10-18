@@ -105,3 +105,7 @@ button{font-family:'DotGothic16',monospace;color:#21182b;background:#e5c8ef;bord
 #ending-screen .ending-credits{margin-top:8px;font-family:monospace;text-align:center;color:#d7c1e4;font-size:clamp(11px,1.6vw,14px);line-height:1.6}
 #ending-screen .ending-credits p{margin:3px 0;color:#d7c1e4;font-size:inherit;letter-spacing:.2px}
 @media(max-width:560px){#hud.minimal-hud{min-height:48px;padding:5px 7px}#hud .hudobjective{font-size:8px}#dialogue{left:3%;right:3%;bottom:4%;padding:8px 9px 7px}#dialogue #line{font-size:12px;line-height:1.35}#ending-screen{padding:8px}}
+
+/* Interaction labels use browser-rendered text rather than the low-resolution game canvas. */
+#interaction-prompt{display:none;position:absolute;left:18.75%;top:88.33%;width:62.5%;min-height:7.22%;padding:2px 6px;align-items:center;justify-content:flex-start;overflow:visible;z-index:2;background:#141923;border-top:1px solid #b7a1b9;color:#f2dfb6;font-family:ui-monospace,Consolas,monospace;font-size:clamp(10px,1.1vw,14px);font-weight:600;line-height:1.2;letter-spacing:0;white-space:normal;text-shadow:none;-webkit-font-smoothing:antialiased}
+#interaction-prompt.visible{display:flex}
