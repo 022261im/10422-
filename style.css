@@ -76,3 +76,5 @@ button{font-family:'DotGothic16',monospace;color:#21182b;background:#e5c8ef;bord
 
 #toast{padding:3px;max-width:90%;white-space:normal}
 #toast-pixel{display:block;width:100%;height:72px;image-rendering:pixelated;image-rendering:crisp-edges}
+
+#logo-pixel{width:336px;height:90px;image-rendering:pixelated;image-rendering:crisp-edges}
