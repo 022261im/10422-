@@ -154,3 +154,26 @@ button{font-family:'DotGothic16',monospace;color:#21182b;background:#e5c8ef;bord
 @media(max-width:560px){#memory-archive{inset:4%;padding:8px}#memory-list{grid-template-columns:1fr;height:calc(100% - 78px)}#memory-archive footer{font-size:9px}}
 /* Facility labels restored to the original smaller size; wording unchanged. */
 #facility-labels .facility-label{font-size:clamp(7px,.9vw,10px)}
+
+
+/* Expanded facility directory and larger readable UI text. */
+#facility-directory{position:absolute;z-index:12;inset:7%;padding:16px;background:#111827f5;border:2px solid #88a8dc;box-shadow:inset 0 0 0 3px #263958,4px 4px 0 #070b14;color:#edf4ff;font-family:ui-monospace,Consolas,monospace;}
+#facility-directory.hidden{display:none!important}
+#facility-directory header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #526e9b;padding-bottom:12px}
+#facility-directory header strong{font-size:clamp(16px,2.1vw,23px);letter-spacing:1px;color:#c4dcff}
+#facility-directory button{font-family:inherit;font-size:clamp(13px,1.5vw,16px);padding:8px 12px;background:#263958;color:#edf4ff;border:1px solid #88a8dc;border-bottom:3px solid #5675a6;box-shadow:none}
+#facility-directory>p{font-size:clamp(13px,1.5vw,17px);color:#bcd1ef;margin:14px 0}
+.facility-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.facility-grid article{display:flex;flex-direction:column;gap:8px;min-height:74px;padding:12px;background:#19263a;border:1px solid #45618a}
+.facility-grid b{font-size:clamp(13px,1.65vw,18px);color:#e1d3ff}
+.facility-grid span{font-size:clamp(12px,1.4vw,15px);line-height:1.4;color:#c4d5ed}
+#facility-directory footer{position:absolute;bottom:10px;left:16px;color:#a8c1e6;font-size:clamp(11px,1.2vw,14px)}
+#hud .hudline{font-size:clamp(11px,1.4vw,15px)!important;min-height:18px}
+#hud .hudline b:last-child{font-size:clamp(11px,1.3vw,14px)!important}
+#hud .hudobjective{font-size:clamp(11px,1.3vw,14px)!important;line-height:1.35!important}
+#interaction-prompt{font-size:clamp(13px,1.5vw,17px)!important;padding:5px 8px!important}
+#facility-labels .facility-label{font-size:clamp(10px,1.2vw,14px)!important;padding:2px 4px!important}
+#dialogue .speaker{font-size:clamp(13px,1.6vw,17px)!important}
+#dialogue #line{font-size:clamp(15px,2vw,21px)!important;line-height:1.5!important}
+#toast{font-size:clamp(12px,1.5vw,16px)!important;padding:9px 12px!important}
+@media(max-width:560px){#facility-directory{inset:4%;padding:9px}.facility-grid{grid-template-columns:1fr;gap:6px}.facility-grid article{min-height:54px;padding:8px}#facility-directory footer{bottom:7px;left:9px}}
