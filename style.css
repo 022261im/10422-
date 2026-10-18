@@ -134,3 +134,23 @@ button{font-family:'DotGothic16',monospace;color:#21182b;background:#e5c8ef;bord
 /* Crisp facility names, matching the interaction prompt font. */
 #facility-labels{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
 #facility-labels .facility-label{position:absolute;transform:translate(-50%,-100%);padding:1px 3px;background:rgba(12,16,25,.78);color:#f2dfb6;border:1px solid rgba(183,161,185,.55);font-family:ui-monospace,Consolas,monospace;font-size:clamp(7px,.9vw,10px);font-weight:600;line-height:1.15;letter-spacing:0;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased}
+
+
+/* Memory archive: diegetic terminal panel, opened with M. */
+#memory-archive{position:absolute;z-index:10;inset:8% 8%;padding:14px;background:#171421f7;border:2px solid #b9a0c9;box-shadow:inset 0 0 0 3px #332742,4px 4px 0 #090811;color:#fff0dc;font-family:ui-monospace,Consolas,monospace;overflow:hidden}
+#memory-archive.hidden{display:none!important}
+#memory-archive header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #655070;padding-bottom:8px;margin-bottom:10px}
+#memory-archive header strong{font-size:clamp(12px,1.7vw,17px);letter-spacing:1px;color:#f0d2ff}
+#memory-archive header p{margin:5px 0 0;font-size:clamp(10px,1.2vw,12px);color:#a8e3bc}
+#memory-archive button{font-family:inherit;font-size:clamp(10px,1.2vw,12px);padding:6px 9px;border:1px solid #b9a0c9;border-bottom:3px solid #80668e;background:#34263f;color:#fff0dc;box-shadow:none;white-space:nowrap}
+#memory-list{height:calc(100% - 82px);overflow:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start}
+.memory-entry{padding:9px;border:1px solid #574563;background:#211a2d;min-width:0}
+.memory-entry h3{font-size:clamp(10px,1.35vw,14px);margin:0 0 5px;color:#f0d2ff;line-height:1.35}
+.memory-entry small{font-size:clamp(9px,1.05vw,11px);color:#d7c1e4}
+.memory-entry p{font-size:clamp(10px,1.15vw,12px);line-height:1.45;margin:8px 0 0;overflow-wrap:anywhere}
+.memory-entry .memory-clue{padding-top:7px;border-top:1px dashed #574563;color:#f1dfb9}
+.memory-entry.locked{opacity:.6;background:#171421}
+#memory-archive footer{position:absolute;left:14px;right:14px;bottom:7px;color:#b7a9c0;font-size:clamp(9px,1vw,11px)}
+@media(max-width:560px){#memory-archive{inset:4%;padding:8px}#memory-list{grid-template-columns:1fr;height:calc(100% - 78px)}#memory-archive footer{font-size:9px}}
+/* Facility labels restored to the original smaller size; wording unchanged. */
+#facility-labels .facility-label{font-size:clamp(7px,.9vw,10px)}
