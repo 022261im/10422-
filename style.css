@@ -55,3 +55,21 @@ button{font-family:'DotGothic16',monospace;color:#21182b;background:#e5c8ef;bord
 #ending-screen p{margin:5px 0;color:#f2e6df;font-size:clamp(12px,2vw,18px)}
 #ending-screen .creator{margin-top:16px;color:#d7c1e4;font-size:clamp(10px,1.5vw,14px)}
 #ending-screen span{margin-top:14px;color:#a8e3bc;font-size:9px;letter-spacing:2px}
+
+/* v10: pixel-rendered UI text, fixed dialogue layout and ending scene */
+#hud.minimal-hud{height:32px;min-height:32px;padding:0;display:block;background:#21192b;border-bottom:2px solid #9a7b9d}
+#hud-pixel{display:block;width:100%;height:32px;image-rendering:pixelated;image-rendering:crisp-edges}
+#dialogue{padding:8px 12px 6px;min-height:0}
+#dialogue .speaker,#dialogue #line{display:none}
+#dialogue-pixel{display:block;width:100%;height:120px;image-rendering:pixelated;image-rendering:crisp-edges}
+.dialogue-hint{padding-top:2px;min-height:17px}
+.dialogue-hint .space-key{width:162px;height:45px;min-width:0;padding:0;border:0;background:transparent;box-shadow:none;image-rendering:pixelated}
+.dialogue-hint .next-arrow{font-size:0;width:18px;height:18px;position:relative}
+.dialogue-hint .next-arrow:after{content:"";position:absolute;left:5px;top:4px;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #f3d29a}
+#ending-screen{gap:6px;padding:16px;overflow:hidden}
+#ending-scene{display:block;width:100%;height:auto;max-height:264px;image-rendering:pixelated;image-rendering:crisp-edges}
+#ending-logo{width:336px;height:90px;max-width:80%;image-rendering:pixelated}
+#ending-copy{display:block;width:100%;height:126px;image-rendering:pixelated;image-rendering:crisp-edges}
+#ending-screen .text-fallback{display:none}
+#toast{white-space:normal;max-width:88%;text-align:center;line-height:1.35}
+@media(max-width:560px){#dialogue-pixel{height:108px}.dialogue-hint .space-key{width:135px;height:37px}#ending-screen{padding:8px}}
