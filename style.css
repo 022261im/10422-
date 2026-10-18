@@ -41,3 +41,17 @@ button{font-family:'DotGothic16',monospace;color:#21182b;background:#e5c8ef;bord
 #parts{padding:2px 6px;background:#3b2b46;border:1px solid #705978;color:#f0d99e!important;white-space:nowrap}
 
 #hud.minimal-hud{height:28px;min-height:28px;display:block;padding:0;background:#241b30;border:0;border-bottom:2px solid #8e7399;box-shadow:inset 0 2px #594562}#hud-pixel{display:block;width:100%;height:28px;image-rendering:pixelated;image-rendering:crisp-edges}
+
+/* Crisp HTML status strip: readable text rather than scaled bitmap lettering. */
+#hud.minimal-hud{height:32px;min-height:32px;padding:4px 10px;background:#21192b;border-bottom:2px solid #9a7b9d;display:flex;justify-content:center;gap:4px;font-size:10px}
+#hud .hudline{display:flex;align-items:center;justify-content:space-between;gap:8px;line-height:1.1;white-space:nowrap}
+#hud .hudline b:first-child{color:#f2dfc8;letter-spacing:1px}
+#hud .hudline span{color:#d7c1e4}
+#hud .hudline b:last-child{color:#a8e3bc;font-size:9px}
+#hud .hudobjective{color:#f1dfb9;font-size:9px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ending-screen{position:absolute;inset:0;z-index:8;background:#12101f;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:4px solid #5b4668;box-shadow:inset 0 0 0 3px #21192b}
+#ending-screen.hidden{display:none}
+#ending-logo{width:224px;height:60px;image-rendering:pixelated;margin-bottom:15px}
+#ending-screen p{margin:5px 0;color:#f2e6df;font-size:clamp(12px,2vw,18px)}
+#ending-screen .creator{margin-top:16px;color:#d7c1e4;font-size:clamp(10px,1.5vw,14px)}
+#ending-screen span{margin-top:14px;color:#a8e3bc;font-size:9px;letter-spacing:2px}
