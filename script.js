@@ -126,25 +126,25 @@ function interact(){
  if((stage===1&&stageStep===3&&testReady&&near(208,97,30))||(stage===2&&stageStep===3&&testReady&&near(160,140,35))||(stage===3&&stageStep===4&&testReady&&near(267,95,35))){testReady=false;finishStage();return;}
  if(restored[stageKeys[stage]])return;
  if(stage===0&&!restored.light){
-  if(stageStep===0&&near(39,122,27)){stageStep=1;toast('광원 출력 안정. 반사판 정렬 오차가 검출됐어.');return}
-  if(stageStep===1&&near(164,84,27)){stageStep=2;toast('반사판 교정 완료. 수신기에서 신호를 확인해.');return}
+  if(stageStep===0&&near(39,122,27)){stageStep=1;drawHud();toast('광원 출력 안정. 반사판 정렬 오차가 검출됐어.');return}
+  if(stageStep===1&&near(164,84,27)){stageStep=2;drawHud();toast('반사판 교정 완료. 수신기에서 신호를 확인해.');return}
   if(stageStep===2&&near(281,95,28)){finishStage();return}
  }
  if(stage===1&&!restored.belt){
-  if(stageStep===0&&near(93,96,27)){stageStep=1;toast('센서 오염 제거. 감지 신호가 복구됐어. 이제 상자를 분류해.');return}
+  if(stageStep===0&&near(93,96,27)){stageStep=1;drawHud();toast('센서 오염 제거. 감지 신호가 복구됐어. 이제 상자를 분류해.');return}
   if(stageStep===1){
    if(carried!=='box'&&near(160,109,27)){carried='box';toast('상자를 들었어. 오른쪽 분류 투입구로 운반해.');return}
-   if(carried==='box'&&near(260,99,34)){carried=null;stageStep=2;toast('상자 분류 완료. 라인 시험 가동을 해야 해.');return}
+   if(carried==='box'&&near(260,99,34)){carried=null;stageStep=2;drawHud();toast('상자 분류 완료. 라인 시험 가동을 해야 해.');return}
   }
   if(stageStep===2&&near(208,97,30)){stageStep=3;testTimer=90;testReady=false;toast('시험 가동 중 — 종료 후 제어기에서 E를 눌러 결과를 승인해.');return}
  }
  if(stage===2&&!restored.floor){
   if(stageStep===0&&carried!=='beam'&&near(62,134,27)){carried='beam';toast('지지대를 들었어. 틈의 왼쪽 가장자리로 옮겨.');return}
-  if(stageStep===0&&carried==='beam'&&near(103,148,42)){carried=null;stageStep=1;toast('지지대가 고정됐어. 이제 하중 센서를 보정해.');drawHud();return}
-  if(stageStep===1&&near(79,137,30)){stageStep=2;toast('하중 센서 영점 보정 완료. 시험 하중을 가해 안전성을 확인해.');return}
+  if(stageStep===0&&carried==='beam'&&near(103,148,42)){carried=null;stageStep=1;drawHud();toast('지지대가 고정됐어. 이제 하중 센서를 보정해.');drawHud();return}
+  if(stageStep===1&&near(79,137,30)){stageStep=2;drawHud();toast('하중 센서 영점 보정 완료. 시험 하중을 가해 안전성을 확인해.');return}
   if(stageStep===2&&near(160,140,35)){stageStep=3;testTimer=100;testReady=false;toast('시험 하중 투입 중 — 종료 후 제어기에서 E를 눌러 결과를 승인해.');return}
  }
- if(stage===3&&!restored.thermal){if(stageStep===0&&near(37,111,28)){stageStep=1;toast('코어 온도 118°C. 방열 모듈을 장착해야 해.');return}if(stageStep===1&&carried!=='sink'&&near(58,135,28)){carried='sink';toast('방열 모듈을 들었어. 발판을 이용해 코어로 운반해.');return}if(stageStep===1&&carried==='sink'&&near(267,95,35)){carried=null;stageStep=2;toast('방열 모듈 장착. 냉각 회로의 제어 밸브를 작동시켜.');return}if(stageStep===2&&near(145,102,30)){stageStep=3;toast('냉각 회로 연결. 코어에서 시험 가동을 시작해.');return}if(stageStep===3&&near(267,95,35)){stageStep=4;testTimer=160;testReady=false;toast('냉각 시험 가동 중 — 종료 후 코어 제어기에서 E를 눌러 결과를 승인해.');return}}
+ if(stage===3&&!restored.thermal){if(stageStep===0&&near(37,111,28)){stageStep=1;drawHud();toast('코어 온도 118°C. 방열 모듈을 장착해야 해.');return}if(stageStep===1&&carried!=='sink'&&near(58,135,28)){carried='sink';toast('방열 모듈을 들었어. 발판을 이용해 코어로 운반해.');return}if(stageStep===1&&carried==='sink'&&near(267,95,35)){carried=null;stageStep=2;drawHud();toast('방열 모듈 장착. 냉각 회로의 제어 밸브를 작동시켜.');return}if(stageStep===2&&near(145,102,30)){stageStep=3;drawHud();toast('냉각 회로 연결. 코어에서 시험 가동을 시작해.');return}if(stageStep===3&&near(267,95,35)){stageStep=4;testTimer=160;testReady=false;toast('냉각 시험 가동 중 — 종료 후 코어 제어기에서 E를 눌러 결과를 승인해.');return}}
  if(near(305,139,25)){if(stage===0&&restored.light){setStage(1);return}if(stage===1&&restored.belt){setStage(2);return}if(stage===2&&restored.floor){setStage(3);return}if(stage===3&&restored.thermal){showEnding();return}}
  toast('주변 장치 가까이에서 E를 눌러. 진단과 수리를 마친 뒤 시험 가동까지 완료해야 해.');
 }
