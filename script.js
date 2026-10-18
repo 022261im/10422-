@@ -79,18 +79,46 @@ function physics(){const left=keys.has('a')||keys.has('arrowleft'),right=keys.ha
 function playerDraw(){const x=Math.round(player.x),y=Math.round(player.y),b=player.grounded?Math.sin(player.step)*1:0;rect(x-2,y+player.h,12,2,'#111821');rect(x+1,y+8+b,3,6,'#5b4a65');rect(x+5,y+8-b,3,6,'#5b4a65');rect(x,y+1+b,8,9,'#a8a0b8');rect(x+1,y-4+b,6,6,'#d8c6d7');rect(x-1,y+1+b,10,3,'#776985');rect(x+(player.face>0?5:1),y+b,2,2,'#27303b');rect(x+2,y+6+b,4,3,'#6d5c7a');if(carried==='box'){rect(x+player.face*4,y-9,11,10,'#9b744b');rect(x+player.face*4+2,y-7,7,6,'#c7a16a')}if(carried==='beam'){rect(x-5,y-8,18,4,'#bda77b');rect(x-4,y-7,16,2,'#e2d0a1')}}
 function near(x,y,r=23){return Math.hypot(player.x+4-x,player.y+7-y)<r}
 function prompt(){if(!started||dialogue)return;let s='';if(stage===0&&!restored.light&&near(164,84))s='E  반사판 복구';if(stage===1&&!restored.belt&&carried!=='box'&&near(160,109,27))s='E  상자 들기';if(stage===1&&!restored.belt&&carried==='box'&&near(260,99,32))s='E  분류 투입구에 놓기';if(stage===2&&!restored.floor&&carried!=='beam'&&near(62,134,27))s='E  지지대 들기';if(stage===2&&!restored.floor&&carried==='beam'&&near(80,148,34))s='E  지지대 설치';if(s){rect(78,159,164,13,'#141923');rect(78,159,164,1,'#b7a1b9');text(s,86,168,'#f2dfb6')}}
-function interact(){if(dialogue){advance();return}
- if(stage===0&&!restored.light&&near(164,84)){restored.light=true;toast('광선 경로 복구 — 수신기 감지!');drawHud();return}
- if(stage===1&&!restored.belt){if(carried!=='box'&&near(160,109,27)){carried='box';toast('상자를 들었어. 파란 분류 투입구로 옮겨.');return}if(carried==='box'&&near(260,99,34)){carried=null;restored.belt=true;toast('분류 완료 — 자동 라인 정상 작동!');drawHud();return}}
- if(stage===2&&!restored.floor){if(carried!=='beam'&&near(62,134,28)){carried='beam';toast('지지대를 들었어. 바닥의 틈으로 이동해.');return}if(carried==='beam'&&near(103,148,36)){carried=null;restored.floor=true;toast('지지대 설치 완료 — 바닥 안정화!');drawHud();return}}
- if(near(305,139,25)){if(stage===0&&restored.light){setStage(1);return}if(stage===1&&restored.belt){setStage(2);return}if(stage===2&&restored.floor){toast('세 장치 복구 완료. 시스템이 안정됐어.');return}}
- toast('주변을 더 살펴봐. 빛나는 장치에 가까이 가면 E로 상호작용할 수 있어.')}
+function finishStage(){
+ const key=['light','belt','floor'][stage]; if(restored[key])return; restored[key]=true; batteries=Math.min(3,batteries+1);drawHud();
+ toast('배터리 셀 회수 '+batteries+'/3 — 시스템 복구 기록 저장');
+ if(stage===0)say([['MICA','광선 경로 안정화. 수신기 응답 정상. 첫 번째 배터리 셀을 회수했어.'],['MICA','이 에너지는 네 기억 저장 장치에도 공급되고 있어. 다음 구역으로 가자.']]);
+ if(stage===1)say([['MICA','분류 센서와 컨베이어 시험 가동 모두 정상. 두 번째 셀을 확보했어.'],['MICA','기록이 더 복구됐어. 너는 이 시설을 폐쇄하기 전, 시스템이 스스로 복구하도록 나를 남겨 뒀어.']]);
+ if(stage===2)say([['MICA','지지대 변형률 정상. 하중 시험 통과. 구조 안정성 확보.'],['MICA','세 번째 배터리 셀 확보. 중앙 코어를 재기동할 전력이 모였어.'],['MICA','이제 기억이 돌아왔어. 너는 시설의 마지막 엔지니어였고, 코어가 꺼지기 전에 나에게 복구 프로토콜을 맡겼어.'],['MICA','코어를 재기동하면 네 복구 캡슐이 열릴 거야. 이제 마지막 문으로 가자.']]);
+}
+function interact(){
+ if(dialogue){advance();if(!dialogue&&stage===2&&restored.floor&&batteries===3)showEnding();return}
+ if(ending)return;
+ if(stage===0&&!restored.light){
+  if(stageStep===0&&near(39,122,27)){stageStep=1;toast('광원 출력 안정. 반사판 정렬 오차가 검출됐어.');return}
+  if(stageStep===1&&near(164,84,27)){stageStep=2;toast('반사판 교정 완료. 수신기에서 신호를 확인해.');return}
+  if(stageStep===2&&near(281,95,28)){finishStage();return}
+ }
+ if(stage===1&&!restored.belt){
+  if(stageStep===0&&near(93,96,27)){stageStep=1;toast('센서 오염 제거. 감지 신호가 복구됐어. 이제 상자를 분류해.');return}
+  if(stageStep===1){
+   if(carried!=='box'&&near(160,109,27)){carried='box';toast('상자를 들었어. 오른쪽 분류 투입구로 운반해.');return}
+   if(carried==='box'&&near(260,99,34)){carried=null;stageStep=2;toast('상자 분류 완료. 라인 시험 가동을 해야 해.');return}
+  }
+  if(stageStep===2&&near(208,97,30)){stageStep=3;testTimer=90;toast('시험 가동 중 — 컨베이어 동작을 확인해.');return}
+ }
+ if(stage===2&&!restored.floor){
+  if(stageStep===0&&carried!=='beam'&&near(62,134,27)){carried='beam';toast('지지대를 들었어. 틈의 왼쪽 가장자리로 옮겨.');return}
+  if(stageStep===0&&carried==='beam'&&near(103,148,42)){carried=null;stageStep=1;toast('지지대가 고정됐어. 이제 하중 센서를 보정해.');return}
+  if(stageStep===1&&near(79,137,30)){stageStep=2;toast('하중 센서 영점 보정 완료. 시험 하중을 가해 안전성을 확인해.');return}
+  if(stageStep===2&&near(160,140,35)){stageStep=3;testTimer=100;toast('시험 하중 투입 중 — 구조 변형을 관찰해.');return}
+ }
+ if(near(305,139,25)){if(stage===0&&restored.light){setStage(1);return}if(stage===1&&restored.belt){setStage(2);return}if(stage===2&&restored.floor){showEnding();return}}
+ toast('주변 장치 가까이에서 E를 눌러. 진단과 수리를 마친 뒤 시험 가동까지 완료해야 해.');
+}
+function showEnding(){ending=true;$('dialogue').classList.add('hidden');const e=$('ending-screen');if(e)e.classList.remove('hidden');}
+
 function drawExit(){const ex=world[['light','belt','floor'][stage]].exit;rect(ex.x,ex.y,ex.w,ex.h,'#17232d');rect(ex.x+3,ex.y+3,ex.w-6,ex.h-6,stage===2&&restored.floor?'#8dd5a7':'#425660');rect(ex.x+5,ex.y+5,2,ex.h-10,'#c4d0c9');if((stage===0&&restored.light)||(stage===1&&restored.belt)||(stage===2&&restored.floor))glow(ex.x+6,ex.y+3,'#a5e8b8');else rect(ex.x+4,ex.y+5,6,2,'#bd8e77')}
 function draw(){background();for(const p of platforms()){if(stage===2&&p.y===151&&((p.x===0)||(p.x===124)||(p.x===232)))continue;rect(p.x,p.y,p.w,p.h,'#414d58');rect(p.x,p.y,p.w,2,'#a5a5a0');for(let x=p.x+5;x<p.x+p.w-3;x+=13)rect(x,p.y+4,5,2,'#303b47')}drawExit();playerDraw();prompt()}
 function begin(){if(started)return;started=true;$('start-screen').classList.add('hidden');drawHud();say(dialogues[0])}
 $('start-screen').addEventListener('click',begin);
 window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if([' ','arrowleft','arrowright','arrowup','arrowdown'].includes(k))e.preventDefault();const was=keys.has(k);keys.add(k);if((k===' '||k==='arrowup'||k==='w')&&!was){if(!started)begin();else if(dialogue)advance();else if(player.grounded){player.vy=-4.6;player.grounded=false}}if(k==='e'&&!was&&started&&!dialogue)interact();if(k==='enter'&&!started)begin()});
 window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
-function loop(){frame++;if(started&&!dialogue){physics();if(player.x>world[['light','belt','floor'][stage]].exit.x-3&&player.y+player.h>125&&player.y<154){if(stage===0&&restored.light)setStage(1);else if(stage===1&&restored.belt)setStage(2);else if(stage===2&&restored.floor)toast('모든 장치 복구 완료!')}}if(toastTimer>0&&!--toastTimer)$('toast').classList.add('hidden');draw();requestAnimationFrame(loop)}
+function loop(){frame++;if(started&&!dialogue&&!ending){physics();if(stageStep===3&&testTimer>0){testTimer--;if(testTimer===0)finishStage()}if(player.x>world[['light','belt','floor'][stage]].exit.x-3&&player.y+player.h>125&&player.y<154){if(stage===0&&restored.light)setStage(1);else if(stage===1&&restored.belt)setStage(2);else if(stage===2&&restored.floor)showEnding()}}if(toastTimer>0&&!--toastTimer)$('toast').classList.add('hidden');draw();requestAnimationFrame(loop)}
 drawHud();const logo=$('logo-pixel');if(logo){const lc=logo.getContext('2d');lc.imageSmoothingEnabled=false;lc.clearRect(0,0,logo.width,logo.height);lc.font='bold 18px monospace';lc.textAlign='center';lc.fillStyle='#f2e6df';lc.fillText('REBOOT',logo.width/2,15);lc.fillStyle='#b99bc9';lc.fillRect(16,18,80,2);lc.font='5px monospace';lc.fillStyle='#d7c3df';lc.fillText('SYSTEM RESTORE // PRESS SPACE',logo.width/2,26)}loop();
 })();
