@@ -5,20 +5,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#100f20">
 <title>REBOOT — 기억 복구 기록</title>
-<link rel="stylesheet" href="./style.css?v=9">
+<link rel="stylesheet" href="./style.css?v=10">
 </head>
 <body>
 <main id="game-wrap" aria-label="REBOOT 픽셀 어드벤처 게임">
   <canvas id="screen" width="320" height="180" aria-label="게임 화면"></canvas>
-  <div id="hud" class="minimal-hud"><canvas id="hud-pixel" width="320" height="28" aria-label="기억 복구, 목표, 복구 게이지"></canvas></div>
+  <div id="hud" class="minimal-hud"><canvas id="hud-pixel" width="320" height="32" aria-label="스테이지와 배터리 상태"></canvas></div>
   <section id="dialogue" class="hidden" aria-live="polite">
     <div class="speaker"><span id="speaker">MICA</span><span id="dialogue-index">01 / 01</span></div>
-    <p id="line"></p><div class="dialogue-hint"><canvas class="space-key" id="space-key" width="54" height="15" aria-label="SPACE"></canvas><span class="next-arrow">▶</span></div>
+    <p id="line" class="text-fallback"></p><canvas id="dialogue-pixel" width="288" height="40" aria-label="대화 내용"></canvas><div class="dialogue-hint"><canvas class="space-key" id="space-key" width="54" height="15" aria-label="SPACE"></canvas><span class="next-arrow">▶</span></div>
   </section>
   <div id="start-screen" aria-label="시작하려면 클릭하거나 SPACE를 누르세요"><canvas id="logo-pixel" width="112" height="20"></canvas></div>
   <div id="toast" class="hidden"></div>
-  <section id="ending-screen" class="hidden" aria-label="게임 엔딩"><canvas id="ending-logo" width="112" height="30"></canvas><p>기억과 기력을 되찾았다.</p><p class="creator">제작자 임서연 / 022261@hafs.hs.kr</p><span>REBOOT PROTOCOL COMPLETE</span></section>
+  <section id="ending-screen" class="hidden" aria-label="게임 엔딩"><canvas id="ending-scene" width="320" height="88"></canvas><canvas id="ending-logo" width="112" height="30"></canvas><canvas id="ending-copy" width="288" height="42" aria-label="엔딩과 제작자 정보"></canvas><span class="text-fallback">REBOOT PROTOCOL COMPLETE</span></section>
 </main>
-<script src="./script.js?v=9"></script>
+<script src="./script.js?v=10"></script>
 </body>
 </html>
