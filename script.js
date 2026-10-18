@@ -5,7 +5,7 @@ ctx.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
 const W = 320, H = 180, keys = new Set();
 let started = false, frame = 0, toastTimer = 0, toastText = '';
-let stage = 0, carried = null, restored = { light: false, belt: false, floor: false };
+let stage = 0, carried = null, restored = { light: false, belt: false, floor: false }, batteries = 0, stageStep = 0, ending = false;
 let dialogue = null, dialoguePos = 0;
 const player = { x: 28, y: 126, vx: 0, vy: 0, w: 8, h: 15, face: 1, grounded: false, step: 0 };
 const world = {
@@ -23,8 +23,8 @@ function say(lines){dialogue=lines;dialoguePos=0;showLine();$('dialogue').classL
 function showLine(){const a=dialogue[dialoguePos];$('speaker').textContent=a[0];$('line').textContent=a[1];$('dialogue-index').textContent=String(dialoguePos+1).padStart(2,'0')+' / '+String(dialogue.length).padStart(2,'0')}
 function advance(){if(!dialogue)return;if(++dialoguePos>=dialogue.length){dialogue=null;$('dialogue').classList.add('hidden');return}showLine()}
 function toast(s){toastText=s;$('toast').textContent=s;$('toast').classList.remove('hidden');toastTimer=100}
-function setStage(n){stage=Math.max(0,Math.min(2,n));player.x=stage===0?20:stage===1?20:18;player.y=126;player.vx=player.vy=0;carried=null;drawHud();if(!restored[['light','belt','floor'][stage]])say(dialogues[stage+1]);}
-function drawHud(){const c=$('hud-pixel')?.getContext('2d');if(!c)return;c.imageSmoothingEnabled=false;c.clearRect(0,0,320,28);c.fillStyle='#211a2b';c.fillRect(0,0,320,28);c.fillStyle='#f2d5a0';c.font='7px monospace';c.fillText('REBOOT  /  '+world[['light','belt','floor'][stage]].name,7,10);c.fillStyle='#e5d6e8';c.fillText(restored.light&&restored.belt&&restored.floor?'시스템 복구 완료':world[['light','belt','floor'][stage]].desc,7,21);for(let i=0;i<3;i++){c.fillStyle=restored[['light','belt','floor'][i]]?'#9ee2b0':'#66516f';c.fillRect(277+i*12,5,8,5);c.fillStyle='#e5c6f1';c.fillRect(277+i*12,12,8,1)}}
+function setStage(n){stage=Math.max(0,Math.min(2,n));stageStep=0;player.x=stage===0?20:stage===1?20:18;player.y=126;player.vx=player.vy=0;carried=null;drawHud();if(!restored[['light','belt','floor'][stage]])say(stage===1?[['MICA','첫 번째 배터리 셀이 기억 회로에 전력을 공급하고 있어. 네가 이 시설의 유지보수 담당자였다는 기록이 복구됐어.'],['MICA','자동 분류 라인이야. 먼저 센서를 복구하고 상자를 올바른 투입구로 옮긴 뒤, 라인을 시험 가동해.']]:[['MICA','두 번째 셀도 확보했어. 마지막 구역은 구조 안정성 시험실이야.'],['MICA','지지대를 설치하는 것만으로는 충분하지 않아. 하중 센서를 보정하고 시험 가동까지 통과해야 해.']]);}
+function drawHud(){const hud=$('hud');if(!hud)return;hud.innerHTML='<div class="hudline"><b>REBOOT</b><span>'+['01 / OPTICS LAB','02 / SORTING BAY','03 / LOAD TEST'][stage]+'</span><b>BATTERY '+batteries+'/3</b></div><div class="hudobjective">'+world[['light','belt','floor'][stage]].desc+'</div>';}
 function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
 function line(x1,y1,x2,y2,c,w=1){const n=Math.max(Math.abs(x2-x1),Math.abs(y2-y1));for(let i=0;i<=n;i++){const t=n?i/n:0;rect(x1+(x2-x1)*t,y1+(y2-y1)*t,w,w,c)}}
 function glow(x,y,c='#f3d48d'){const p=frame%24<12;rect(x-4,y-1,9,3,c);rect(x-1,y-4,3,9,c);rect(x-1,y-1,3,3,p?'#fff6d9':c)}
