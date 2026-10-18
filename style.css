@@ -122,3 +122,10 @@ button{font-family:'DotGothic16',monospace;color:#21182b;background:#e5c8ef;bord
 #ending-animation:not(.hidden){display:block}
 #start-screen{background:#161225!important}
 #start-screen #logo-pixel{display:block;flex:none}
+
+/* Gentle reveal after the core-reboot sequence. */
+@keyframes rebootFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes rebootLogoFadeIn{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:translateY(0)}}
+#ending-screen:not(.hidden){animation:rebootFadeIn 1.15s ease-out both}
+#ending-screen:not(.hidden) #ending-logo{opacity:0;animation:rebootLogoFadeIn 1.35s ease-out .18s both}
+@media(prefers-reduced-motion:reduce){#ending-screen:not(.hidden),#ending-screen:not(.hidden) #ending-logo{animation-duration:.01ms;animation-delay:0ms}}
