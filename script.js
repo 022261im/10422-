@@ -5,6 +5,13 @@ ctx.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
 const W = 320, H = 180, keys = new Set();
 let started = false, frame = 0, toastTimer = 0, toastText = '';
+let archiveOpen = false;
+const memoryRecords = [
+ {title:'기록 01 — 최초의 이상 신호',facility:'광학 연구실',text:'대피가 끝날 때까지 코어를 재가동하지 마. — 손상된 음성 기록',clue:'시설 정지 전, 광학 장치에서 비정상 신호가 먼저 감지됐다.'},
+ {title:'기록 02 — 대피용 전력 경로',facility:'자동 분류 시설',text:'마지막 순간까지 대피 구역에 전력을 우선 공급했다.',clue:'MICA는 특정 명령을 거부했다. 당시의 제어 로그가 더 필요하다.'},
+ {title:'기록 03 — 봉인 명령',facility:'하중 시험실',text:'MICA, 네 기억을 남겨 두고 내 기록은 봉인해.',clue:'플레이어가 MICA의 기억을 보호하도록 직접 명령했다.'},
+ {title:'기록 04 — 비상 정지',facility:'열 제어 시설',text:'대피가 끝나기 전 코어가 과열됐다. 네 개의 셀에 기억을 나눠 봉인했다.',clue:'MICA가 기억을 잃은 것은 명령을 지키기 위해서였다.'}
+];
 let stage = 0, carried = null, restored = { light: false, belt: false, floor: false, thermal: false }, batteries = 0, stageStep = 0, ending = false, testTimer = 0, testReady = false, endingAnimFrame = 0;
 const stageKeys=['light','belt','floor','thermal'];
 const pixelCache=new Map();
@@ -23,6 +30,8 @@ const dialogues = [
   [['MICA','하중 시험 구역이야. 가운데 바닥이 무너져 있어.'],['MICA','느슨해진 지지대를 찾아 E로 들고, 끊어진 바닥 틈으로 가져가 E를 눌러 설치해. 그 뒤에 건너가면 돼.']]
 ];
 function say(lines){dialogue=lines;dialoguePos=0;showLine();$('dialogue').classList.remove('hidden')}
+function renderArchive(){const list=$('memory-list');if(!list)return;const count=Math.min(batteries,memoryRecords.length);list.innerHTML='';for(let i=0;i<memoryRecords.length;i++){const r=memoryRecords[i],item=document.createElement('article');item.className='memory-entry'+(i<count?' recovered':' locked');if(i<count){item.innerHTML='<h3></h3><small></small><p></p><p class="memory-clue"></p>';item.querySelector('h3').textContent=r.title;item.querySelector('small').textContent=r.facility;item.querySelectorAll('p')[0].textContent=r.text;item.querySelectorAll('p')[1].textContent=r.clue;}else{item.innerHTML='<h3></h3><small>기록 잠김</small><p>시설을 복구하면 이 기록을 확인할 수 있다.</p>';item.querySelector('h3').textContent='기록 '+String(i+1).padStart(2,'0')+' — ?????';}list.appendChild(item)}const status=$('memory-status');if(status)status.textContent='기억 복구 '+count+' / '+memoryRecords.length;const archive=$('memory-archive');if(archive)archive.classList.toggle('hidden',!archiveOpen)}
+function toggleArchive(){if(!started||ending||dialogue)return;archiveOpen=!archiveOpen;renderArchive();if(archiveOpen)toast('기억 아카이브 — M 또는 닫기 버튼으로 돌아가기')}
 function showLine(){const a=dialogue[dialoguePos];$('speaker').textContent=a[0];$('line').innerHTML=a[1].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');$('dialogue-index').textContent=String(dialoguePos+1).padStart(2,'0')+' / '+String(dialogue.length).padStart(2,'0')}
 function advance(){if(!dialogue)return;if(++dialoguePos>=dialogue.length){dialogue=null;$('dialogue').classList.add('hidden');return}showLine()}
 function toast(s){toastText=s;$('toast').textContent=s;$('toast').classList.remove('hidden');toastTimer=130}
@@ -113,7 +122,7 @@ if(stage===2&&!restored.floor){if(stageStep===0&&carried!=='beam'&&near(62,134,2
 if(stage===3&&!restored.thermal){if(stageStep===0&&near(37,111,28))s='E  온도 진단';else if(stageStep===1&&carried!=='sink'&&near(58,135,28))s='E  방열 모듈 들기';else if(stageStep===1&&carried==='sink'&&near(267,95,35))s='E  코어에 설치';else if(stageStep===2&&near(145,102,30))s='E  냉각 회로 조정';else if(stageStep===3&&near(267,95,35))s='E  냉각 시험 가동';}
 const promptEl=$('interaction-prompt');if(promptEl){promptEl.textContent=s;promptEl.classList.toggle('visible',Boolean(s))}}
 function finishStage(){
- const key=stageKeys[stage]; if(restored[key])return; restored[key]=true; batteries=Math.min(4,batteries+1);drawHud();
+ const key=stageKeys[stage]; if(restored[key])return; restored[key]=true; batteries=Math.min(4,batteries+1);drawHud();renderArchive();
  toast('배터리 셀 회수 '+batteries+'/4 — 복구 기록 저장');
  if(stage===0)say([['MICA','광선 경로 안정화. 첫 번째 셀 회수 완료. **광학실의 기록 조각**이 복구됐어.'],['MICA','기록에는 네 목소리가 남아 있어. “대피가 끝날 때까지 코어를 재가동하지 마.” 누군가를 기다렸던 걸까? 다음 구역에서 나머지 기록을 찾아보자.']]);
  if(stage===1)say([['MICA','분류 센서와 컨베이어 시험 가동 정상. 두 번째 셀 확보.'],['MICA','기억 기록 일부가 돌아왔어. 너는 마지막 순간까지 시설을 떠나지 않고 **대피용 전력 경로를 직접 연결**했어. 그 뒤에 무슨 일이 있었는지는 아직 손상돼 있어.']]);
@@ -156,8 +165,9 @@ function drawBattery(x,y){rect(x,y,8,13,'#d8c26d');rect(x+2,y-2,4,2,'#d8c26d');r
 function drawEndingScene(){const ec=$('ending-logo')?.getContext('2d');if(ec){ec.imageSmoothingEnabled=false;ec.clearRect(0,0,112,30);pixelText(ec,'REBOOT',10,22,94,18,'#f2e6df');ec.fillStyle='#b99bc9';ec.fillRect(14,26,84,2)}}
 function begin(){if(started)return;started=true;$('start-screen').classList.add('hidden');drawHud();say([['MICA','**REBOOT 복구 프로토콜**을 시작합니다. 시설 중앙 코어 응답률 3%.'],['MICA','나는 MICA, 네가 직접 설계한 시설 관리 AI야. 지금은 기억 기록이 손상돼서 네 이름조차 읽을 수 없어.'],['MICA','비상 정지 기록에 따르면, 네가 마지막으로 내린 명령은 **대피 구역에 전력을 우선 공급하라**였어. 코어를 차단한 뒤 네 기억 백업도 네 구역 네 곳에 나뉘어 봉인됐어.'],['MICA','각 구역에는 순서가 있는 복구 지령이 남아 있어. **상단 지령을 읽고, 순서대로 장치를 조작해.** 먼저 광학실로 가자.']])}
 $('start-screen').addEventListener('click',begin);
-window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if([' ','arrowleft','arrowright','arrowup','arrowdown'].includes(k))e.preventDefault();const was=keys.has(k);keys.add(k);if((k===' '||k==='arrowup'||k==='w')&&!was){if(!started)begin();else if(dialogue)advance();else if(player.grounded){player.vy=-4.6;player.grounded=false}}if(k==='e'&&!was&&started)interact();if(k==='enter'&&!started)begin()});
+window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if([' ','arrowleft','arrowright','arrowup','arrowdown'].includes(k))e.preventDefault();const was=keys.has(k);keys.add(k);if(k==='m'&&!was&&started&&!dialogue&&!ending){e.preventDefault();toggleArchive();return}if((k===' '||k==='arrowup'||k==='w')&&!was){if(!started)begin();else if(dialogue)advance();else if(!archiveOpen&&player.grounded){player.vy=-4.6;player.grounded=false}}if(k==='e'&&!was&&started&&!archiveOpen)interact();if(k==='enter'&&!started)begin()});
 window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
-function loop(){frame++;if(started&&!dialogue&&!ending){physics();if((stage===1&&stageStep===3||stage===2&&stageStep===3||stage===3&&stageStep===4)&&testTimer>0){testTimer--;if(testTimer===0){testReady=true;toast('시험 종료. 제어기로 돌아가 E를 눌러 결과를 승인해.')}}const ex=world[stageKeys[stage]].exit;if(player.x>ex.x-3&&player.y+player.h>125&&player.y<154){if(stage===0&&restored.light)setStage(1);else if(stage===1&&restored.belt)setStage(2);else if(stage===2&&restored.floor)setStage(3);else if(stage===3&&restored.thermal)showEnding()}}if(toastTimer>0&&!--toastTimer)$('toast').classList.add('hidden');draw();requestAnimationFrame(loop)}
+$('memory-close')?.addEventListener('click',()=>{archiveOpen=false;renderArchive()});
+function loop(){frame++;if(started&&!dialogue&&!ending&&!archiveOpen){physics();if((stage===1&&stageStep===3||stage===2&&stageStep===3||stage===3&&stageStep===4)&&testTimer>0){testTimer--;if(testTimer===0){testReady=true;toast('시험 종료. 제어기로 돌아가 E를 눌러 결과를 승인해.')}}const ex=world[stageKeys[stage]].exit;if(player.x>ex.x-3&&player.y+player.h>125&&player.y<154){if(stage===0&&restored.light)setStage(1);else if(stage===1&&restored.belt)setStage(2);else if(stage===2&&restored.floor)setStage(3);else if(stage===3&&restored.thermal)showEnding()}}if(toastTimer>0&&!--toastTimer)$('toast').classList.add('hidden');draw();requestAnimationFrame(loop)}
 drawHud();const logo=$('logo-pixel');if(logo){const lc=logo.getContext('2d');lc.imageSmoothingEnabled=false;lc.clearRect(0,0,logo.width,logo.height);pixelText(lc,'REBOOT',10,22,94,18,'#f2e6df');lc.fillStyle='#b99bc9';lc.fillRect(16,26,80,2)}drawSpaceKey();loop();
 })();
