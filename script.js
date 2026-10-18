@@ -5,7 +5,7 @@ ctx.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
 const W = 320, H = 180, keys = new Set();
 let started = false, frame = 0, toastTimer = 0, toastText = '';
-let stage = 0, carried = null, restored = { light: false, belt: false, floor: false, thermal: false }, batteries = 0, stageStep = 0, ending = false, testTimer = 0, endingAnimFrame = 0;
+let stage = 0, carried = null, restored = { light: false, belt: false, floor: false, thermal: false }, batteries = 0, stageStep = 0, ending = false, testTimer = 0, testReady = false, endingAnimFrame = 0;
 const stageKeys=['light','belt','floor','thermal'];
 const pixelCache=new Map();
 let dialogue = null, dialoguePos = 0;
