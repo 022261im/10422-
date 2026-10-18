@@ -129,3 +129,8 @@ button{font-family:'DotGothic16',monospace;color:#21182b;background:#e5c8ef;bord
 #ending-screen:not(.hidden){animation:rebootFadeIn 1.15s ease-out both}
 #ending-screen:not(.hidden) #ending-logo{opacity:0;animation:rebootLogoFadeIn 1.35s ease-out .18s both}
 @media(prefers-reduced-motion:reduce){#ending-screen:not(.hidden),#ending-screen:not(.hidden) #ending-logo{animation-duration:.01ms;animation-delay:0ms}}
+
+
+/* Crisp facility names, matching the interaction prompt font. */
+#facility-labels{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+#facility-labels .facility-label{position:absolute;transform:translate(-50%,-100%);padding:1px 3px;background:rgba(12,16,25,.78);color:#f2dfb6;border:1px solid rgba(183,161,185,.55);font-family:ui-monospace,Consolas,monospace;font-size:clamp(7px,.9vw,10px);font-weight:600;line-height:1.15;letter-spacing:0;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased}
