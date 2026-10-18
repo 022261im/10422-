@@ -116,3 +116,9 @@ button{font-family:'DotGothic16',monospace;color:#21182b;background:#e5c8ef;bord
 #hud .hudline{display:flex;justify-content:space-between;gap:8px;align-items:center}
 #hud .hudline span{flex:1;text-align:center}
 #hud .hudobjective strong{font-weight:800}
+
+/* The ending canvas must stay hidden until the final sequence begins. */
+#ending-animation.hidden{display:none!important}
+#ending-animation:not(.hidden){display:block}
+#start-screen{background:#161225!important}
+#start-screen #logo-pixel{display:block;flex:none}
