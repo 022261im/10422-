@@ -111,7 +111,7 @@ if(stage===0&&!restored.light){if(stageStep===0&&near(39,122,27))s='E  광원 �
 if(stage===1&&!restored.belt){if(stageStep===0&&near(93,96,27))s='E  센서 점검';else if(stageStep===1&&carried!=='box'&&near(160,109,27))s='E  상자 회수';else if(stageStep===1&&carried==='box'&&near(260,99,32))s='E  분류 투입구에 놓기';else if(stageStep===2&&near(208,97,30))s='E  라인 시험 가동';}
 if(stage===2&&!restored.floor){if(stageStep===0&&carried!=='beam'&&near(62,134,27))s='E  지지대 들기';else if(stageStep===0&&carried==='beam'&&near(103,148,42))s='E  지지대 설치';else if(stageStep===1&&near(79,137,30))s='E  하중 센서 보정';else if(stageStep===2&&near(160,140,35))s='E  시험 하중 가동';}
 if(stage===3&&!restored.thermal){if(stageStep===0&&near(37,111,28))s='E  온도 진단';else if(stageStep===1&&carried!=='sink'&&near(58,135,28))s='E  방열 모듈 들기';else if(stageStep===1&&carried==='sink'&&near(267,95,35))s='E  코어에 설치';else if(stageStep===2&&near(145,102,30))s='E  냉각 회로 조정';else if(stageStep===3&&near(267,95,35))s='E  냉각 시험 가동';}
-if(s){rect(60,159,200,13,'#141923');rect(60,159,200,1,'#b7a1b9');text(s,68,168,'#f2dfb6')}}
+const promptEl=$('interaction-prompt');if(promptEl){promptEl.textContent=s;promptEl.classList.toggle('visible',Boolean(s))}}
 function finishStage(){
  const key=stageKeys[stage]; if(restored[key])return; restored[key]=true; batteries=Math.min(4,batteries+1);drawHud();
  toast('배터리 셀 회수 '+batteries+'/4 — 복구 기록 저장');
