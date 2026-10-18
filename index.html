@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#100f20">
 <title>REBOOT — 기억 복구 기록</title>
-<link rel="stylesheet" href="./style.css?v=24">
+<link rel="stylesheet" href="./style.css?v=25">
 </head>
 <body>
 <main id="game-wrap" aria-label="REBOOT 픽셀 어드벤처 게임">
   <canvas id="screen" width="320" height="180" aria-label="게임 화면"></canvas>
   <div id="facility-labels" aria-hidden="true"></div>
+  <section id="facility-directory" class="hidden" aria-label="시설 목록"><header><strong>FACILITY DIRECTORY / 시설 목록</strong><button id="facility-directory-close" type="button">닫기 · F</button></header><p>복구 구역 외에도 조사할 시설이 남아 있다.</p><div class="facility-grid"><article><b>05 · 전력 배전실</b><span>전력 경로와 차단기 기록</span></article><article><b>06 · 로봇 제어실</b><span>자동화 장치와 명령 로그</span></article><article><b>07 · 기억 보관소</b><span>MICA의 손상된 기억 데이터</span></article><article><b>08 · 중앙 코어</b><span>최종 재가동 구역</span></article></div><footer>F 키를 눌러 탐험으로 돌아가기</footer></section>
   <section id="memory-archive" class="hidden" aria-label="기억 아카이브"><header><div><strong>MEMORY ARCHIVE</strong><p id="memory-status">기억 복구 0 / 4</p></div><button id="memory-close" type="button">닫기 · M</button></header><div id="memory-list"></div><footer>시설 복구 기록은 이곳에 저장돼. M을 눌러 탐험으로 돌아가.</footer></section>
   <div id="hud" class="minimal-hud"><canvas id="hud-pixel" width="320" height="32" aria-label="스테이지와 배터리 상태"></canvas></div>
   <section id="dialogue" class="hidden" aria-live="polite">
@@ -21,6 +22,6 @@
   <div id="interaction-prompt" aria-live="polite"></div><div id="toast" class="hidden"><canvas id="toast-pixel" width="280" height="30" aria-label="상호작용 안내"></canvas></div>
   <canvas id="ending-animation" width="320" height="180" class="hidden" aria-label="코어 재가동 애니메이션"></canvas><section id="ending-screen" class="hidden" aria-label="게임 엔딩"><canvas id="ending-logo" width="112" height="30" aria-label="REBOOT"></canvas><div class="ending-credits"><p>임서연</p><p>022261@hafs.hs.kr</p></div></section>
 </main>
-<script src="./script.js?v=24"></script>
+<script src="./script.js?v=25"></script>
 </body>
 </html>
