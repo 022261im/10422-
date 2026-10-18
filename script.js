@@ -9,7 +9,7 @@ let stage = 0, carried = null, restored = { light: false, belt: false, floor: fa
 const stageKeys=['light','belt','floor','thermal'];
 const pixelCache=new Map();
 let dialogue = null, dialoguePos = 0;
-const player = { x: 28, y: 124, vx: 0, vy: 0, w: 14, h: 17, face: 1, grounded: false, step: 0, jumpPose: 0 };
+const player = { x: 28, y: 126, vx: 0, vy: 0, w: 10, h: 13, face: 1, grounded: false, step: 0, jumpPose: 0 };
 const world = {
   light: { name:'OPTICS LAB', title:'광학 장치', desc:'고장 난 반사판을 복구해 빛을 수신기로 보내자.', platforms:[{x:0,y:151,w:320,h:29},{x:65,y:125,w:42,h:6},{x:136,y:106,w:42,h:6},{x:222,y:126,w:38,h:6}], exit:{x:298,y:126,w:14,h:25}},
   belt: { name:'SORTING BAY', title:'자동 분류 라인', desc:'벨트 위의 잘못 분류된 상자를 올바른 투입구로 옮기자.', platforms:[{x:0,y:151,w:320,h:29},{x:74,y:124,w:45,h:6},{x:201,y:124,w:43,h:6}], exit:{x:298,y:126,w:14,h:25}},
@@ -80,26 +80,30 @@ function drawLoadRoom(){// gap and beams
  if(restored.floor||stageStep>=1){rect(82,145,42,6,'#6e857c');rect(190,145,42,6,'#6e857c');rect(83,146,40,2,'#b4d1ad');rect(191,146,40,2,'#b4d1ad');for(let x=86;x<121;x+=8)rect(x,152,3,21,'#62776e');for(let x=194;x<229;x+=8)rect(x,152,3,21,'#62776e');glow(103,141,'#9ce7b2');glow(211,141,'#9ce7b2')}
  text('LOAD TEST',128,55,'#d4c8df');text('MAX LOAD',133,69,'#c1b6c6');rect(134,74,51,5,'#17232e');rect(135,75,restored.floor?48:21,3,restored.floor?'#8ed7aa':'#d78d77');
 }
-function text(s,x,y,color='#e8e2dc'){ctx.fillStyle=color;ctx.font='6px monospace';ctx.textBaseline='alphabetic';ctx.fillText(s,x,y)}
+function text(s,x,y,color='#e8e2dc'){pixelText(ctx,s,x,y,150,5,color)}
 function drawThermalRoom(){rect(0,135,320,16,'#482d39');for(let x=0;x<320;x+=12){rect(x,138,5,3,'#d47b67');rect(x+5,143,4,3,'#f0b16e')}rect(20,92,31,39,'#263640');rect(24,96,23,31,'#536a73');rect(28,100,15,22,'#db866c');rect(31,103,9,15,'#ffd28c');text('TEMP',22,87,'#ffe0a1');rect(246,78,43,34,'#263640');rect(250,82,35,26,'#4d6570');rect(255,87,25,16,restored.thermal?'#93e3b3':'#c77866');text('CORE',254,73,'#f0d8c2');if(!restored.thermal&&carried!=='sink'){rect(50,132,16,8,'#9bb8c2');rect(52,134,12,4,'#d5e4dc');glow(58,130,'#e8cf8b')}if(carried==='sink'){rect(player.x+player.face*3,player.y-7,12,6,'#9bb8c2');rect(player.x+player.face*3+2,player.y-5,8,2,'#e0eee8')}rect(132,96,26,8,'#3a505b');rect(136,98,18,4,'#6d8b95');rect(228,104,25,8,'#3a505b');rect(232,106,17,4,'#6d8b95');if(restored.thermal){line(38,113,267,94,'#a4e7b8',1);glow(267,94,'#a4e7b8')}else{glow(267,94,'#df7c65');text('OVERHEAT',246,70,'#ffb48c')}}
 function platforms(){const base=world[stageKeys[stage]].platforms;if(stage===2&&(restored.floor||stageStep>=1))return [...base,{x:82,y:145,w:42,h:10},{x:190,y:145,w:42,h:10}];return base}
 function collide(){player.grounded=false;for(const p of platforms()){const wasBottom=player.y+player.h-player.vy;const overlaps=player.x+player.w>p.x&&player.x<p.x+p.w;const bridgeSnap=stage===2&&p.y===145&&(restored.floor||stageStep>=1)&&player.y+player.h>=p.y-3&&player.y+player.h<=p.y+12;if(player.vy>=0&&overlaps&&((wasBottom<=p.y+3&&player.y+player.h>=p.y)||bridgeSnap)){player.y=p.y-player.h;player.vy=0;player.grounded=true}}}
 function physics(){const left=keys.has('a')||keys.has('arrowleft'),right=keys.has('d')||keys.has('arrowright');player.vx=left?-1.65:right?1.65:0;if(player.vx)player.face=player.vx>0?1:-1;player.x=Math.max(0,Math.min(W-player.w,player.x+player.vx));player.vy=Math.min(5.2,player.vy+.24);player.y+=player.vy;collide();if(stage===3&&player.y+player.h>149&&((player.x>65&&player.x<101)||(player.x>157&&player.x<207))){player.x=20;player.y=125;player.vy=0;toast('과열 바닥 접촉 — 안전 플랫폼으로 후퇴');}if(player.y>190){player.x=20;player.y=125;player.vy=0;toast('낙하 감지 — 안전 지점으로 복귀');}if(player.grounded&&player.vx)player.step+=.5;player.jumpPose=player.grounded?0:player.vy<0?1:2}
 function playerDraw(){
  const x=Math.round(player.x),y=Math.round(player.y),air=!player.grounded,phase=Math.floor(player.step)%4;
- rect(x-1,y+player.h+1,16,2,'#111821');
  const bob=air?0:(phase===0||phase===3?0:1);
- rect(x-5,y+7+bob,4,6,'#e9c2b6');rect(x-4,y+6+bob,3,6,'#fff0dc');rect(x-4,y+8+bob,2,3,'#f5d9ca');
- rect(x+14,y+3+bob,5,7,'#e6b4a5');rect(x+15,y+2+bob,4,6,'#fff0dc');rect(x+15,y+3+bob,3,3,'#f7d7c8');
- rect(x+2,y+1+bob,10,2,'#d5c4c0');rect(x+1,y+3+bob,12,8,'#fff0dc');rect(x+2,y+11+bob,10,3,'#f3c5b8');rect(x+4,y+13+bob,6,2,'#eaa99c');
- rect(x+3,y+2+bob,8,1,'#ffffff');rect(x+2,y+4+bob,2,5,'#fff7e9');rect(x+10,y+5+bob,2,4,'#f9dfd0');
- rect(x+3,y+4+bob,8,6,'#8db7ba');rect(x+2,y+5+bob,10,5,'#9bcdd0');rect(x+3,y+5+bob,8,5,'#17232e');rect(x+4,y+4+bob,6,1,'#253b46');rect(x+4,y+9+bob,6,1,'#111c27');
- rect(x+4,y+6+bob,2,1,'#57f0eb');rect(x+3,y+7+bob,4,2,'#57f0eb');rect(x+4,y+9+bob,2,1,'#57f0eb');
- rect(x+8,y+6+bob,2,1,'#57f0eb');rect(x+7,y+7+bob,4,2,'#57f0eb');rect(x+8,y+9+bob,2,1,'#57f0eb');
- rect(x+4,y+6+bob,1,1,'#caffff');rect(x+8,y+6+bob,1,1,'#caffff');
- if(carried==='box'){rect(x+player.face*7,y-7,9,8,'#9b744b');rect(x+player.face*7+2,y-5,5,4,'#c7a16a')}
- if(carried==='beam'){rect(x-3,y-6,18,4,'#bda77b');rect(x-2,y-5,16,2,'#e2d0a1')}
- if(carried==='sink'){rect(x+player.face*5,y-6,10,6,'#9bb8c2');rect(x+player.face*5+2,y-4,6,2,'#e0eee8')}
+ // Small, simplified cream-colored pixel robot; no mint/turquoise palette.
+ rect(x+1,y+player.h+1,9,1,'#111821');
+ // tiny floating side pods
+ rect(x-3,y+6+bob,2,4,'#d9b7ad');rect(x-2,y+6+bob,1,3,'#fff0dc');
+ rect(x+11,y+3+bob,3,5,'#d9b7ad');rect(x+12,y+3+bob,2,4,'#fff0dc');
+ // compact round body
+ rect(x+2,y+1+bob,6,1,'#d5c4c0');rect(x+1,y+2+bob,8,7,'#fff0dc');
+ rect(x+2,y+9+bob,6,2,'#f0c9bc');rect(x+3,y+11+bob,4,1,'#dca99e');
+ // dark visor, warm cream outline
+ rect(x+2,y+3+bob,6,5,'#c9b9b5');rect(x+2,y+4+bob,6,4,'#17202b');
+ // soft ivory eyes instead of mint
+ rect(x+3,y+5+bob,2,1,'#fff0dc');rect(x+3,y+6+bob,1,1,'#fff0dc');
+ rect(x+6,y+5+bob,2,1,'#fff0dc');rect(x+7,y+6+bob,1,1,'#fff0dc');
+ if(carried==='box'){rect(x+player.face*5,y-5,7,5,'#9b744b');rect(x+player.face*5+2,y-4,3,2,'#c7a16a')}
+ if(carried==='beam'){rect(x-3,y-4,15,3,'#bda77b');rect(x-2,y-3,13,1,'#e2d0a1')}
+ if(carried==='sink'){rect(x+player.face*4,y-5,7,5,'#b6b0b4');rect(x+player.face*4+2,y-3,3,2,'#e0d8d4')}
 }
 function near(x,y,r=23){return Math.hypot(player.x+4-x,player.y+7-y)<r}
 function prompt(){if(!started||dialogue||ending)return;let s='';
