@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#100f20">
 <title>REBOOT — 기억 복구 기록</title>
-<link rel="stylesheet" href="./style.css?v=5">
+<link rel="stylesheet" href="./style.css?v=6">
 </head>
 <body>
 <main id="game-wrap" aria-label="REBOOT 픽셀 어드벤처 게임">
   <canvas id="screen" width="320" height="180" aria-label="게임 화면"></canvas>
-  <div id="hud">
-    <div class="hud-top"><span class="brand">기억 복구</span><span id="chapter">기동 기록 00</span><span class="battery"><b id="battery-fill"></b></span></div>
+  <div id="hud" class="game-hud">
+    <div class="hud-top"><span class="brand"><i class="brand-mark">◆</i> 기억 복구</span><span class="chapter-tag" id="chapter">기동 기록 00</span><span class="battery-wrap"><span class="battery-label">CORE</span><span class="battery"><b id="battery-fill"></b></span></span></div>
     <div class="hud-bottom"><span id="objective">목표: 주변을 살펴보자</span><span id="parts">복구 0/3</span></div>
   </div>
   <section id="dialogue" class="hidden" aria-live="polite">
@@ -21,6 +21,6 @@
   <div id="start-screen" aria-label="시작하려면 클릭하거나 SPACE를 누르세요"><canvas id="logo-pixel" width="112" height="20"></canvas></div>
   <div id="toast" class="hidden"></div>
 </main>
-<script src="./script.js?v=5"></script>
+<script src="./script.js?v=6"></script>
 </body>
 </html>
