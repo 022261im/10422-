@@ -61,7 +61,7 @@ button{font-family:'DotGothic16',monospace;color:#21182b;background:#e5c8ef;bord
 #hud-pixel{display:block;width:100%;height:32px;image-rendering:pixelated;image-rendering:crisp-edges}
 #dialogue{padding:8px 12px 6px;min-height:0}
 #dialogue .speaker,#dialogue #line{display:none}
-#dialogue-pixel{display:block;width:100%;height:120px;image-rendering:pixelated;image-rendering:crisp-edges}
+#dialogue-pixel{display:block;width:100%;height:126px;image-rendering:pixelated;image-rendering:crisp-edges}
 .dialogue-hint{padding-top:2px;min-height:17px}
 .dialogue-hint .space-key{width:162px;height:45px;min-width:0;padding:0;border:0;background:transparent;box-shadow:none;image-rendering:pixelated}
 .dialogue-hint .next-arrow{font-size:0;width:18px;height:18px;position:relative}
@@ -72,9 +72,9 @@ button{font-family:'DotGothic16',monospace;color:#21182b;background:#e5c8ef;bord
 #ending-copy{display:block;width:100%;height:126px;image-rendering:pixelated;image-rendering:crisp-edges}
 #ending-screen .text-fallback{display:none}
 #toast{white-space:normal;max-width:88%;text-align:center;line-height:1.35}
-@media(max-width:560px){#dialogue-pixel{height:108px}.dialogue-hint .space-key{width:135px;height:37px}#ending-screen{padding:8px}}
+@media(max-width:560px){#dialogue-pixel{height:113px}.dialogue-hint .space-key{width:135px;height:37px}#ending-screen{padding:8px}}
 
 #toast{padding:3px;max-width:90%;white-space:normal}
-#toast-pixel{display:block;width:100%;height:72px;image-rendering:pixelated;image-rendering:crisp-edges}
+#toast-pixel{display:block;width:100%;height:90px;image-rendering:pixelated;image-rendering:crisp-edges}
 
 #logo-pixel{width:336px;height:90px;image-rendering:pixelated;image-rendering:crisp-edges}
